@@ -45,6 +45,7 @@ class AppTests(unittest.TestCase):
 		'''
 		self.scheme = 'http'
 		self.url = '127.0.0.1:5000/'
+		self.use_static_distance = True
 		# self.url = 'localhost:3000'
 
 		# self.add_test_locations(add_reviews=False, clear_db=True)
@@ -73,7 +74,7 @@ class AppTests(unittest.TestCase):
 		# remove all other tags:
 		
 		# expected_data = self.get_homepage_expected_data(ratings=0)
-		expected_data = self.get_homepage_expected_data(ratings=0, static_distances=True)
+		expected_data = self.get_homepage_expected_data(ratings=0, static_distances=self.use_static_distance)
 
 
 		# get test data by scraping the locations-list page:
@@ -113,7 +114,7 @@ class AppTests(unittest.TestCase):
 
 
 		# expected_data = self.get_details_expected_data(ratings=0, num_reviews=0)
-		expected_data = self.get_details_expected_data(ratings=0, num_reviews=0, static_distances=True)
+		expected_data = self.get_details_expected_data(ratings=0, num_reviews=0)
 
 
 
@@ -130,7 +131,11 @@ class AppTests(unittest.TestCase):
 		loc_scraper = LocationsScraper(url=url)
 		details_scraper = DetailsScraper()
 
-		for location in loc_scraper.scrape():
+		locations = loc_scraper.scrape()
+		self.assertTrue(len(locations)>0, msg="No locations for testing. Possible cause of this failure is the scraper cannot find any data on the Locaitons page.")
+
+
+		for location in locations:
 			# build complete url path to each details page:
 			details_url = self.build_url(path_parts=location['details_url'].split('/'))
 
@@ -925,7 +930,7 @@ class AppTests(unittest.TestCase):
 		# (expected_data, test_data) will basically produce an empty list
 		# thereby passing all tests which is not what we want.
 		self.assertTrue(len(expected_data)>0, msg="No expected_data for testing")
-		self.assertTrue(len(test_data)>0, msg="No test_data for testing. It seems the scraper cannot find any data on the Locaitons page.")
+		self.assertTrue(len(test_data)>0, msg="No test_data for testing. Possible cause of this failure is the scraper cannot find any data on the Locaitons page.")
 		self.assertEqual(len(expected_data), len(test_data), msg='expected_data and test_data lengths do not match')
 		
 		# test the data in each location record matches the expected data:

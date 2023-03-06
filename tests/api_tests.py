@@ -37,7 +37,8 @@ class APITests(unittest.TestCase):
 
 		'''
 		self.scheme = 'http'
-		self.url = 'localhost:3000'
+		self.url = '127.0.0.1:5000/'
+		# self.url = 'localhost:3000'
 
 
 	def build_url(self, path_parts):

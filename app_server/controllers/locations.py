@@ -7,6 +7,6 @@ def locations_by_distance(request):
 
 	'''
 
-	return render_template('layout.html')
+	return render_template('locations.html')
 
 

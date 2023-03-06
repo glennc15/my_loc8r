@@ -1,0 +1,10 @@
+{% macro outputRating(rating) -%}
+	{% for idx in range(rating) %}
+	<span class="glyphicon glyphicon-star"></span>
+	{% endfor %}
+
+	{% for idx in range((5-rating)) %}
+	<span class="glyphicon glyphicon-star-empty"></span>
+	{% endfor %}
+
+{%- endmacro %}

@@ -44,9 +44,10 @@ class AppTests(unittest.TestCase):
 
 		'''
 		self.scheme = 'http'
-		self.url = 'localhost:3000'
+		self.url = '127.0.0.1:5000/'
+		# self.url = 'localhost:3000'
 
-		self.add_test_locations(add_reviews=False, clear_db=True)
+		# self.add_test_locations(add_reviews=False, clear_db=True)
 
 
 
@@ -71,7 +72,9 @@ class AppTests(unittest.TestCase):
 		#
 		# remove all other tags:
 		
-		expected_data = self.get_homepage_expected_data(ratings=0)
+		# expected_data = self.get_homepage_expected_data(ratings=0)
+		expected_data = self.get_homepage_expected_data(ratings=0, static_distances=True)
+
 
 		# get test data by scraping the locations-list page:
 
@@ -108,7 +111,11 @@ class AppTests(unittest.TestCase):
 		#
 		# remove all other tags:
 
-		expected_data = self.get_details_expected_data(ratings=0, num_reviews=0)
+
+		# expected_data = self.get_details_expected_data(ratings=0, num_reviews=0)
+		expected_data = self.get_details_expected_data(ratings=0, num_reviews=0, static_distances=True)
+
+
 
 		# turn the test data list into a dict with key = location name.
 		expected_dict = dict([(location['name'], location) for location in expected_data])
@@ -564,7 +571,7 @@ class AppTests(unittest.TestCase):
 	# *********************************************************************************
 	#  Start Helper Methods:
 
-	def get_homepage_expected_data(self, ratings=0):
+	def get_homepage_expected_data(self, ratings=0, static_distances=False):
 		'''
 
 		ratings=[number]: sets the rating for all locations = number.
@@ -597,35 +604,42 @@ class AppTests(unittest.TestCase):
 		# will make it easier to add distances to the correct record.
 		expected_dict = dict([(location['name'], location) for location in expected_data])
 
-		# have to get distances from the api and convert the distance to the
-		# correct string
+		if static_distances:
+			expected_dict['Starcups']['distance'] = '6m'
+			expected_dict['Cafe Hero']['distance'] = '62m'
+			expected_dict['Burger Queen']['distance'] = '1.1km'
 
-		url = self.build_url(path_parts=['api', 'locations'])
-		location_r = requests.get(
-			url=url,
-			params={
-				'lng': -0.9690885,
-				'lat': 51.455041,
-				'maxDistance': 20
-			}
-		)
+		else:
+			# have to get distances from the api and convert the distance to the
+			# correct string
 
-		self.status_code_test(
-			url=url,
-			expected_status_code=200,
-			test_status_code=location_r.status_code
-		)
+			url = self.build_url(path_parts=['api', 'locations'])
+			location_r = requests.get(
+				url=url,
+				params={
+					'lng': -0.9690885,
+					'lat': 51.455041,
+					'maxDistance': 20
+				}
+			)
 
-		for location in location_r.json():
-			distance = location['distance']
+			self.status_code_test(
+				url=url,
+				expected_status_code=200,
+				test_status_code=location_r.status_code
+			)
 
-			if distance < 1.0:
-				distance_str = "{}m".format(int(distance*1000))
+			for location in location_r.json():
+				distance = location['distance']
 
-			else:
-				distance_str = "{:.1f}km".format(distance)
+				if distance < 1.0:
+					distance_str = "{}m".format(int(distance*1000))
 
-			expected_dict[location['name']]['distance'] = distance_str
+				else:
+					distance_str = "{:.1f}km".format(distance)
+
+				expected_dict[location['name']]['distance'] = distance_str
+
 
 		# convert expected_dict back to a list:
 		expected_data = [location for name, location in expected_dict.items()]
@@ -906,6 +920,13 @@ class AppTests(unittest.TestCase):
 
 
 		'''
+		# test the lengths of the expected/test data. If the locations page is
+		# empty test_data will be an empty list. And zip
+		# (expected_data, test_data) will basically produce an empty list
+		# thereby passing all tests which is not what we want.
+		self.assertTrue(len(expected_data)>0, msg="No expected_data for testing")
+		self.assertTrue(len(test_data)>0, msg="No test_data for testing. It seems the scraper cannot find any data on the Locaitons page.")
+		self.assertEqual(len(expected_data), len(test_data), msg='expected_data and test_data lengths do not match')
 		
 		# test the data in each location record matches the expected data:
 		expected_data = sorted(expected_data, key=lambda x: x['name'])		
@@ -915,8 +936,12 @@ class AppTests(unittest.TestCase):
 
 			error_msg_tag = "locations-list['{}']".format(expected_loc['name'])
 
+			print("expected_loc:\n{}\n".format(expected_data))
+			print("test_data:\n{}\n".format(test_data))
+
+
 			self.compare_data_objs(
-				expected_data=expected_loc,
+				expected_data=test_data,
 				test_data=test_loc,
 				err_msg_tag=error_msg_tag,
 			)

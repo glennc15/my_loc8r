@@ -917,6 +917,7 @@ class AppTests(unittest.TestCase):
 			err_msg += "type(expected_data) = {}\n".format(type(expected_data))
 			err_msg += "type(test_data) = {}\n".format(type(test_data))
 			err_msg += "expected_data and test_data must both be of type dict()"
+			err_msg += err_msg_tag
 			raise ValueError(err_msg)
 
 
@@ -941,12 +942,11 @@ class AppTests(unittest.TestCase):
 
 			error_msg_tag = "locations-list['{}']".format(expected_loc['name'])
 
-			print("expected_loc:\n{}\n".format(expected_data))
-			print("test_data:\n{}\n".format(test_data))
-
+			# print("expected_loc:\n{}\n".format(expected_loc))
+			# print("test_loc:\n{}\n".format(test_loc))			
 
 			self.compare_data_objs(
-				expected_data=test_data,
+				expected_data=expected_loc,
 				test_data=test_loc,
 				err_msg_tag=error_msg_tag,
 			)

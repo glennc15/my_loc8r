@@ -66,7 +66,7 @@ def about():
 # api_server routers:
 
 # Location routes:
-@app.route('/api/locations', methods=['GET', 'POST', 'PUT'])
+@app.route('/api/locations', methods=['GET', 'POST', 'PUT', 'DELETE'])
 def api_locations():
 
 	if request.method == 'GET':
@@ -77,6 +77,9 @@ def api_locations():
 
 	if request.method == 'PUT':
 		return ({'message': "Invalide update. A locations id is required"}, 404)
+
+	if request.method == 'DELETE':
+		return ({'message': "Invalide delete. A locations id is required"}, 404)
 
 
 

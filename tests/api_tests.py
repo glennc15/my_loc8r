@@ -173,8 +173,6 @@ class APITests(unittest.TestCase):
 		self.assertEqual(location_r.json()['name'], 'Burger QueEn')
 
 
-		print('location_r.json() = {}'.format(location_r.json()))
-
 		# READ a location:
 		url = self.build_url(path_parts=['api', 'locations', location_r.json()['_id']])
 		r = requests.get(url=url)

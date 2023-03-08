@@ -70,18 +70,18 @@ def convert_object_ids(document):
 
 	'''
 
-	record = json.loads(document.to_json())
+	record = document.to_mongo().to_dict()
 
 	# # convert the ObjectId in the location object:
-	record['_id'] = record['_id']['$oid']
+	record['_id'] = str(record['_id'])
 
 	# convert the ObjectId for each opeing time sub document
 	for opening_time in record['openingTimes']:
-		opening_time['_id'] = opening_time['_id']['$oid']
+		opening_time['_id'] = str(opening_time['_id'])
 
 	# convert the ObjectId for each review sub document
 	for review in record['reviews']:
-		review['_id'] = review['_id']['$oid']
+		review['_id'] = str(review['_id'])
 
 
 	return record 

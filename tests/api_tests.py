@@ -221,6 +221,8 @@ class APITests(unittest.TestCase):
 			}
 		)
 
+		# print("location_r.json() = {}".format(location_r.json()))
+
 		self.assertEqual(location_r.status_code, 200)
 		self.assertEqual(location_r.json()['name'], 'Burger Queen')
 

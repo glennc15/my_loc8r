@@ -66,15 +66,19 @@ def about():
 # api_server routers:
 
 # Location routes:
-@app.route('/api/locations', methods=['GET', 'POST'])
+@app.route('/api/locations', methods=['GET', 'POST', 'PUT'])
 def api_locations():
 
 	if request.method == 'GET':
 		return locs_api_ctrl.locations_by_distance(request=request)
 
-
 	if request.method == 'POST':
 		return locs_api_ctrl.location_create(request=request)
+
+	if request.method == 'PUT':
+		return ({'message': "Invalide update. A locations id is required"}, 404)
+
+
 
 @app.route('/api/locations/<locationid>', methods=['GET', 'PUT', 'DELETE'])
 def api_location(locationid):
@@ -82,6 +86,7 @@ def api_location(locationid):
 		return locs_api_ctrl.location_read(request=request, locationid=locationid)
 
 	if request.method == 'PUT':
+		print("locationid = {}".format(locationid))
 		return locs_api_ctrl.location_update(request=request, locationid=locationid)
 
 	if request.method == 'DELETE':

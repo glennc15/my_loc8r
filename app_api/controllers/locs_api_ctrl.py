@@ -213,14 +213,19 @@ def location_read(request, locationid=None):
 	return response 
 
 
-def location_update(request, locationid):
+def location_update(request, locationid=None):
 
 	if locationid is None:
 		response = ({"message": "locationid is required"}, 404)
 
 	else:
 
+
+
+
 		try:
+
+			print("update location")
 
 			location = Location.objects(id=locationid).get()
 
@@ -231,14 +236,21 @@ def location_update(request, locationid):
 			location.facilities = new_data['facilities']
 			location.coords = [new_data['lng'], new_data['lat']]
 
-			opening_time_records = build_opening_times(opening_times_list=location_data['openingTimes'])
+			opening_time_records = build_opening_times(opening_times_list=new_data['openingTimes'])
 			location.openingTimes = opening_time_records
 
-			location.save()
+			print("updated location")
 
-			location_data = convert_object_ids(document=location)
+			try:
+				location.save()
 
-			response = (location_data, 200)
+				# pdb.set_trace()
+
+				location_data = convert_object_ids(document=location)
+				response = (location_data, 200)
+
+			except Exception as e:
+				raise e
 
 		except Exception as e:
 

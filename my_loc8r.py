@@ -16,17 +16,15 @@ app = Flask(__name__, template_folder='app_server/templates')
 def locations():
 
 	if request.method == 'GET':
-
-	# return "<p>Locations</p>"
-	# return render_template('app_server/templates/hello.html')
 		return loc.locations_by_distance(request=request)
-		# return render_template('hello.html')
 
 
 
-@app.route('/location/<locationid>')
+@app.route('/location/<locationid>', methods=['GET'])
 def location_details(locationid):
-	return render_template('hello.html', name=locationid)
+
+	if request.method == 'GET':
+		return loc.location(request=request)
 
 
 @app.route('/location/<locationid>/review/new')

@@ -23,7 +23,7 @@ class Location(me.Document):
 	rating = me.IntField(default=0, min_value=0, max_value=5)
 	facilities = me.StringField()
 	coords = me.PointField(auto_index=True)
-	opening_times = me.ListField(me.EmbeddedDocumentField(OpeningTime))
+	openingTimes = me.ListField(me.EmbeddedDocumentField(OpeningTime))
 	reviews = me.ListField(me.EmbeddedDocumentField(Review))
 	
 	# opening_times = me.EmbeddedDocumentListField(me.EmbeddedDocument(OpeningTimeSchema))

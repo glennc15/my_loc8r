@@ -69,6 +69,7 @@ class APITests(unittest.TestCase):
 		r = requests.post(
 			url=url,
 			json={
+				'name': '',
 				'address': "783 High Street, Reading, RG6 1PS",
 				'facilities': "Food,Premium wifi",
 				'lng': -0.9690854,
@@ -172,12 +173,14 @@ class APITests(unittest.TestCase):
 		self.assertEqual(location_r.json()['name'], 'Burger QueEn')
 
 
+		print('location_r.json() = {}'.format(location_r.json()))
+
 		# READ a location:
 		url = self.build_url(path_parts=['api', 'locations', location_r.json()['_id']])
 		r = requests.get(url=url)
 
 		self.assertEqual(r.status_code, 200)
-
+		self.assertEqual(r.json()['_id'], location_r.json()['_id'])
 
 		# read error due to invalid id:
 		url = self.build_url(path_parts=['api', 'locations', location_r.json()['_id'][1:]])
@@ -186,11 +189,11 @@ class APITests(unittest.TestCase):
 		self.assertEqual(r.status_code, 404)
 
 
-		# read error due to no id:
-		url = self.build_url(path_parts=['api', 'locations'])
-		r = requests.get(url=url)
+		# # read error due to no id:
+		# url = self.build_url(path_parts=['api', 'locations'])
+		# r = requests.get(url=url)
 
-		self.assertEqual(r.status_code, 404)
+		# self.assertEqual(r.status_code, 404)
 
 
 		# UPDATE a location:

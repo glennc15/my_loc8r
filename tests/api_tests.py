@@ -69,6 +69,34 @@ class APITests(unittest.TestCase):
 		r = requests.post(
 			url=url,
 			json={
+				'address': "783 High Street, Reading, RG6 1PS",
+				'facilities': "Food,Premium wifi",
+				'lng': -0.9690854,
+				'lat': 51.455051,
+				'openingTimes': [
+					{
+						'days': "Thursday - Saturday",
+						'opening': "1:00am",
+						'closing': "10:00am",
+						'closed': False
+					},
+					{
+						'days': "Monday - Wednesday",
+						'closed': True
+					}
+				]
+			}
+		)
+
+		# print(r.json())
+
+		self.assertEqual(r.status_code, 400)
+
+
+		# unsuccessful POST due to missing invalid name field (required):
+		r = requests.post(
+			url=url,
+			json={
 				'name': '',
 				'address': "783 High Street, Reading, RG6 1PS",
 				'facilities': "Food,Premium wifi",
@@ -92,6 +120,7 @@ class APITests(unittest.TestCase):
 		# print(r.json())
 
 		self.assertEqual(r.status_code, 400)
+
 
 
 		# unsuccessful POST due to missing longitude coordinate (required):
@@ -119,6 +148,34 @@ class APITests(unittest.TestCase):
 
 		self.assertEqual(r.status_code, 400)
 
+		# unsuccessful POST due to invalid longitude coordinate (required):
+		r = requests.post(
+			url=url,
+			json={
+				'name': 'Burger Queen',
+				'address': "783 High Street, Reading, RG6 1PS",
+				'facilities': "Food,Premium wifi",
+				'lng': -180.9690854,
+				'lat': 51.455051,
+				'openingTimes': [
+					{
+						'days': "Thursday - Saturday",
+						'opening': "1:00am",
+						'closing': "10:00am",
+						'closed': False
+					},
+					{
+						'days': "Monday - Wednesday",
+						'closed': True
+					}
+				]
+			}
+		)
+
+		# print(r.json())
+
+		self.assertEqual(r.status_code, 400)
+
 		# unsuccessful POST due to missing latitude coordinates (required):
 		r = requests.post(
 			url=url,
@@ -143,6 +200,30 @@ class APITests(unittest.TestCase):
 		)
 
 		self.assertEqual(r.status_code, 400)
+
+		# unsuccessful POST due to invalid latitude coordinate (required):
+		r = requests.post(
+			url=url,
+			json={
+				'name': 'Burger Queen',
+				'address': "783 High Street, Reading, RG6 1PS",
+				'facilities': "Food,Premium wifi",
+				'lng': -0.9690854,
+				'lat': 151.455051,
+				'openingTimes': [
+					{
+						'days': "Thursday - Saturday",
+						'opening': "1:00am",
+						'closing': "10:00am",
+						'closed': False
+					},
+					{
+						'days': "Monday - Wednesday",
+						'closed': True
+					}
+				]
+			}
+		)
 
 
 		# a successful post:
@@ -370,7 +451,6 @@ class APITests(unittest.TestCase):
 		# CREATE a review:
 
 		# CREATE failure due to incorrect location id:
-		
 		url = self.build_url(path_parts=['api', 'locations', location_r.json()['_id'][1:], 'reviews'])
 		review1_r = requests.post(
 			url=url,

@@ -4,7 +4,9 @@ from flask_mongoengine import MongoEngine
 
 import my_loc8r.app_server.controllers.locations_ctrl as loc_ctrl
 
-import my_loc8r.app_api.controllers.locs_api_ctrl as locs_api_ctrl
+# import my_loc8r.app_api.controllers.locs_api_ctrl as locs_api_ctrl
+from my_loc8r.app_api.controllers.locations_api_controller import LocationsAPIController
+
 import my_loc8r.app_api.controllers.reviews_api_ctrl as reviews_api_ctrl 
 
 
@@ -69,50 +71,78 @@ def about():
 @app.route('/api/locations', methods=['GET', 'POST', 'PUT', 'DELETE'])
 def api_locations():
 
-	if request.method == 'GET':
-		return locs_api_ctrl.locations_by_distance(request=request)
+	loc_api_controller = LocationsAPIController()
+	loc_api_controller.locations(request=request, location_id=None)
 
-	if request.method == 'POST':
-		return locs_api_ctrl.location_create(request=request)
-
-	if request.method == 'PUT':
-		return ({'message': "Invalide update. A locations id is required"}, 404)
-
-	if request.method == 'DELETE':
-		return ({'message': "Invalide delete. A locations id is required"}, 404)
+	print("loc_api_controller.status_code = {}".format(loc_api_controller.status_code))
+	print("loc_api_controller.data = {}".format(loc_api_controller.data))
 
 
+	return (loc_api_controller.data, loc_api_controller.status_code)
 
-@app.route('/api/locations/<locationid>', methods=['GET', 'PUT', 'DELETE'])
+	# if request.method == 'GET':
+	# 	return locs_api_ctrl.locations_by_distance(request=request)
+
+	# if request.method == 'POST':
+	# 	return locs_api_ctrl.location_create(request=request)
+
+	# if request.method == 'PUT':
+	# 	return ({'message': "Invalide update. A locations id is required"}, 404)
+
+	# if request.method == 'DELETE':
+	# 	return ({'message': "Invalide delete. A locations id is required"}, 404)
+
+
+
+@app.route('/api/locations/<locationid>', methods=['GET', 'POST', 'PUT', 'DELETE'])
 def api_location(locationid):
-	if request.method == 'GET':
-		return locs_api_ctrl.location_read(request=request, locationid=locationid)
 
-	if request.method == 'PUT':
-		print("locationid = {}".format(locationid))
-		return locs_api_ctrl.location_update(request=request, locationid=locationid)
+	loc_api_controller = LocationsAPIController()
+	loc_api_controller.locations(request=request, location_id=locationid)
 
-	if request.method == 'DELETE':
-		return locs_api_ctrl.location_delete(request=request, locationid=locationid)
+	return (loc_api_controller.data, loc_api_controller.status_code)
+
+
+	# if request.method == 'GET':
+	# 	return locs_api_ctrl.location_read(request=request, locationid=locationid)
+
+	# if request.method == 'PUT':
+	# 	print("locationid = {}".format(locationid))
+	# 	return locs_api_ctrl.location_update(request=request, locationid=locationid)
+
+	# if request.method == 'DELETE':
+	# 	return locs_api_ctrl.location_delete(request=request, locationid=locationid)
 
 
 # Review routes:
-@app.route('/api/locations/<locationid>/reviews', methods=['POST'])
+@app.route('/api/locations/<locationid>/reviews', methods=['GET', 'POST', 'PUT', 'DELETE'])
 def api_review_create(locationid):
-	if request.method == 'POST':
-		return reviews_api_ctrl.review_create(request=request)
+	loc_api_controller = LocationsAPIController()
+	loc_api_controller.reviews(request=request, location_id=locationid, review_id=None)
+
+	return (loc_api_controller.data, loc_api_controller.status_code)
 
 
-@app.route('/api/locations/<locationid>/reviews/<reviewid>', methods=['GET', 'PUT', 'DELETE'])
+
+	# if request.method == 'POST':
+	# 	return reviews_api_ctrl.review_create(request=request)
+
+
+@app.route('/api/locations/<locationid>/reviews/<reviewid>', methods=['GET', 'POST', 'PUT', 'DELETE'])
 def api_review_CRUD(locationid, reviewid):
-	if request.method == 'GET':
-		return reviews_api_ctrl.review_read(request=request, locationid=locationid, reviewid=reviewid)
+	loc_api_controller = LocationsAPIController()
+	loc_api_controller.reviews(request=request, location_id=locationid, review_id=reviewid)
 
-	if request.method == 'PUT':
-		return reviews_api_ctrl.review_update(request=request, locationid=locationid, reviewid=reviewid)
+	return (loc_api_controller.data, loc_api_controller.status_code)
 
-	if request.method == 'DELETE':
-		return reviews_api_ctrl.review_delete(request=request, locationid=locationid, reviewid=reviewid)
+	# if request.method == 'GET':
+	# 	return reviews_api_ctrl.review_read(request=request, locationid=locationid, reviewid=reviewid)
+
+	# if request.method == 'PUT':
+	# 	return reviews_api_ctrl.review_update(request=request, locationid=locationid, reviewid=reviewid)
+
+	# if request.method == 'DELETE':
+	# 	return reviews_api_ctrl.review_delete(request=request, locationid=locationid, reviewid=reviewid)
 
 
 # *************************************************************

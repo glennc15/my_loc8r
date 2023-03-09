@@ -225,6 +225,125 @@ class APITests(unittest.TestCase):
 			}
 		)
 
+		# unsuccessful POST due to invalid openingTimes record:
+		location_r = requests.post(
+			url=url,
+			json={
+				'name': 'Burger QueEn',		
+				'address': "783 High Street, Reading, RG6 1PS",
+				'facilities': "Food,Premium wifi",
+				'lng': -0.9690854,
+				'lat': 51.455051,
+				'openingTimes': [
+					{
+						'days': "Thursday - Saturday",
+						'opening': "1:00am",
+						'closing': "10:00am",
+						'closed': False
+					},
+					
+					"Monday - Wednesday",
+	
+				]
+			}
+		)
+
+		# unsuccessful POST due to missing openingTimes['days']:
+		location_r = requests.post(
+			url=url,
+			json={
+				'name': 'Burger QueEn',		
+				'address': "783 High Street, Reading, RG6 1PS",
+				'facilities': "Food,Premium wifi",
+				'lng': -0.9690854,
+				'lat': 51.455051,
+				'openingTimes': [
+					{
+						'opening': "1:00am",
+						'closing': "10:00am",
+						'closed': False
+					},
+					{
+						'days': "Monday - Wednesday",
+						'closed': True
+					}
+				]
+			}
+		)
+
+		# unsuccessful POST due to invalid openingTimes['days']:
+		location_r = requests.post(
+			url=url,
+			json={
+				'name': 'Burger QueEn',		
+				'address': "783 High Street, Reading, RG6 1PS",
+				'facilities': "Food,Premium wifi",
+				'lng': -0.9690854,
+				'lat': 51.455051,
+				'openingTimes': [
+					{
+						'days': 5,
+						'opening': "1:00am",
+						'closing': "10:00am",
+						'closed': False
+					},
+					{
+						'days': "Monday - Wednesday",
+						'closed': True
+					}
+				]
+			}
+		)
+
+		# unsuccessful POST due to missing openingTimes['closed']:
+		location_r = requests.post(
+			url=url,
+			json={
+				'name': 'Burger QueEn',		
+				'address': "783 High Street, Reading, RG6 1PS",
+				'facilities': "Food,Premium wifi",
+				'lng': -0.9690854,
+				'lat': 51.455051,
+				'openingTimes': [
+					{
+						'days': "Thursday - Saturday",
+						'opening': "1:00am",
+						'closing': "10:00am",
+						'closed': False
+					},
+					{
+						'days': "Monday - Wednesday",
+					}
+				]
+			}
+		)
+
+
+		# unsuccessful POST due to invalid openingTimes['closed']:
+		location_r = requests.post(
+			url=url,
+			json={
+				'name': 'Burger QueEn',		
+				'address': "783 High Street, Reading, RG6 1PS",
+				'facilities': "Food,Premium wifi",
+				'lng': -0.9690854,
+				'lat': 51.455051,
+				'openingTimes': [
+					{
+						'days': "Thursday - Saturday",
+						'opening': "1:00am",
+						'closing': "10:00am",
+						'closed': False
+					},
+					{
+						'days': "Monday - Wednesday",
+						'closed': 'True'
+					}
+				]
+			}
+		)
+
+
 
 		# a successful post:
 		location_r = requests.post(

@@ -295,9 +295,81 @@ class LocationsAPIController(object):
 
 		'''
 
-		pass
+		if not isinstance(opening_data, list):
+			opening_data = [opening_data]
+
+		for opening_record in opening_data:
+			if not self.is_opening_record_ok(opening_record=opening_record):
+				return False
 
 
+		return True
+
+
+	def is_opening_record_ok(self, opening_record):
+		'''
+
+
+		'''
+
+		# check opening record is a dict:
+		if not isinstance(opening_record, dict):
+			error_msg = "Invalid type for opening time record.\n"
+			error_msg += "This opening time record is of type {}".format(type(opening_record))
+
+			self.data = {"message": error_msg}
+			self.status_code = 400
+
+			return False
+
+
+		# check opening data for the required values:
+		for opening_key in self._required_opening_keys:
+			if opening_key not in opening_record:
+				error_msg = "Invalid data for opening time.\n"
+				error_msg += "opening_time['{}'] is required.".format(opening_key)
+
+				self.data = {"message": error_msg}
+				self.status_code = 400
+
+				return False
+
+		# validate opening_record['days']: 
+		if (isinstance(opening_record['days'], str)):
+			if len(opening_record['days']) == 0:
+				error_msg = "Invalid data for opening_record['days'].\n"
+				error_msg += "opening_record['days'] an empty string."
+
+				self.data = {"message": error_msg}
+				self.status_code = 400
+				location_data_ok = False
+
+				return location_data_ok
+
+		else:
+				error_msg = "opening_record['days'] must be a string.\n"
+				error_msg += "opening_record['days'] is type {}".format(type(opening_record['days']))
+
+				self.data = {"message": error_msg}
+				self.status_code = 400
+				location_data_ok = False
+
+				return location_data_ok
+
+		# validate opening_record['closed']: 
+		if not (isinstance(opening_record['closed'], bool)):
+				error_msg = "opening_record['closed'] must be a boolean.\n"
+				error_msg += "opening_record['closed'] is type {}".format(type(opening_record['closed']))
+
+				self.data = {"message": error_msg}
+				self.status_code = 400
+				location_data_ok = False
+
+				return location_data_ok
+
+
+		# the opening recod data is valid:
+		return True
 
 
 # End: helper methods:

@@ -240,6 +240,8 @@ class LocationsAPIController(object):
 
 		except Exception as e:
 
+			print("Exception = {}".format(e))
+
 			error_msg = "No location record with id = {}".format(location_id)
 			self.data = {'message': error_msg}
 			self.status_code = 404

@@ -63,6 +63,35 @@ class APITests(unittest.TestCase):
 		'''
 		# CREATE a location:
 
+		# unsuccessful POST due to an invalid url:
+		url = self.build_url(path_parts=['api', 'locations', '6408d7ef69d46dd24edd9287'])
+
+		location_r = requests.post(
+			url=url,
+			json={
+				'name': 'Burger QueEn',		
+				'address': "783 High Street, Reading, RG6 1PS",
+				'facilities': "Food,Premium wifi",
+				'lng': -0.9690854,
+				'lat': 51.455051,
+				'openingTimes': [
+					{
+						'days': "Thursday - Saturday",
+						'opening': "1:00am",
+						'closing': "10:00am",
+						'closed': False
+					},
+					{
+						'days': "Monday - Wednesday",
+						'closed': True
+					}
+				]
+			}
+		)
+
+		self.assertEqual(location_r.status_code, 401)
+
+
 		url = self.build_url(path_parts=['api', 'locations'])
 		
 		# unsuccessful POST due to missing name field (required):
@@ -225,6 +254,8 @@ class APITests(unittest.TestCase):
 			}
 		)
 
+		self.assertEqual(r.status_code, 400)
+
 		# unsuccessful POST due to invalid openingTimes record:
 		location_r = requests.post(
 			url=url,
@@ -248,6 +279,8 @@ class APITests(unittest.TestCase):
 			}
 		)
 
+		self.assertEqual(r.status_code, 400)
+
 		# unsuccessful POST due to missing openingTimes['days']:
 		location_r = requests.post(
 			url=url,
@@ -270,6 +303,8 @@ class APITests(unittest.TestCase):
 				]
 			}
 		)
+
+		self.assertEqual(r.status_code, 400)
 
 		# unsuccessful POST due to invalid openingTimes['days']:
 		location_r = requests.post(
@@ -295,6 +330,8 @@ class APITests(unittest.TestCase):
 			}
 		)
 
+		self.assertEqual(r.status_code, 400)
+
 		# unsuccessful POST due to missing openingTimes['closed']:
 		location_r = requests.post(
 			url=url,
@@ -318,6 +355,7 @@ class APITests(unittest.TestCase):
 			}
 		)
 
+		self.assertEqual(r.status_code, 400)
 
 		# unsuccessful POST due to invalid openingTimes['closed']:
 		location_r = requests.post(
@@ -343,9 +381,10 @@ class APITests(unittest.TestCase):
 			}
 		)
 
+		self.assertEqual(r.status_code, 400)
 
 
-		# a successful post:
+		# a successful POST:
 		location_r = requests.post(
 			url=url,
 			json={

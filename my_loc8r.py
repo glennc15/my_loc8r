@@ -100,6 +100,9 @@ def api_location(locationid):
 	loc_api_controller = LocationsAPIController()
 	loc_api_controller.locations(request=request, location_id=locationid)
 
+	print("loc_api_controller.status_code = {}".format(loc_api_controller.status_code))
+	print("loc_api_controller.data = {}".format(loc_api_controller.data))
+
 	return (loc_api_controller.data, loc_api_controller.status_code)
 
 

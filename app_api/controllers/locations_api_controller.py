@@ -1,4 +1,7 @@
+from urllib.parse import urlsplit
+import bson
 
+from my_loc8r.app_api.models.location_models import Location, OpeningTime, Review
 
 class LocationsAPIController(object):
 	'''
@@ -72,48 +75,64 @@ class LocationsAPIController(object):
 
 		elif (request.method == 'GET') and (location_id is not None):
 
-			if self.is_object_id(object_id=location_id):
+			if self.is_object_id_ok(request=request, object_id=location_id):
 				self.read_location_by_id(location_id=location_id)
 
 			else:
-				# bad object id:
-				pass 
+				# problem with location_id:
+				return False 
 
 
 		elif (request.method == 'POST') and (location_id is None):
 			self.create_location(data=request.get_json())
 
 		
-		elif (request.method == 'POST') and (location_id is not None):
-			# in valid POST request:
-			pass 
+		# elif (request.method == 'POST') and (location_id is not None):
+		# 	# in valid POST request:
+		# 	pass 
 
 
 		elif (request.method == 'PUT') and (location_id is not None):
-			if self.is_object_id(object_id=location_id):
+			if self.is_object_id_ok(request=request, object_id=location_id):
 				self.update_location(location_id=location_id, data=request.json())
 
 			else:
-				pass 
+				# location_id is invalid:
+				return False 
 
 
 
-		elif (request.method == 'PUT') and (location_id is None):
-			# invalid PUT request:
-			pass 
+		# elif (request.method == 'PUT') and (location_id is None):
+		# 	# invalid PUT request:
+		# 	pass 
 
 
 		elif (request.method == 'DELETE') and (location_id is not None):
-			if self.is_object_id(object_id=location_id):
+			if self.is_object_id_ok(request=request, object_id=location_id):
 				self.delete_location(location_id=location_id)
 
 			else:
-				pass 
+				# location_id is invalid:
+				return False 
 
 		
-		elif (request.method == 'DELETE') and (location_id is None):
-			# invalid DELETE request:
-			pass
+		# elif (request.method == 'DELETE') and (location_id is None):
+		# 	# invalid DELETE request:
+		# 	pass
+
+		else:
+			# all 401 requests:
+
+			scheme, netloc, path, query, fragment = urlsplit(request.base_url)
+
+			error_msg = "{} {}{} is not valid. Check the url or the request method".format(request.method, path, query)
+
+			# print('error_msg = {}'.format(error_msg))
+
+			self.data = {'message': error_msg}
+			self.status_code = 401
+
+			return None
 
 
 
@@ -151,6 +170,39 @@ class LocationsAPIController(object):
 			# there is a problem with the opening data so exit:
 			return None
 
+
+		location = Location(
+			name=data['name'],
+			address=data['address'],
+			facilities=data['facilities'],
+			coords = [data['lng'], data['lat']]
+		)
+
+		opening_time_records = self.build_opening_times(opening_times_list=data['openingTimes'])
+		location.openingTimes = opening_time_records
+
+		try:
+			location.save()
+
+			# remove the ObjectId objects:
+			location_data = self.convert_object_ids(document=location)
+
+			self.data = location_data
+			self.status_code = 201
+
+			# successful POST so exit
+			return None
+
+		except Exception as e:
+			# not sure how to test this
+
+			print("500 Error!")
+			print(e)
+
+			self.data = {'message': 'database error!'}
+			self.status_code = 500
+
+			return None 
 
 
 
@@ -207,9 +259,8 @@ class LocationsAPIController(object):
 
 				self.data = {"message": error_msg}
 				self.status_code = 400
-				location_data_ok = False
 
-				return location_data_ok
+				return False
 
 		# validate location_data['name']: 
 		if (isinstance(location_data['name'], str)):
@@ -219,9 +270,8 @@ class LocationsAPIController(object):
 
 				self.data = {"message": error_msg}
 				self.status_code = 400
-				location_data_ok = False
 
-				return location_data_ok
+				return False
 
 		else:
 				error_msg = "location['name'] must be a string.\n"
@@ -229,9 +279,8 @@ class LocationsAPIController(object):
 
 				self.data = {"message": error_msg}
 				self.status_code = 400
-				location_data_ok = False
 
-				return location_data_ok
+				return False
 
 
 		# validate location_data['lng']: 
@@ -245,9 +294,8 @@ class LocationsAPIController(object):
 
 				self.data = {"message": error_msg}
 				self.status_code = 400
-				location_data_ok = False
 
-				return location_data_ok
+				return False
 
 		else:
 				error_msg = "location['lng'] must be a float.\n"
@@ -255,9 +303,8 @@ class LocationsAPIController(object):
 
 				self.data = {"message": error_msg}
 				self.status_code = 400
-				location_data_ok = False
 
-				return location_data_ok
+				return False
 
 		# validate location_data['lat']: 
 		if (isinstance(location_data['lat'], float)):
@@ -270,9 +317,8 @@ class LocationsAPIController(object):
 
 				self.data = {"message": error_msg}
 				self.status_code = 400
-				location_data_ok = False
 
-				return location_data_ok
+				return False
 
 		else:
 				error_msg = "location['lat'] must be a float.\n"
@@ -280,13 +326,12 @@ class LocationsAPIController(object):
 
 				self.data = {"message": error_msg}
 				self.status_code = 400
-				location_data_ok = False
 
-				return location_data_ok
+				return False
 
 
-		location_data_ok = True
-		return location_data_ok
+
+		return True
 
 
 
@@ -370,6 +415,88 @@ class LocationsAPIController(object):
 
 		# the opening recod data is valid:
 		return True
+	
+	def convert_object_ids(self, document):
+		'''
+		
+		Mongo ObjectId cannot be converted to JSON.
+
+		Each Mongoengine Document class has a .to_json() method but it converts
+		ObjectIds to {'$oid': '6408a9dcdec8287c6dfd03d6'}
+		
+		So converts all ObjectId objects to strings
+
+		'''
+
+		record = document.to_mongo().to_dict()
+
+		# # convert the ObjectId in the location object:
+		record['_id'] = str(record['_id'])
+
+		# convert the ObjectId for each opeing time sub document
+		for opening_time in record['openingTimes']:
+			opening_time['_id'] = str(opening_time['_id'])
+
+		# convert the ObjectId for each review sub document
+		for review in record['reviews']:
+			review['_id'] = str(review['_id'])
+
+
+		return record 
+
+
+	def build_opening_times(self, opening_times_list):
+		'''
+
+
+		'''
+
+		# add the opening time sub documents:
+		opening_time_records = list()
+		for opening_time in opening_times_list:
+
+			# add valid opening time:
+			if opening_time['closed']:
+				opening_record = OpeningTime(
+					days=opening_time['days'],
+					closed=opening_time['closed']
+				)
+
+			else:
+				opening_record = OpeningTime(
+					days=opening_time['days'],
+					opening=opening_time['opening'],
+					closing=opening_time['closing'],
+					closed=opening_time['closed'] 
+					)
+
+			opening_time_records.append(opening_record)
+
+
+		return opening_time_records
+
+	def is_object_id_ok(self, request, object_id):
+		'''
+
+		Validate object_id is ObjectId object. Any invalid object_id is a 401 error.
+
+
+		'''
+
+		if not bson.objectid.ObjectId.is_valid(object_id):
+
+			scheme, netloc, path, query, fragment = urlsplit(request.base_url)
+
+			error_msg = "{} {}{} is not valid\n".format(request.method, path, query)
+			error_msg += "{} is not a valid id".format(object_id)
+
+			self.data = {'message': error_msg}
+			self.status_code = 401
+
+			return False 
+
+		return True
+
 
 
 # End: helper methods:

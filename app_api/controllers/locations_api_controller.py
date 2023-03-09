@@ -94,7 +94,7 @@ class LocationsAPIController(object):
 
 		elif (request.method == 'PUT') and (location_id is not None):
 			if self.is_object_id_ok(request=request, object_id=location_id):
-				self.update_location(location_id=location_id, data=request.json())
+				self.update_location(location_id=location_id, new_data=request.get_json())
 
 			else:
 				# location_id is invalid:
@@ -110,7 +110,7 @@ class LocationsAPIController(object):
 		elif (request.method == 'DELETE') and (location_id is not None):
 			if self.is_object_id_ok(request=request, object_id=location_id):
 				self.delete_location(location_id=location_id)
-
+				
 			else:
 				# location_id is invalid:
 				return False 
@@ -223,16 +223,8 @@ class LocationsAPIController(object):
 		try:
 
 			location = Location.objects(id=location_id).get()
-	
-			# remove the object ids:
-			location_data =  self.convert_object_ids(document=location)
-
-			# seperate 'coords' into longatude and lattitude and then remove 'coords'
-			location_data['lng'] = location_data['coords']['coordinates'][0]
-			location_data['lat'] = location_data['coords']['coordinates'][1]
-
-			# remove coords from dictionary:
-			location_data = dict([(k, v) for k, v in location_data.items() if k not in ['coords']])
+			
+			location_data = self.format_location(document=location)
 
 			self.data = location_data
 			self.status_code = 200
@@ -240,27 +232,77 @@ class LocationsAPIController(object):
 
 		except Exception as e:
 
-			print("Exception = {}".format(e))
-
-			error_msg = "No location record with id = {}".format(location_id)
+			error_msg = "No location record with id = {} found.".format(location_id)
 			self.data = {'message': error_msg}
 			self.status_code = 404
 			
 
-	def update_location(self, location_id, data):
+
+
+
+	def update_location(self, location_id, new_data):
 		'''
 
 
 		'''
+		# Find the location by id:
+		try:
+			location = Location.objects(id=location_id).get()
 
-		pass 
+		except Exception as e:
+
+			error_msg = "No location record with id = {} found.".format(location_id)
+			self.data = {'message': error_msg}
+			self.status_code = 404
+
+			return None
+
+		# update the Location record:
+		location.name = new_data['name']
+		location.address = new_data['address']
+		location.facilities = new_data['facilities']
+		location.coords = [new_data['lng'], new_data['lat']]
+
+		opening_time_records = self.build_opening_times(opening_times_list=new_data['openingTimes'])
+		location.openingTimes = opening_time_records
+
+		try:
+			location.save()
+			location_data = self.format_location(document=location)
+
+			self.data = location_data
+			self.status_code = 200
+
+		except Exception as e:
+			# not sure how to test this
+			print("500 Error!")
+			print(e)
+
+			self.data = {'message': 'database error!'}
+			self.status_code = 500
+
+		return None 
 
 
 	def delete_location(self, location_id):
 		'''
 
 		'''
-		pass 
+
+		try:
+			location = Location.objects(id=location_id).get().delete()
+			self.data = {'message': "location with id = {} was successfully removed".format(location_id)}
+			self.status_code = 204
+
+		except Exception as e:
+			# not sure how to test this
+			print("500 Error!")
+			print(e)
+
+			self.data = {'message': 'database error!'}
+			self.status_code = 500
+
+		return None 
 
 
 	def is_object_id(self, object_id):
@@ -523,6 +565,23 @@ class LocationsAPIController(object):
 		return True
 
 
+	def format_location(self, document):
+		'''
+
+
+		'''
+		# remove the object ids:
+		location_data =  self.convert_object_ids(document=document)
+
+		# seperate 'coords' into longatude and lattitude and then remove 'coords'
+		location_data['lng'] = location_data['coords']['coordinates'][0]
+		location_data['lat'] = location_data['coords']['coordinates'][1]
+
+		# remove coords from dictionary:
+		location_data = dict([(k, v) for k, v in location_data.items() if k not in ['coords']])
+
+
+		return location_data
 
 # End: helper methods:
 # *******************************************************************************

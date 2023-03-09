@@ -427,7 +427,7 @@ class APITests(unittest.TestCase):
 		self.assertEqual(r.status_code, 401)
 
 
-		# READ error due to a ndn existing id:
+		# READ error due to a non existing id:
 		url = self.build_url(path_parts=['api', 'locations', '6408d79c0ba5040bf57d2311'])
 		r = requests.get(url=url)
 
@@ -471,7 +471,8 @@ class APITests(unittest.TestCase):
 		self.assertEqual(location_r.status_code, 200)
 		self.assertEqual(location_r.json()['name'], 'Burger Queen')
 
-		# unsuccessful update, incorrect id:
+
+		# unsuccessful update, invalid id:
 		url = self.build_url(path_parts=['api', 'locations', location_r.json()['_id'][1:]])
 		r = requests.put(
 			url=url,
@@ -496,8 +497,36 @@ class APITests(unittest.TestCase):
 			}
 		)
 
-		self.assertEqual(r.status_code, 404)
+		self.assertEqual(r.status_code, 401)
 
+		# unsuccessful update, id does not exists:
+		url = self.build_url(path_parts=['api', 'locations', '6408d79c0ba5040bf57d2311'])
+		r = requests.put(
+			url=url,
+			json={
+				'name': 'Burger Queen',		
+				'address': "783 High Street, Reading, RG6 1PS",
+				'facilities': "Food,Premium wifi",
+				'lng': -0.9690854,
+				'lat': 51.455051,
+				'openingTimes': [
+					{
+						'days': "Thursday - Saturday",
+						'opening': "1:00am",
+						'closing': "10:00am",
+						'closed': False
+					},
+					{
+						'days': "Monday - Wednesday",
+						'closed': True
+					}
+				]
+			}
+		)
+
+		# print("location_r.json() = {}".format(location_r.json()))
+
+		self.assertEqual(r.status_code, 404)
 
 		# unsuccessful update, no id:
 		url = self.build_url(path_parts=['api', 'locations'])
@@ -524,7 +553,7 @@ class APITests(unittest.TestCase):
 			}
 		)
 
-		self.assertEqual(r.status_code, 404)
+		self.assertEqual(r.status_code, 401)
 
 
 		# DELETE a location:
@@ -532,13 +561,13 @@ class APITests(unittest.TestCase):
 		# unsuccessful delete, incorrect id:
 		url = self.build_url(path_parts=['api', 'locations', location_r.json()['_id'][1:]])
 		r = requests.delete(url=url)
-		self.assertEqual(r.status_code, 404)
+		self.assertEqual(r.status_code, 401)
 
 
 		# unsuccessful delete, no id:
 		url = self.build_url(path_parts=['api', 'locations'])
 		r = requests.delete(url=url)
-		self.assertEqual(r.status_code, 404)
+		self.assertEqual(r.status_code, 401)
 
 
 		# successful delete:

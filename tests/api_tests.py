@@ -419,8 +419,16 @@ class APITests(unittest.TestCase):
 		self.assertEqual(r.status_code, 200)
 		self.assertEqual(r.json()['_id'], location_r.json()['_id'])
 
-		# read error due to invalid id:
+
+		# READ error due to invalid id:
 		url = self.build_url(path_parts=['api', 'locations', location_r.json()['_id'][1:]])
+		r = requests.get(url=url)
+
+		self.assertEqual(r.status_code, 401)
+
+
+		# READ error due to a ndn existing id:
+		url = self.build_url(path_parts=['api', 'locations', '6408d79c0ba5040bf57d2311'])
 		r = requests.get(url=url)
 
 		self.assertEqual(r.status_code, 404)

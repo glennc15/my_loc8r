@@ -220,7 +220,30 @@ class LocationsAPIController(object):
 
 		'''
 
-		pass 
+		try:
+
+			location = Location.objects(id=location_id).get()
+	
+			# remove the object ids:
+			location_data =  self.convert_object_ids(document=location)
+
+			# seperate 'coords' into longatude and lattitude and then remove 'coords'
+			location_data['lng'] = location_data['coords']['coordinates'][0]
+			location_data['lat'] = location_data['coords']['coordinates'][1]
+
+			# remove coords from dictionary:
+			location_data = dict([(k, v) for k, v in location_data.items() if k not in ['coords']])
+
+			self.data = location_data
+			self.status_code = 200
+	
+
+		except Exception as e:
+
+			error_msg = "No location record with id = {}".format(location_id)
+			self.data = {'message': error_msg}
+			self.status_code = 404
+			
 
 	def update_location(self, location_id, data):
 		'''

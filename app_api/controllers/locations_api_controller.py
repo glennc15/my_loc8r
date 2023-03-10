@@ -1,5 +1,6 @@
 from urllib.parse import urlsplit
 import bson
+import re 
 
 from my_loc8r.app_api.models.location_models import Location, OpeningTime, Review
 
@@ -121,22 +122,37 @@ class LocationsAPIController(object):
 		# 	pass
 
 		else:
-			# all 401 requests:
 
+			# 405 and 401 errors:
+			#if we made it this far then something is wrong with the request
+			
 			scheme, netloc, path, query, fragment = urlsplit(request.base_url)
 
-			error_msg = "{} {}{} is not valid. Check the url or the request method".format(request.method, path, query)
+			# 405 errors for route /api/locations. allowed methods = ['GET', 'POST']
+			if (re.search(r'/api/locations', path)) and (request.method not in ['GET', 'POST']):
+				error_msg = "{} request is not valid for url {}".format(request.method, path)
+				self.data = {'message': error_msg}
+				self.status_code = 405
 
-			# print('error_msg = {}'.format(error_msg))
+				return None
 
-			self.data = {'message': error_msg}
-			self.status_code = 401
+			
+			# 405 errors for route /api/locations/:locationid. allowed methods = ['GET', 'PUT', 'DELETE']
+			if (re.search(r'/api/locations/[a-f\d]{24}', path, re.I)) and (request.method not in ['GET', 'PUT', 'DELETE']):
+				error_msg = "{} request is not valid for url {}".format(request.method, path)
+				self.data = {'message': error_msg}
+				self.status_code = 405
 
-			return None
+				return None
 
+			
+			# all 401 requests:
+			else:
+				error_msg = "{} {}{} is not valid. Check the url or the request method".format(request.method, path, query)
+				self.data = {'message': error_msg}
+				self.status_code = 401
 
-
-
+				return None
 
 
 

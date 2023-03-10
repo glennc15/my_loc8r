@@ -89,7 +89,7 @@ class APITests(unittest.TestCase):
 			}
 		)
 
-		self.assertEqual(location_r.status_code, 401)
+		self.assertEqual(location_r.status_code, 405)
 
 
 		url = self.build_url(path_parts=['api', 'locations'])
@@ -553,7 +553,7 @@ class APITests(unittest.TestCase):
 			}
 		)
 
-		self.assertEqual(r.status_code, 401)
+		self.assertEqual(r.status_code, 405)
 
 
 		# DELETE a location:
@@ -567,7 +567,7 @@ class APITests(unittest.TestCase):
 		# unsuccessful delete, no id:
 		url = self.build_url(path_parts=['api', 'locations'])
 		r = requests.delete(url=url)
-		self.assertEqual(r.status_code, 401)
+		self.assertEqual(r.status_code, 405)
 
 
 		# successful delete:
@@ -577,32 +577,67 @@ class APITests(unittest.TestCase):
 
 		
 
+		# 405 Errors: Wrong request methods for a url.
+
+		# unsuccessful PUT due to an invalid url:
+		location_r = requests.put(
+			url=self.build_url(path_parts=['api', 'locations']),
+			json={
+				'name': 'Burger QueEn',		
+				'address': "783 High Street, Reading, RG6 1PS",
+				'facilities': "Food,Premium wifi",
+				'lng': -0.9690854,
+				'lat': 51.455051,
+				'openingTimes': [
+					{
+						'days': "Thursday - Saturday",
+						'opening': "1:00am",
+						'closing': "10:00am",
+						'closed': False
+					},
+					{
+						'days': "Monday - Wednesday",
+						'closed': True
+					}
+				]
+			}
+		)
+
+		self.assertEqual(location_r.status_code, 405)
+
+		# unsuccessful DELETE due to an invalid url:
+		location_r = requests.delete(
+			url=self.build_url(path_parts=['api', 'locations'])
+		)
+
+		self.assertEqual(location_r.status_code, 405)
 
 
-	def read_a_location(self, location_id, expected_reviews=None, expected_rating=None, timedelay=1):
-		'''
-		
-		helper method to CRUD testing
+		# unsuccessful POST due to an invalid url:
+		location_r = requests.post(
+			url=self.build_url(path_parts=['api', 'locations', '6408d7ef69d46dd24edd9287']),
+			json={
+				'name': 'Burger QueEn',		
+				'address': "783 High Street, Reading, RG6 1PS",
+				'facilities': "Food,Premium wifi",
+				'lng': -0.9690854,
+				'lat': 51.455051,
+				'openingTimes': [
+					{
+						'days': "Thursday - Saturday",
+						'opening': "1:00am",
+						'closing': "10:00am",
+						'closed': False
+					},
+					{
+						'days': "Monday - Wednesday",
+						'closed': True
+					}
+				]
+			}
+		)
 
-		'''
-
-		# have to add a small delay so rating can update correctly.
-		time.sleep(timedelay) 
-
-		url = self.build_url(path_parts=['api', 'locations', location_id])
-		location_r = requests.get(url=url)
-
-		self.assertEqual(location_r.status_code, 200)
-
-		if expected_reviews:
-			self.assertEqual(len(location_r.json()['reviews']), expected_reviews)
-
-		if expected_rating:
-			self.assertEqual(location_r.json()['rating'], expected_rating)
-
-
-		return location_r
-
+		self.assertEqual(location_r.status_code, 405)
 
 
 

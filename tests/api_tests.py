@@ -1298,12 +1298,22 @@ class APITests(unittest.TestCase):
 			self.assertEqual(r.status_code, 204)
 
 
+	def drop_db(self):
+		'''
+
+		'''
+
+		APITests.mongo_client.drop_database(self.db_name)
+
+		
+
 	def test_locations_geoNear_01(self):
 		'''
 
 
 		'''
 
+		# self.drop_db()
 		self.remove_all_records()
 
 		# Set up: build some test locations:
@@ -1335,6 +1345,28 @@ class APITests(unittest.TestCase):
 
 		self.assertEqual(location_r.status_code, 404)
 
+		# READ: failure with invalide longiture parameter
+		location_r = requests.get(
+			url=url,
+			params={
+				'lng': -180.9690854,
+				'lat': 51.455051,
+			}
+		)
+
+		self.assertEqual(location_r.status_code, 404)
+
+
+		# READ: failure with invalide latitude parameter
+		location_r = requests.get(
+			url=url,
+			params={
+				'lng': -0.9690854,
+				'lat': 151.455051,
+			}
+		)
+
+		self.assertEqual(location_r.status_code, 404)
 
 
 		# READ: success with no maxDistance parameter:

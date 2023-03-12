@@ -82,7 +82,7 @@ class LocationsAPIController(object):
 		'''
 
 		if (request.method == 'GET') and (location_id is None):
-			self.read_locations_by_distance()
+			self.read_locations_by_distance(request=request)
 
 		elif (request.method == 'GET') and (location_id is not None):
 
@@ -300,12 +300,104 @@ class LocationsAPIController(object):
 
 
 
-	def read_locations_by_distance(self):
+	def read_locations_by_distance(self, request):
 		'''
 
 		'''
 		
-		pass  
+		longitude, latitude, max_dist = self.parse_location_parameters(parameters=request.args)
+
+		print('longitude = {}'.format(longitude))
+		print('latitude = {}'.format(latitude))
+		print('max_dist = {}'.format(max_dist))
+
+
+		if (longitude is not None) and (latitude is not None):
+			
+			start_point = {
+				'type': 'Point',
+				'coordinates': [longitude, latitude]
+			}
+
+
+			pipeline = [
+				{
+					'$geoNear': {
+						'near': start_point,
+						'spherical': True,
+						'distanceField': 'dist_calc',
+						'maxDistance': max_dist
+					}
+				}
+			]
+
+
+			locations = Location.objects().aggregate(pipeline)
+
+			self.data = [self.format_location(document=x) for x in locations]
+			self.status_code = 200
+
+
+	def parse_location_parameters(self, parameters):
+		'''
+
+
+		'''
+
+
+
+		for coords_key in ['lng', 'lat']:
+			if coords_key not in parameters:
+				error_msg = "{} is a required parameter and is missing in the query".format(coords_key)
+
+				self.data = {"message": error_msg}
+				self.status_code = 404
+
+				return (None, None, None)
+
+		# print('parameters = '.format(parameters))
+		# pdb.set_trace()
+
+		# validate the latitude parameter:
+		try:
+			latitude = float(parameters['lat'])
+
+		except Exception as e:
+			error_msg = "the parameter['lat'] = {} is not a float.".format(parameters['lat'])
+			self.data = {"message": error_msg}
+			self.status_code = 404
+			
+			return (None, None, None)
+
+		if not self.is_latitude_ok(latitude=latitude):
+			latitude = None 
+
+
+		# validate the longitude parameter:
+		try:
+			longitude = float(parameters['lng'])
+
+		except Exception as e:
+			error_msg = "the parameter['lng'] = {} is not a float.".format(parameters['lng'])
+			self.data = {"message": error_msg}
+			self.status_code = 404
+			
+			return (None, None, None)
+
+		if not self.is_longitude_ok(longitude=longitude):
+			longitude = None
+
+
+		if parameters.get('maxDistance'):
+			max_dist = float(parameters['maxDistance'])
+
+		else:
+			max_dist = 1000000
+
+
+		return (longitude, latitude, max_dist)	
+
+
 
 
 	def read_location_by_id(self, location_id):
@@ -708,6 +800,69 @@ class LocationsAPIController(object):
 
 		return True
 
+	def is_latitude_ok(self, latitude):
+		'''
+
+
+		'''
+
+		# validate location_data['lat']: 
+		if (isinstance(latitude, float)):
+			if -90 <= latitude <= 90:
+				pass
+
+			else:
+				error_msg = "Invalid data for location['lat'] = {}.\n".format(latitude)
+				error_msg += "location['lat'] must be between -90 and 90"
+
+				self.data = {"message": error_msg}
+				self.status_code = 404
+
+				return False
+
+		else:
+				error_msg = "location['lat'] must be a float.\n"
+				error_msg += "location['lat'] is type {}".format(type(latitude))
+
+				self.data = {"message": error_msg}
+				self.status_code = 404
+
+				return False
+
+
+		return True
+
+
+	def is_longitude_ok(self, longitude):
+		'''
+
+		'''
+		# validate location_data['lng']: 
+		if (isinstance(longitude, float)):
+			if -180 <= longitude <= 180:
+				pass
+
+			else:
+				error_msg = "Invalid data for location['lng'] = {}.\n".format(longitude)
+				error_msg += "location['lng'] must be between -180 and 180"
+
+				self.data = {"message": error_msg}
+				self.status_code = 404
+
+				return False
+
+		else:
+				error_msg = "location['lng'] must be a float.\n"
+				error_msg += "location['lng'] is type {}".format(type(longitude))
+
+				self.data = {"message": error_msg}
+				self.status_code = 404
+
+				return False
+
+
+		return True
+
 
 
 	def is_opening_data_ok(self, opening_data):
@@ -890,7 +1045,11 @@ class LocationsAPIController(object):
 
 		'''
 
-		record = document.to_mongo().to_dict()
+		if isinstance(document, dict):
+			record = document
+
+		else:
+			record = document.to_mongo().to_dict()
 
 		# # convert the ObjectId in the location object:
 		record['_id'] = str(record['_id'])

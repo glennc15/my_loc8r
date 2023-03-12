@@ -10,7 +10,9 @@ from my_loc8r.app_api.controllers.locations_api_controller import LocationsAPICo
 import my_loc8r.app_api.controllers.reviews_api_ctrl as reviews_api_ctrl 
 
 
-
+import rlcompleter
+import pdb 
+pdb.Pdb.complete = rlcompleter.Completer(locals()).complete
 
 # from jinja2 import Environment, FileSystemLoader
 # template_dir = '/Users/glenn/Documents/GettingMEAN/my_loc8r/app_server/templates/'
@@ -101,12 +103,14 @@ def api_review_create(locationid):
 	loc_api_controller = LocationsAPIController()
 	loc_api_controller.reviews(request=request, location_id=locationid, review_id=None)
 
+	print("loc_api_controller.status_code = {}".format(loc_api_controller.status_code))
+	print("loc_api_controller.data = {}".format(loc_api_controller.data))
+
+	# pdb.set_trace()
+	
 	return (loc_api_controller.data, loc_api_controller.status_code)
 
 
-
-	# if request.method == 'POST':
-	# 	return reviews_api_ctrl.review_create(request=request)
 
 
 @app.route('/api/locations/<locationid>/reviews/<reviewid>', methods=['GET', 'POST', 'PUT', 'DELETE'])
@@ -114,16 +118,12 @@ def api_review_CRUD(locationid, reviewid):
 	loc_api_controller = LocationsAPIController()
 	loc_api_controller.reviews(request=request, location_id=locationid, review_id=reviewid)
 
+	print("loc_api_controller.status_code = {}".format(loc_api_controller.status_code))
+	print("loc_api_controller.data = {}".format(loc_api_controller.data))
+
+
 	return (loc_api_controller.data, loc_api_controller.status_code)
 
-	# if request.method == 'GET':
-	# 	return reviews_api_ctrl.review_read(request=request, locationid=locationid, reviewid=reviewid)
-
-	# if request.method == 'PUT':
-	# 	return reviews_api_ctrl.review_update(request=request, locationid=locationid, reviewid=reviewid)
-
-	# if request.method == 'DELETE':
-	# 	return reviews_api_ctrl.review_delete(request=request, locationid=locationid, reviewid=reviewid)
 
 
 # *************************************************************

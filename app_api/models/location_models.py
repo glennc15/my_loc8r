@@ -3,10 +3,10 @@ import datetime
 from bson import ObjectId
 
 class Review(me.EmbeddedDocument):
-	_id = me.ObjectIdField(required=True, default=ObjectId)
+	review_id = me.ObjectIdField(required=True, default=ObjectId)
 	author = me.StringField(required=True)
 	rating = me.IntField(required=True, min_value=0, max_value=5)
-	reviewSchema_text = me.StringField(required=True)
+	review_text = me.StringField(required=True)
 	created_on = me.DateTimeField(default=datetime.datetime.utcnow)
 
 class OpeningTime(me.EmbeddedDocument):

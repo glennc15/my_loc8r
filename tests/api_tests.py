@@ -3,8 +3,9 @@ import unittest
 from bson import ObjectId
 
 from urllib.parse import urlsplit, urlunsplit
-# from pymongo import MongoClient
-# import pymongo
+
+from pymongo import MongoClient
+import pymongo
 
 # import collections
 
@@ -31,6 +32,29 @@ pdb.Pdb.complete = rlcompleter.Completer(locals()).complete
 
 class APITests(unittest.TestCase):
 
+	mongo_address = "mongodb://192.168.1.2:27017"
+	mongo_client = MongoClient(mongo_address)
+
+	@classmethod
+	def setUpClass(cls):
+		'''
+
+		'''
+
+		pass 
+
+
+	@classmethod
+	def tearDownClass(cls):
+		''' 
+
+
+		'''
+
+		APITests.mongo_client.close()
+
+
+
 	def setUp(self):
 		'''
 
@@ -38,6 +62,8 @@ class APITests(unittest.TestCase):
 		'''
 		self.scheme = 'http'
 		self.url = '127.0.0.1:5000/'
+		self.db_name = 'myLoc8r'
+
 		# self.url = 'localhost:3000'
 
 
@@ -53,6 +79,20 @@ class APITests(unittest.TestCase):
 
 
 		return url 
+
+	def location_tests(self, location_id, expected_reviews, expected_rating):
+		'''
+
+		'''
+
+		# print("location_id = {}".format(location_id))
+
+		db_location = APITests.mongo_client[self.db_name]['location'].find_one({'_id': ObjectId(location_id)})
+
+		self.assertEqual(db_location['rating'], expected_rating)
+		self.assertEqual(len(db_location['reviews']), expected_reviews)
+
+
 
 
 	def test_location_crud_01(self):
@@ -424,7 +464,7 @@ class APITests(unittest.TestCase):
 		url = self.build_url(path_parts=['api', 'locations', location_r.json()['_id'][1:]])
 		r = requests.get(url=url)
 
-		self.assertEqual(r.status_code, 401)
+		self.assertEqual(r.status_code, 404)
 
 
 		# READ error due to a non existing id:
@@ -497,7 +537,7 @@ class APITests(unittest.TestCase):
 			}
 		)
 
-		self.assertEqual(r.status_code, 401)
+		self.assertEqual(r.status_code, 404)
 
 		# unsuccessful update, id does not exists:
 		url = self.build_url(path_parts=['api', 'locations', '6408d79c0ba5040bf57d2311'])
@@ -561,7 +601,7 @@ class APITests(unittest.TestCase):
 		# unsuccessful delete, incorrect id:
 		url = self.build_url(path_parts=['api', 'locations', location_r.json()['_id'][1:]])
 		r = requests.delete(url=url)
-		self.assertEqual(r.status_code, 401)
+		self.assertEqual(r.status_code, 404)
 
 
 		# unsuccessful delete, no id:
@@ -691,7 +731,7 @@ class APITests(unittest.TestCase):
 			}
 		)
 
-		self.assertEqual(review1_r.status_code, 400)
+		self.assertEqual(review1_r.status_code, 404)
 
 
 		# CREATE failure due to no location id:
@@ -705,14 +745,12 @@ class APITests(unittest.TestCase):
 			}
 		)
 
-		self.assertEqual(review1_r.status_code, 404)
+		self.assertEqual(review1_r.status_code, 401)
 
 
-		# CREATE failure due to no rating (rating is a required):
-		
-		url = self.build_url(path_parts=['api', 'locations', location_r.json()['_id'], 'reviews'])
+		# CREATE failure due to no rating (rating is a required):		
 		review1_r = requests.post(
-			url=url,
+			url=self.build_url(path_parts=['api', 'locations', location_r.json()['_id'], 'reviews']),
 			json={
 				'author': 'Simon Holmes',		
 				'reviewText': "No wifi. Has male and female a go-go dances. Will be back with the family!",
@@ -722,25 +760,103 @@ class APITests(unittest.TestCase):
 		self.assertEqual(review1_r.status_code, 400)
 
 
-		
-		# CREATE review #1 success:
-
+		# CREATE failure due to no author (author is a required):		
 		url = self.build_url(path_parts=['api', 'locations', location_r.json()['_id'], 'reviews'])
 		review1_r = requests.post(
+			url=self.build_url(path_parts=['api', 'locations', location_r.json()['_id'], 'reviews']),
+			json={
+				'rating': 5,		
+				'reviewText': "No wifi. Has male and female a go-go dances. Will be back with the family!",
+			}
+		)
+
+		self.assertEqual(review1_r.status_code, 400)
+
+
+		# CREATE failure due to no review text (review text is a required):		
+		url = self.build_url(path_parts=['api', 'locations', location_r.json()['_id'], 'reviews'])
+		review1_r = requests.post(
+			url=self.build_url(path_parts=['api', 'locations', location_r.json()['_id'], 'reviews']),
+			json={
+				'author': 'Simon Holmes',
+				'rating': 5,		
+			}
+		)
+
+		self.assertEqual(review1_r.status_code, 400)
+
+
+
+		# CREATE unsuccessful due to imporper request (GET not allowed):
+		url = self.build_url(path_parts=['api', 'locations', location_r.json()['_id'], 'reviews'])
+		review1_r = requests.get(
 			url=url,
 			json={
 				'author': 'Simmon Holmes',		
-				'rating': "5",
+				'rating': 5,
+				'reviewText': "No wifi. Has male and female a go-go dances. Will be back with the family!",
+			}
+		)
+
+		self.assertEqual(review1_r.status_code, 405)
+
+		# CREATE unsuccessful due to imporper request (PUT not allowed):
+		url = self.build_url(path_parts=['api', 'locations', location_r.json()['_id'], 'reviews'])
+		review1_r = requests.put(
+			url=url,
+			json={
+				'author': 'Simmon Holmes',		
+				'rating': 5,
+				'reviewText': "No wifi. Has male and female a go-go dances. Will be back with the family!",
+			}
+		)
+
+		self.assertEqual(review1_r.status_code, 405)
+
+
+		# CREATE unsuccessful due to imporper request (DELETE not allowed):
+		url = self.build_url(path_parts=['api', 'locations', location_r.json()['_id'], 'reviews'])
+		review1_r = requests.delete(
+			url=url,
+			json={
+				'author': 'Simmon Holmes',		
+				'rating': 5,
+				'reviewText': "No wifi. Has male and female a go-go dances. Will be back with the family!",
+			}
+		)
+
+		self.assertEqual(review1_r.status_code, 405)
+
+		
+		# CREATE review #1 success:
+		location_id = location_r.json()['_id']
+
+		# url = self.build_url(path_parts=['api', 'locations', location_r.json()['_id'], 'reviews'])
+		review1_r = requests.post(
+			url=self.build_url(path_parts=['api', 'locations', location_id, 'reviews']),
+			json={
+				'author': 'Simmon Holmes',		
+				'rating': 5,
 				'reviewText': "No wifi. Has male and female a go-go dances. Will be back with the family!",
 			}
 		)
 
 		self.assertEqual(review1_r.status_code, 201)
+		# self.assertTrue('_id' in review1_r.json())
+
+		# self.assertTrue('_id' in review1_r.json())
 
 		# read location and verify the review was added and rating updated:
 
-		location_r = self.read_a_location(
-			location_id=location_r.json()['_id'], 
+		# location_r = self.location_tests(
+		# 	location_id='640c131b0eff6bceca9e57b8', 
+		# 	expected_reviews=1, 
+		# 	expected_rating=5, 
+		# )
+
+
+		self.location_tests(
+			location_id=location_id, 
 			expected_reviews=1, 
 			expected_rating=5, 
 		)
@@ -749,12 +865,12 @@ class APITests(unittest.TestCase):
 
 		# CREATE review #2 success:
 
-		url = self.build_url(path_parts=['api', 'locations', location_r.json()['_id'], 'reviews'])
+		# url = self.build_url(path_parts=['api', 'locations', location_r.json()['_id'], 'reviews'])
 		review2_r = requests.post(
-			url=url,
+			url=self.build_url(path_parts=['api', 'locations', location_id, 'reviews']),
 			json={
 				'author': 'Charlie Chaplin',		
-				'rating': "2",
+				'rating': 2,
 				'reviewText': "Didn't get any work done, great place!",
 			}
 		)
@@ -763,8 +879,8 @@ class APITests(unittest.TestCase):
 
 		# read location and verify the review was added and rating updated:
 
-		location_r = self.read_a_location(
-			location_id=location_r.json()['_id'], 
+		self.location_tests(
+			location_id=location_id, 
 			expected_reviews=2, 
 			expected_rating=3, 
 		)
@@ -774,43 +890,70 @@ class APITests(unittest.TestCase):
 		# READ a review:
 
 		# READ failure due to incorrect location id:
-		url = self.build_url(path_parts=['api', 'locations', location_r.json()['_id'][1:], 'reviews', review1_r.json()['_id']])
+		# url = self.build_url(path_parts=['api', 'locations', location_r.json()['_id'][1:], 'reviews', review1_r.json()['_id']])
+		url = self.build_url(path_parts=['api', 'locations', location_r.json()['_id'][1:], 'reviews', review1_r.json()['review_id']])
 		review1_err_r = requests.get(url=url)
 		self.assertEqual(review1_err_r.status_code, 404)
 
 		# READ failure due to no location id:
-		url = self.build_url(path_parts=['api', 'locations', 'reviews', review1_r.json()['_id']])
+		url = self.build_url(path_parts=['api', 'locations', 'reviews', review1_r.json()['review_id']])
+		review1_err_r = requests.get(url=url)
+		self.assertEqual(review1_err_r.status_code, 404)
+
+
+		# READ failure due to non existing location id:
+		url = self.build_url(path_parts=['api', 'locations', '640ceee95fedd040ba74a736', 'reviews', review1_r.json()['review_id'][1:]])
 		review1_err_r = requests.get(url=url)
 		self.assertEqual(review1_err_r.status_code, 404)
 
 
 		# READ failure due to incorrect review id:
-		url = self.build_url(path_parts=['api', 'locations', location_r.json()['_id'], 'reviews', review1_r.json()['_id'][1:]])
+		url = self.build_url(path_parts=['api', 'locations', location_r.json()['_id'], 'reviews', review1_r.json()['review_id'][1:]])
 		review1_err_r = requests.get(url=url)
 		self.assertEqual(review1_err_r.status_code, 404)
+
+
+		# READ failure due non exixting review id:
+		url = self.build_url(path_parts=['api', 'locations', location_r.json()['_id'], 'reviews', '640ceee95fedd040ba74a736'])
+		review1_err_r = requests.get(url=url)
+		self.assertEqual(review1_err_r.status_code, 404)
+
 
 		# READ failure due to no review id:
 		url = self.build_url(path_parts=['api', 'locations', location_r.json()['_id'], 'reviews'])
 		review1_err_r = requests.get(url=url)
-		self.assertEqual(review1_err_r.status_code, 404)
+		self.assertEqual(review1_err_r.status_code, 405)
 		
 
 		# READ success
-		url = self.build_url(path_parts=['api', 'locations', location_r.json()['_id'], 'reviews', review1_r.json()['_id']])
-		review1_err_r = requests.get(url=url)
-		self.assertEqual(review1_err_r.status_code, 200)
-
+		url = self.build_url(path_parts=['api', 'locations', location_r.json()['_id'], 'reviews', review1_r.json()['review_id']])
+		read_review1_r = requests.get(url=url)
+		self.assertEqual(read_review1_r.status_code, 200)
+		self.assertEqual(read_review1_r.json()['review_id'], review1_r.json()['review_id'])
 
 
 		# UPDATE a review:
 
 		# UPDATE failure due to incorrect location id:
-		url = self.build_url(path_parts=['api', 'locations', location_r.json()['_id'][1:], 'reviews', review1_r.json()['_id']])
+		url = self.build_url(path_parts=['api', 'locations', location_r.json()['_id'][1:], 'reviews', review1_r.json()['review_id']])
 		review1_update_r = requests.put(
 			url=url,
 			json={
 				'author': 'Simon Holmes',		
-				'rating': "5",
+				'rating': 5,
+				'reviewText': "No wifi. Has male and female a go-go dances. Will be back with the family!",
+			}
+		)
+		self.assertEqual(review1_update_r.status_code, 404)
+
+
+		# UPDATE failure due to non existing location id:
+		url = self.build_url(path_parts=['api', 'locations', '640ceee95fedd040ba74a736', 'reviews', review1_r.json()['review_id']])
+		review1_update_r = requests.put(
+			url=url,
+			json={
+				'author': 'Simon Holmes',		
+				'rating': 5,
 				'reviewText': "No wifi. Has male and female a go-go dances. Will be back with the family!",
 			}
 		)
@@ -818,24 +961,37 @@ class APITests(unittest.TestCase):
 
 
 		# UPDATE failure due to no location id:
-		url = self.build_url(path_parts=['api', 'locations', 'reviews', review1_r.json()['_id']])
+		url = self.build_url(path_parts=['api', 'locations', 'reviews', review1_r.json()['review_id']])
 		review1_update_r = requests.put(
 			url=url,
 			json={
 				'author': 'Simon Holmes',		
-				'rating': "5",
+				'rating': 5,
 				'reviewText': "No wifi. Has male and female a go-go dances. Will be back with the family!",
 			}
 		)
 		self.assertEqual(review1_update_r.status_code, 404)
 
 		# UPDATE failure due to incorrect review id:
-		url = self.build_url(path_parts=['api', 'locations', location_r.json()['_id'], 'reviews', review1_r.json()['_id'][1:]])
+		url = self.build_url(path_parts=['api', 'locations', location_r.json()['_id'], 'reviews', review1_r.json()['review_id'][1:]])
 		review1_update_r = requests.put(
 			url=url,
 			json={
 				'author': 'Simon Holmes',		
-				'rating': "5",
+				'rating': 5,
+				'reviewText': "No wifi. Has male and female a go-go dances. Will be back with the family!",
+			}
+		)
+		self.assertEqual(review1_update_r.status_code, 404)
+
+
+		# UPDATE failure due to non existing review id:
+		url = self.build_url(path_parts=['api', 'locations', location_r.json()['_id'], 'reviews', '640ceee95fedd040ba74a736'])
+		review1_update_r = requests.put(
+			url=url,
+			json={
+				'author': 'Simon Holmes',		
+				'rating': 5,
 				'reviewText': "No wifi. Has male and female a go-go dances. Will be back with the family!",
 			}
 		)
@@ -847,14 +1003,15 @@ class APITests(unittest.TestCase):
 			url=url,
 			json={
 				'author': 'Simon Holmes',		
-				'rating': "5",
+				'rating': 5,
 				'reviewText': "No wifi. Has male and female a go-go dances. Will be back with the family!",
 			}
 		)
-		self.assertEqual(review1_update_r.status_code, 404)
+		self.assertEqual(review1_update_r.status_code, 405)
 		
+
 		# UPDATE failure due to no rating (rating is required):
-		url = self.build_url(path_parts=['api', 'locations', location_r.json()['_id'], 'reviews', review1_r.json()['_id']])
+		url = self.build_url(path_parts=['api', 'locations', location_r.json()['_id'], 'reviews', review1_r.json()['review_id']])
 		review1_update_r = requests.put(
 			url=url,
 			json={
@@ -862,50 +1019,73 @@ class APITests(unittest.TestCase):
 				'reviewText': "No wifi. Has male and female a go-go dances. Will be back with the family!",
 			}
 		)
-		self.assertEqual(review1_update_r.status_code, 404)
+		self.assertEqual(review1_update_r.status_code, 400)
+
+
+		# UPDATE failure due to no author (author is required):
+		url = self.build_url(path_parts=['api', 'locations', location_r.json()['_id'], 'reviews', review1_r.json()['review_id']])
+		review1_update_r = requests.put(
+			url=url,
+			json={
+				'author': 5,
+				'reviewText': "No wifi. Has male and female a go-go dances. Will be back with the family!",
+			}
+		)
+		self.assertEqual(review1_update_r.status_code, 400)
+
+
+		# UPDATE failure due to no review text (review is required):
+		url = self.build_url(path_parts=['api', 'locations', location_r.json()['_id'], 'reviews', review1_r.json()['review_id']])
+		review1_update_r = requests.put(
+			url=url,
+			json={
+				'author': 'Simon Holmes',		
+				'author': 5,
+			}
+		)
+		self.assertEqual(review1_update_r.status_code, 400)
 
 
 		# UPDATE success
 
 		# author needs to be correct from 'Simmon Holmes' to 'Simon Holmes'
-		original_review = location_r.json()['reviews'][0]
-		self.assertEqual(original_review['author'], 'Simmon Holmes')
+		self.assertEqual(review1_r.json()['author'], 'Simmon Holmes')
 
-		url = self.build_url(path_parts=['api', 'locations', location_r.json()['_id'], 'reviews', review1_r.json()['_id']])
+		url = self.build_url(path_parts=['api', 'locations', location_r.json()['_id'], 'reviews', review1_r.json()['review_id']])
 		review1_update_r = requests.put(
 			url=url,
 			json={
 				'author': 'Simon Holmes',		
-				'rating': "5",
+				'rating': 5,
 				'reviewText': "No wifi. Has male and female a go-go dances. Will be back with the family!",
 			}
 		)
 		self.assertEqual(review1_update_r.status_code, 200)
 
-		location_r = self.read_a_location(
+		self.location_tests(
 			location_id=location_r.json()['_id'], 
 			expected_reviews=2, 
 			expected_rating=3, 
 		)
 
-		updated_review = location_r.json()['reviews'][0]
-		self.assertEqual(updated_review['author'], 'Simon Holmes')
+		# updated_review = location_r.json()['reviews'][0]
+		self.assertEqual(review1_update_r.json()['author'], 'Simon Holmes')
 
 		# update the second review's rating to 5
-		url = self.build_url(path_parts=['api', 'locations', location_r.json()['_id'], 'reviews', review2_r.json()['_id']])
+		url = self.build_url(path_parts=['api', 'locations', location_r.json()['_id'], 'reviews', review2_r.json()['review_id']])
 
 		review2_update_r = requests.put(
 			url=url,
 			json={
 				'author': 'Charlie Chaplin',		
-				'rating': "5",
+				'rating': 5,
 				'reviewText': "Didn't get any work done, great place!",
 			}
 		)
 
 		self.assertEqual(review2_update_r.status_code, 200)
 
-		location_r = self.read_a_location(
+		self.location_tests(
 			location_id=location_r.json()['_id'], 
 			expected_reviews=2, 
 			expected_rating=5, 
@@ -914,17 +1094,17 @@ class APITests(unittest.TestCase):
 		# DELETE a review:
 
 		# DELETE failure due to incorrect location id:
-		url = self.build_url(path_parts=['api', 'locations', location_r.json()['_id'][1:], 'reviews', review2_r.json()['_id']])
+		url = self.build_url(path_parts=['api', 'locations', location_r.json()['_id'][1:], 'reviews', review2_r.json()['review_id']])
 		review2_delete_r = requests.delete(url=url)
 		self.assertEqual(review2_delete_r.status_code, 404)
 
 		# DELETE failure due to no location id:
-		url = self.build_url(path_parts=['api', 'locations', 'reviews', review2_r.json()['_id']])
+		url = self.build_url(path_parts=['api', 'locations', 'reviews', review2_r.json()['review_id']])
 		review2_delete_r = requests.delete(url=url)
 		self.assertEqual(review2_delete_r.status_code, 404)
 		
 		# DELETE failure due to incorrect review id:
-		url = self.build_url(path_parts=['api', 'locations', location_r.json()['_id'], 'reviews', review2_r.json()['_id'][1:]])
+		url = self.build_url(path_parts=['api', 'locations', location_r.json()['_id'], 'reviews', review2_r.json()['review_id'][1:]])
 		review2_delete_r = requests.delete(url=url)
 		self.assertEqual(review2_delete_r.status_code, 404)
 		
@@ -933,19 +1113,61 @@ class APITests(unittest.TestCase):
 		review2_delete_r = requests.delete(url=url)
 		self.assertEqual(review2_delete_r.status_code, 404)
 		
-		# DELETE success
-		url = self.build_url(path_parts=['api', 'locations', location_r.json()['_id'], 'reviews', review2_r.json()['_id']])
+		# DELETE 2nd review: success
+		url = self.build_url(path_parts=['api', 'locations', location_r.json()['_id'], 'reviews', review2_r.json()['review_id']])
+		read_review_1 = requests.get(url)
+		self.assertEqual(read_review_1.status_code, 200)
+
 		review2_delete_r = requests.delete(url=url)
 		self.assertEqual(review2_delete_r.status_code, 204)
 
+		read_review_1 = requests.get(url)
+		self.assertEqual(read_review_1.status_code, 404)
 
-		location_r = self.read_a_location(
+		self.location_tests(
 			location_id=location_r.json()['_id'], 
 			expected_reviews=1, 
 			expected_rating=5, 
 		)
 
+		# DELETE 1st review: success
+		url = self.build_url(path_parts=['api', 'locations', location_r.json()['_id'], 'reviews', review1_r.json()['review_id']])
+		read_review_2 = requests.get(url)
+		self.assertEqual(read_review_2.status_code, 200)
 
+
+		review2_delete_r = requests.delete(url=url)
+		self.assertEqual(review2_delete_r.status_code, 204)
+
+		# for whatever reason when all reviews are removed the location
+		# ['reviews'] no longer exists in the database. But can add another
+		# reviews without issues. When another review is added then location
+		# ['reviews'] is present again.
+
+		# self.location_tests(
+		# 	location_id=location_r.json()['_id'], 
+		# 	expected_reviews=0, 
+		# 	expected_rating=0, 
+		# )
+
+		read_review_2 = requests.get(url)
+		self.assertEqual(read_review_2.status_code, 404)
+
+
+		# CREATE review #1 success:
+		location_id = location_r.json()['_id']
+
+		# url = self.build_url(path_parts=['api', 'locations', location_r.json()['_id'], 'reviews'])
+		review1_r = requests.post(
+			url=self.build_url(path_parts=['api', 'locations', location_id, 'reviews']),
+			json={
+				'author': 'Simmon Holmes',		
+				'rating': 5,
+				'reviewText': "No wifi. Has male and female a go-go dances. Will be back with the family!",
+			}
+		)
+
+		self.assertEqual(review1_r.status_code, 201)
 
 
 		# Clean up; delete the test location:
@@ -1165,7 +1387,8 @@ class APITests(unittest.TestCase):
 
 
 
-
+if __name__ == '__main__':
+	unittest.main()
 
 
 

@@ -466,6 +466,8 @@ class AppTests(unittest.TestCase):
 			allow_redirects=False
 		)
 
+		# pdb.set_trace()
+
 		self.assertEqual(post_r.status_code, 400)
 
 		expected_error_data1 = {
@@ -648,7 +650,7 @@ class AppTests(unittest.TestCase):
 
 				else:
 					distance = location['dist_calc']
-					
+
 
 				if distance < 1.0:
 					distance_str = "{}m".format(int(distance*1000))
@@ -732,20 +734,25 @@ class AppTests(unittest.TestCase):
 					review_post_r = requests.post(url=review_api_url, json=review)
 					self.assertEqual(review_post_r.status_code, 201)
 
+		# 13Mar2023: Figured this out. When the database is droppped and the
+		# new records are added the 'coords_2dsphere' index needs to be
+		# rebuild. Also the timedelay is no longer needed after rebuilding
+		# the index.
 
-		# 2Mar2022: Have to reset the server connection to Mongo or the
+		# 2Mar2023: Have to reset the server connection to Mongo or the
 		# $GeoNear seach will no work properly. I'm not sure why this happens
 		# but resetting the connection is a workaround. 
+
 		# reset_api_url = self.build_url(path_parts=['api', 'resetMongo'])
 		# reset_r = requests.get(url=reset_api_url)
 		# self.assertEqual(reset_r.status_code, 201)
 
-		
+		# part of resetting the connection:
+		# time.sleep(.5)
 
 		mongo_client['myLoc8r']['location'].create_index([('coords', pymongo.GEOSPHERE)])
 
-		# part of resetting the connection:
-		time.sleep(.5)
+
 
 
 

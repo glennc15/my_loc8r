@@ -260,7 +260,26 @@ def render_details_page(location):
 
 	return render_template('location.html', **location_data)
 
+def show_error(status_code):
+	'''
 
+	'''
+
+
+	if status_code == 404:
+		title = "404, page not found";
+		content = "Oh dear. Looks like we can't find this page. Sorry.";
+	
+	elif status_code == 500:
+		title = "500, internal server error";
+		content = "How embarrassing. There's a problem with our server.";
+
+	else:
+		title = "{}, something's gone wrong".format(status_code)
+		content = "Something, somewhere, has gone just a little bit wrong.";
+	
+
+	return (render_template('generic_text.html', title=title, content=content), status_code)
 
 
 def location(request, location_id):
@@ -290,10 +309,10 @@ def location(request, location_id):
 		return render_details_page(location=location)
 
 
-
 	else:
-		# show error page:
-		pass 
+		# some kind of error occured:
+		return show_error(status_code=location_r.status_code)
+		 
 
 
 

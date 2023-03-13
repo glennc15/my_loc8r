@@ -44,7 +44,7 @@ class AppTests(unittest.TestCase):
 
 		'''
 		self.scheme = 'http'
-		self.url = '127.0.0.1:5000/'
+		self.url = '127.0.0.1:5000'
 		self.use_static_distance = True
 		# self.url = 'localhost:3000'
 
@@ -178,7 +178,9 @@ class AppTests(unittest.TestCase):
 		}
 
 		details_scraper = DetailsScraper()
+
 		invalid_details_url = self.build_url(path_parts=['location', '6401b4c408c1d613f89439ed'])
+
 		details_test_data1 = details_scraper.scrape(
 			url=invalid_details_url,
 			expected_status_code=404

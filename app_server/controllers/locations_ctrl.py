@@ -1,11 +1,77 @@
-from flask import render_template
+from flask import render_template, url_for
 # from bson import ObjectId
 
-def locations_by_distance(request):
+# import bson 
+
+from urllib.parse import urlsplit, urlunsplit
+
+import math
+
+import requests
+
+# import requests
+
+import rlcompleter
+import pdb 
+pdb.Pdb.complete = rlcompleter.Completer(locals()).complete
+
+
+def build_url(path, query=None, scheme=None, netloc=None):
 	'''
 
 
 	'''
+
+	if scheme is None:
+		scheme = 'http'
+
+	if netloc is None:
+		netloc = '127.0.0.1:5000'
+
+	url = urlunsplit((scheme, netloc, path, query, None))
+
+
+	return url 
+
+
+def format_distance(distance):
+	'''
+
+	'''
+
+	if isinstance(distance, float):
+		if distance > 1:
+
+			dist_formated = "{:.1f}km".format(distance)
+
+		else:
+			m_distance = int((distance*1000))
+			dist_formated = "{:.0f}m".format(m_distance)
+
+	else:
+		dist_formated = '?'
+
+
+	return dist_formated
+
+
+def render_homepage(request, locations):
+	'''
+
+
+	'''
+	
+	message = None 
+
+	if not isinstance(locations, list):
+		message = 'API lookup error'
+		locations = []
+
+	else:
+		if len(locations) == 0:
+			message = "No places found nearby"
+
+
 
 	locations_data = {
 		'title': "myLoc8r - find a place to work with wifi",
@@ -14,35 +80,117 @@ def locations_by_distance(request):
 			'strapline': 'Find places to work with wifi near you!'
 		},
 		'sidebar': "Looking for wifi and a seat? myLoc8r helps you find places to work when out and about. Perhaps with coffee, cake or a pint? Let Loc8r help you find the place you're looking for.",
-		'locations': [
-			{	
-				'_id': '6400f4cb08c1d613f894394a',
-				'name': 'Starcups',
-				'address': '125 High Street, Reading, RG6 1PS',
-				'rating': 3,
-				'facilities': ['Hot drinks', 'Food', 'Premium wifi'],
-				'distance': '100m'
-			}, 
-			{
-				'_id': '6400f4cb08c1d613f894394f',
-				'name': 'Cafe Hero',
-				'address': '125 High Street, Reading, RG6 1PS',
-				'rating': 4,
-				'facilities': ['Hot drinks', 'Food', 'Premium wifi'],
-				'distance': '200m'
-			}, 
-			{
-				'_id': '6400f4cb08c1d613f8943954',
-				'name': 'Burger Queen',
-				'address': '125 High Street, Reading, RG6 1PS',
-				'rating': 2,
-				'facilities': ['Food', 'Premium wifi'],
-				'distance': '250m'
-		}]
-
+		'locations': locations,
+		'message': message
 	}
 
+
+
+
+	# 	[
+	# 		{	
+	# 			'_id': '6400f4cb08c1d613f894394a',
+	# 			'name': 'Starcups',
+	# 			'address': '125 High Street, Reading, RG6 1PS',
+	# 			'rating': 3,
+	# 			'facilities': ['Hot drinks', 'Food', 'Premium wifi'],
+	# 			'distance': '100m'
+	# 		}, 
+	# 		{
+	# 			'_id': '6400f4cb08c1d613f894394f',
+	# 			'name': 'Cafe Hero',
+	# 			'address': '125 High Street, Reading, RG6 1PS',
+	# 			'rating': 4,
+	# 			'facilities': ['Hot drinks', 'Food', 'Premium wifi'],
+	# 			'distance': '200m'
+	# 		}, 
+	# 		{
+	# 			'_id': '6400f4cb08c1d613f8943954',
+	# 			'name': 'Burger Queen',
+	# 			'address': '125 High Street, Reading, RG6 1PS',
+	# 			'rating': 2,
+	# 			'facilities': ['Food', 'Premium wifi'],
+	# 			'distance': '250m'
+	# 	}]
+
+	# }
+
 	return render_template('locations.html', **locations_data)
+
+
+
+
+
+def locations_by_distance(request):
+	'''
+
+
+	'''
+
+	api_url = url_for('api_locations', lng=-0.9690885, lat=51.455041, maxDistance=20)
+	url_parts = urlsplit(api_url)
+	api_url = build_url(
+		path=url_parts.path,
+		query=url_parts.query
+	)
+
+	# print('url = {}'.format(url))
+
+	locations_r = requests.get(url=api_url)
+
+	if locations_r.status_code == 200:
+		locations = locations_r.json()
+
+		for location in locations:
+			location['distance'] = format_distance(distance=location['dist_calc'])
+			location['facilities'] = location['facilities'].split(',')
+
+
+	else:
+		locaitons - []
+
+	
+	return render_homepage(request=request, locations=locations)
+
+	
+	# pdb.set_trace()
+
+	# locations_data = {
+	# 	'title': "myLoc8r - find a place to work with wifi",
+	# 	'page_header': {
+	# 		'title': 'myLoc8r',
+	# 		'strapline': 'Find places to work with wifi near you!'
+	# 	},
+	# 	'sidebar': "Looking for wifi and a seat? myLoc8r helps you find places to work when out and about. Perhaps with coffee, cake or a pint? Let Loc8r help you find the place you're looking for.",
+	# 	'locations': [
+	# 		{	
+	# 			'_id': '6400f4cb08c1d613f894394a',
+	# 			'name': 'Starcups',
+	# 			'address': '125 High Street, Reading, RG6 1PS',
+	# 			'rating': 3,
+	# 			'facilities': ['Hot drinks', 'Food', 'Premium wifi'],
+	# 			'distance': '100m'
+	# 		}, 
+	# 		{
+	# 			'_id': '6400f4cb08c1d613f894394f',
+	# 			'name': 'Cafe Hero',
+	# 			'address': '125 High Street, Reading, RG6 1PS',
+	# 			'rating': 4,
+	# 			'facilities': ['Hot drinks', 'Food', 'Premium wifi'],
+	# 			'distance': '200m'
+	# 		}, 
+	# 		{
+	# 			'_id': '6400f4cb08c1d613f8943954',
+	# 			'name': 'Burger Queen',
+	# 			'address': '125 High Street, Reading, RG6 1PS',
+	# 			'rating': 2,
+	# 			'facilities': ['Food', 'Premium wifi'],
+	# 			'distance': '250m'
+	# 	}]
+
+	# }
+
+	# return render_template('locations.html', **locations_data)
 
 
 def location(request):

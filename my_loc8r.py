@@ -7,7 +7,7 @@ import my_loc8r.app_server.controllers.locations_ctrl as loc_ctrl
 # import my_loc8r.app_api.controllers.locs_api_ctrl as locs_api_ctrl
 from my_loc8r.app_api.controllers.locations_api_controller import LocationsAPIController
 
-import my_loc8r.app_api.controllers.reviews_api_ctrl as reviews_api_ctrl 
+# import my_loc8r.app_api.controllers.reviews_api_ctrl as reviews_api_ctrl 
 
 
 import rlcompleter

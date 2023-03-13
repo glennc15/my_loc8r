@@ -699,7 +699,7 @@ class AppTests(unittest.TestCase):
 		if clear_db:
 			mongo_address = "mongodb://192.168.1.2:27017"
 			mongo_client = MongoClient(mongo_address)
-			mongo_client.drop_database('Loc8r')
+			mongo_client.drop_database('myLoc8r')
 
 
 		# add data via the api:

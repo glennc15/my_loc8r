@@ -21,7 +21,8 @@
 		{% for location in locations %}
 			<div class="col-xs-12 list-group-item">
 				<h4> 
-					<a href="/location/{{ location._id }}">{{ location.name }}</a>
+					<a href="{{ url_for('location_details', locationid=location._id) }}">{{ location.name }}</a>
+					<!-- <a href="/location/{{ location._id }}">{{ location.name }}</a> -->
 					<small>&nbsp;{{ macros.outputRating(location.rating) }}</small>
 					<span class="badge pull-right badge-default">{{ location.distance }}</span>
 				</h4>

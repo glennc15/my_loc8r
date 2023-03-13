@@ -48,7 +48,7 @@ class AppTests(unittest.TestCase):
 		self.use_static_distance = True
 		# self.url = 'localhost:3000'
 
-		# self.add_test_locations(add_reviews=False, clear_db=True)
+		self.add_test_locations(add_reviews=False, clear_db=True)
 
 
 
@@ -263,6 +263,9 @@ class AppTests(unittest.TestCase):
 				'rating': this_review['rating'],
 				'review': this_review['reviewText']
 			}
+
+			# print("add_review_url = {}".format(add_review_url))
+			# pdb.set_trace()
 
 			# The server redirects after a successful post. So checking for
 			# the redirect. If the request followed the redirect the status
@@ -637,7 +640,15 @@ class AppTests(unittest.TestCase):
 			)
 
 			for location in location_r.json():
-				distance = location['distance']
+				
+				# print("location = {}".format(location))
+
+				if location.get('distance'):
+					distance = location['distance']
+
+				else:
+					distance = location['dist_calc']
+					
 
 				if distance < 1.0:
 					distance_str = "{}m".format(int(distance*1000))
@@ -698,9 +709,10 @@ class AppTests(unittest.TestCase):
 
 		'''
 
+		mongo_address = "mongodb://192.168.1.2:27017"
+		mongo_client = MongoClient(mongo_address)
+
 		if clear_db:
-			mongo_address = "mongodb://192.168.1.2:27017"
-			mongo_client = MongoClient(mongo_address)
 			mongo_client.drop_database('myLoc8r')
 
 
@@ -724,13 +736,18 @@ class AppTests(unittest.TestCase):
 		# 2Mar2022: Have to reset the server connection to Mongo or the
 		# $GeoNear seach will no work properly. I'm not sure why this happens
 		# but resetting the connection is a workaround. 
-		reset_api_url = self.build_url(path_parts=['api', 'resetMongo'])
-		reset_r = requests.get(url=reset_api_url)
+		# reset_api_url = self.build_url(path_parts=['api', 'resetMongo'])
+		# reset_r = requests.get(url=reset_api_url)
+		# self.assertEqual(reset_r.status_code, 201)
 
-		self.assertEqual(reset_r.status_code, 201)
+		
+
+		mongo_client['myLoc8r']['location'].create_index([('coords', pymongo.GEOSPHERE)])
 
 		# part of resetting the connection:
 		time.sleep(.5)
+
+
 
 
 	def build_url(self, path_parts=[]):

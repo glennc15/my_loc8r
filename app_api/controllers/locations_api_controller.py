@@ -307,9 +307,9 @@ class LocationsAPIController(object):
 		
 		longitude, latitude, max_dist = self.parse_location_parameters(parameters=request.args)
 
-		print('longitude = {}'.format(longitude))
-		print('latitude = {}'.format(latitude))
-		print('max_dist = {}'.format(max_dist))
+		# print('longitude = {}'.format(longitude))
+		# print('latitude = {}'.format(latitude))
+		# print('max_dist = {}'.format(max_dist))
 
 
 		if (longitude is not None) and (latitude is not None):
@@ -1131,6 +1131,7 @@ class LocationsAPIController(object):
 		# seperate 'coords' into longatude and lattitude and then remove 'coords'
 		location_data['lng'] = location_data['coords']['coordinates'][0]
 		location_data['lat'] = location_data['coords']['coordinates'][1]
+		# location_data['distance'] = location_data['dist_calc']
 
 		# remove coords from dictionary:
 		location_data = dict([(k, v) for k, v in location_data.items() if k not in ['coords']])

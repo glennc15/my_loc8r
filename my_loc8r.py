@@ -53,9 +53,19 @@ def location_details(locationid):
 		return loc_ctrl.location(request=request, location_id=locationid)
 
 
-@app.route('/location/<locationid>/review/new')
+@app.route('/location/<locationid>/review/new', methods=['GET', 'POST'])
 def add_loc_review(locationid):
-	return "<p>Add a review for Location = {}!</p>".format(locationid)
+
+	if request.method == 'GET':
+		return loc_ctrl.add_review_page(request=request, location_id=locationid)
+
+
+	elif request.method == 'POST':
+		return loc_ctrl.add_review(request=request, location_id=locationid)
+
+
+
+	# return "<p>Add a review for Location = {}!</p>".format(locationid)
 
 
 @app.route('/about')

@@ -1,4 +1,4 @@
-from flask import render_template, url_for
+from flask import render_template, url_for, redirect
 # from bson import ObjectId
 
 # import bson 
@@ -147,7 +147,7 @@ def locations_by_distance(request):
 
 
 	else:
-		locaitons = []
+		locations = []
 
 	
 	return render_homepage(request=request, locations=locations)
@@ -211,6 +211,9 @@ def render_details_page(location):
 		'location': location 
 		}
 
+	# print("location_data = {}".format(location_data))
+
+	# pdb.set_trace()
 
 		# {
 		# 	'name': 'Starcups',
@@ -282,11 +285,11 @@ def show_error(status_code):
 	return (render_template('generic_text.html', title=title, content=content), status_code)
 
 
-def location(request, location_id):
+def get_location(location_id):
 	'''
 
 
-	'''
+	'''	
 
 	api_url = url_for('api_location', locationid=location_id)
 	url_parts = urlsplit(api_url)
@@ -295,9 +298,29 @@ def location(request, location_id):
 		query=url_parts.query
 	)
 
-	# print('url = {}'.format(url))
 
 	location_r = requests.get(url=api_url)
+
+	return location_r
+
+
+
+def location(request, location_id):
+	'''
+
+
+	'''
+
+	# api_url = url_for('api_location', locationid=location_id)
+	# url_parts = urlsplit(api_url)
+	# api_url = build_url(
+	# 	path=url_parts.path,
+	# 	query=url_parts.query
+	# )
+
+	# # print('url = {}'.format(url))
+
+	location_r = get_location(location_id=location_id)
 
 	# pdb.set_trace()
 
@@ -312,7 +335,76 @@ def location(request, location_id):
 	else:
 		# some kind of error occured:
 		return show_error(status_code=location_r.status_code)
-		 
+
+
+def render_review_form(location, status_code):
+	'''
+
+
+	'''
+
+	review_form_data = {
+		'title': "Review {} on myLoc8r".format(location['name']),
+		'page_header': {
+			'title': "Review {}".format(location['name'])
+		}
+	}
+
+
+	return (render_template('location_review_form.html', **review_form_data), status_code)
+
+
+
+def add_review_page(request, location_id):
+	'''
+
+	'''
+
+	location_r = get_location(location_id=location_id)
+
+	if location_r.status_code == 200:
+
+		return render_review_form(location=location_r.json(), status_code=200)
+
+
+
+
+def add_review(request, location_id):
+	'''
+
+
+	'''
+
+	api_url = url_for('api_review_create', locationid=location_id)
+	url_parts = urlsplit(api_url)
+	api_url = build_url(
+		path=url_parts.path,
+	)
+
+	# print("api_url = {}".format(api_url))
+	# print("request.json = {}".format(request.json))
+
+	# pdb.set_trace()
+
+	post_data = {
+		'author': request.json['name'],
+		'rating': request.json['rating'],
+		'reviewText': request.json['review']
+	}
+
+
+	post_r = requests.post(
+		url=api_url,
+		json=post_data
+	)
+
+
+	if post_r.status_code == 201:
+		return redirect(url_for('location_details', locationid=location_id))
+
+	else:
+		Show_error(status_code=post_r.status_code)
+
 
 
 

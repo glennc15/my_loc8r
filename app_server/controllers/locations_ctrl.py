@@ -147,7 +147,7 @@ def locations_by_distance(request):
 
 
 	else:
-		locaitons - []
+		locaitons = []
 
 	
 	return render_homepage(request=request, locations=locations)
@@ -193,66 +193,165 @@ def locations_by_distance(request):
 	# return render_template('locations.html', **locations_data)
 
 
-def location(request):
+
+def render_details_page(location):
 	'''
 
 
 	'''
-
 	location_data = {
-		'title': 'Starcups',
+		'title': location['name'],
 		'page_header': {
-			'title': 'Starcups'
+			'title': location['name']
 		},
 		'sidebar': {
 			'context': "is on myLoc8r because it has accessible wifi and space to sit down with your laptop and get some work done.",
 			'callToAction': "If you've been and you like it - or if you don't - please leave a review to help other people just like you."
 		},
-		'location': {
-			'name': 'Starcups',
-			'address': '125 High Street, Reading, RG6 1PS',
-			'rating': 3,
-			'facilities': ['Hot drinks', 'Food', 'Premium wifi'],
-			'coords': {
-				'lat': 51.455041,
-				'lng': -0.9690884
-			},
-			'openingTimes': [
-				{
-					'days': 'Monday - Friday',
-					'opening': '7:00am',
-					'closing': '7:00pm',
-					'closed': False
-				}, 
-				{
-					'days': 'Saturday',
-					'opening': '8:00am',
-					'closing': '5:00pm',
-					'closed': False
-				}, 
-				{
-				'days': 'Sunday',
-				'closed': True
-				}
-			],
-			'reviews': [
-				{
-					'author': 'Simon Holmes',
-					'rating': 5,
-					'timestamp': '16 July 2013',
-					'reviewText': 'What a great place. I can\'t say enough good things about it.'
-				}, 
-				{
-					'author': 'Charlie Chaplin',
-					'rating': 3,
-					'timestamp': '16 June 2013',
-					'reviewText': 'It was okay. Coffee wasn\'t great, but the wifi was fast.'
-				}
-			]
+		'location': location 
 		}
 
-	}
+
+		# {
+		# 	'name': 'Starcups',
+		# 	'address': '125 High Street, Reading, RG6 1PS',
+		# 	'rating': 3,
+		# 	'facilities': ['Hot drinks', 'Food', 'Premium wifi'],
+		# 	'coords': {
+		# 		'lat': 51.455041,
+		# 		'lng': -0.9690884
+		# 	},
+		# 	'openingTimes': [
+		# 		{
+		# 			'days': 'Monday - Friday',
+		# 			'opening': '7:00am',
+		# 			'closing': '7:00pm',
+		# 			'closed': False
+		# 		}, 
+		# 		{
+		# 			'days': 'Saturday',
+		# 			'opening': '8:00am',
+		# 			'closing': '5:00pm',
+		# 			'closed': False
+		# 		}, 
+		# 		{
+		# 		'days': 'Sunday',
+		# 		'closed': True
+		# 		}
+		# 	],
+		# 	'reviews': [
+		# 		{
+		# 			'author': 'Simon Holmes',
+		# 			'rating': 5,
+		# 			'timestamp': '16 July 2013',
+		# 			'reviewText': 'What a great place. I can\'t say enough good things about it.'
+		# 		}, 
+		# 		{
+		# 			'author': 'Charlie Chaplin',
+		# 			'rating': 3,
+		# 			'timestamp': '16 June 2013',
+		# 			'reviewText': 'It was okay. Coffee wasn\'t great, but the wifi was fast.'
+		# 		}
+		# 	]
+		# }
+
+	# }
+
 
 	return render_template('location.html', **location_data)
+
+
+
+
+def location(request, location_id):
+	'''
+
+
+	'''
+
+	api_url = url_for('api_location', locationid=location_id)
+	url_parts = urlsplit(api_url)
+	api_url = build_url(
+		path=url_parts.path,
+		query=url_parts.query
+	)
+
+	# print('url = {}'.format(url))
+
+	location_r = requests.get(url=api_url)
+
+	# pdb.set_trace()
+
+	if location_r.status_code == 200:
+		location = location_r.json()
+		# format the facilities as a list so it can render properly.
+		location['facilities'] = location['facilities'].split(',')
+
+		return render_details_page(location=location)
+
+
+
+	else:
+		# show error page:
+		pass 
+
+
+
+
+	# location_data = {
+	# 	'title': 'Starcups',
+	# 	'page_header': {
+	# 		'title': 'Starcups'
+	# 	},
+	# 	'sidebar': {
+	# 		'context': "is on myLoc8r because it has accessible wifi and space to sit down with your laptop and get some work done.",
+	# 		'callToAction': "If you've been and you like it - or if you don't - please leave a review to help other people just like you."
+	# 	},
+	# 	'location': {
+	# 		'name': 'Starcups',
+	# 		'address': '125 High Street, Reading, RG6 1PS',
+	# 		'rating': 3,
+	# 		'facilities': ['Hot drinks', 'Food', 'Premium wifi'],
+	# 		'coords': {
+	# 			'lat': 51.455041,
+	# 			'lng': -0.9690884
+	# 		},
+	# 		'openingTimes': [
+	# 			{
+	# 				'days': 'Monday - Friday',
+	# 				'opening': '7:00am',
+	# 				'closing': '7:00pm',
+	# 				'closed': False
+	# 			}, 
+	# 			{
+	# 				'days': 'Saturday',
+	# 				'opening': '8:00am',
+	# 				'closing': '5:00pm',
+	# 				'closed': False
+	# 			}, 
+	# 			{
+	# 			'days': 'Sunday',
+	# 			'closed': True
+	# 			}
+	# 		],
+	# 		'reviews': [
+	# 			{
+	# 				'author': 'Simon Holmes',
+	# 				'rating': 5,
+	# 				'timestamp': '16 July 2013',
+	# 				'reviewText': 'What a great place. I can\'t say enough good things about it.'
+	# 			}, 
+	# 			{
+	# 				'author': 'Charlie Chaplin',
+	# 				'rating': 3,
+	# 				'timestamp': '16 June 2013',
+	# 				'reviewText': 'It was okay. Coffee wasn\'t great, but the wifi was fast.'
+	# 			}
+	# 		]
+	# 	}
+
+	# }
+
+	# return render_template('location.html', **location_data)
 
 

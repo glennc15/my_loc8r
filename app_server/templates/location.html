@@ -23,7 +23,7 @@
 					</div>
 					<div class="panel-body">
 					{% for time in location.openingTimes %}
-						<p class="opening-time">{{ time.days}} : {% if time.closed %}Closed{% else %}{{ time.opening }} - {{time.closing}}{% endif %}</p>
+						<p class="opening-time">{{ time.days}} : {% if time.closed %}closed{% else %}{{ time.opening }} - {{time.closing}}{% endif %}</p>
 
 					{% endfor %}
 					</div>
@@ -54,7 +54,7 @@
 			<div class="col-xs-12">
 				<div class="panel panel-primary review-panel">
 					<div class="panel-heading">
-						<a href="/location/64060489e1998b72edd1b13c/review/new" class="btn btn-default pull-right">Add review</a>
+						<a href="{{ url_for('add_loc_review', locationid=location._id) }}" class="btn btn-default pull-right">Add review</a>
 						<h2 class="panel-title">Customer reviews</h2>
 					</div>
 					<div class="panel-body review-container">

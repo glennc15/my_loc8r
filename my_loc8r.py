@@ -50,7 +50,7 @@ def locations():
 def location_details(locationid):
 
 	if request.method == 'GET':
-		return loc_ctrl.location(request=request)
+		return loc_ctrl.location(request=request, location_id=locationid)
 
 
 @app.route('/location/<locationid>/review/new')

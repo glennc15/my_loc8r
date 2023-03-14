@@ -95,6 +95,7 @@ def locations_by_distance(request):
 	'''
 
 	api_url = url_for('api_locations', lng=-0.9690885, lat=51.455041, maxDistance=20)
+	
 	url_parts = urlsplit(api_url)
 	api_url = build_url(
 		path=url_parts.path,
@@ -111,6 +112,8 @@ def locations_by_distance(request):
 		for location in locations:
 			location['distance'] = format_distance(distance=location['dist_calc'])
 			location['facilities'] = location['facilities'].split(',')
+
+			print(location)
 
 
 	else:

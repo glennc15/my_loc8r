@@ -87,8 +87,8 @@ def api_locations():
 	loc_api_controller = LocationsAPIController()
 	loc_api_controller.locations(request=request, location_id=None)
 
-	# print("loc_api_controller.status_code = {}".format(loc_api_controller.status_code))
-	# print("loc_api_controller.data = {}".format(loc_api_controller.data))
+	print("loc_api_controller.status_code = {}".format(loc_api_controller.status_code))
+	print("loc_api_controller.data = {}".format(loc_api_controller.data))
 
 
 	return (loc_api_controller.data, loc_api_controller.status_code)
@@ -114,8 +114,8 @@ def api_review_create(locationid):
 	loc_api_controller = LocationsAPIController()
 	loc_api_controller.reviews(request=request, location_id=locationid, review_id=None)
 
-	# print("loc_api_controller.status_code = {}".format(loc_api_controller.status_code))
-	# print("loc_api_controller.data = {}".format(loc_api_controller.data))
+	print("loc_api_controller.status_code = {}".format(loc_api_controller.status_code))
+	print("loc_api_controller.data = {}".format(loc_api_controller.data))
 
 	# pdb.set_trace()
 	

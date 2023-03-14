@@ -309,7 +309,7 @@ class LocationsAPIController(object):
 
 		# print('longitude = {}'.format(longitude))
 		# print('latitude = {}'.format(latitude))
-		# print('max_dist = {}'.format(max_dist))
+		print('max_dist = {}'.format(max_dist))
 
 
 		if (longitude is not None) and (latitude is not None):
@@ -317,16 +317,23 @@ class LocationsAPIController(object):
 			start_point = {
 				'type': 'Point',
 				'coordinates': [longitude, latitude]
+				# 'coordinates': [latitude, longitude]
+
 			}
 
+			# max_dist is in km. Must be converted to m:
+			max_dist_m = max_dist * 1000
 
+			# distances are returned in m. So convert them to km
+			# with 'distanceMultiplier' = 1/0000
 			pipeline = [
 				{
 					'$geoNear': {
 						'near': start_point,
 						'spherical': True,
 						'distanceField': 'dist_calc',
-						'maxDistance': max_dist
+						'maxDistance': max_dist_m,
+						'distanceMultiplier': 1/1000,
 					}
 				}
 			]
@@ -1131,6 +1138,9 @@ class LocationsAPIController(object):
 		# seperate 'coords' into longatude and lattitude and then remove 'coords'
 		location_data['lng'] = location_data['coords']['coordinates'][0]
 		location_data['lat'] = location_data['coords']['coordinates'][1]
+		# dist_calc is in radians. Must convert back to km by multiplying by
+		# radius of the Earth (6371km):
+		# location_data['dist_calc'] = location_data['dist_calc'] * 6371
 		# location_data['distance'] = location_data['dist_calc']
 
 		# remove coords from dictionary:

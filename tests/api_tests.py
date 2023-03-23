@@ -1430,6 +1430,218 @@ class APITests(unittest.TestCase):
 
 
 
+	def test_authencation_01(self):
+		'''
+
+		'''
+		# Test registration:
+
+		url = self.build_url(path_parts=['api', 'register'])
+
+		# # Add User: failure due to no data:
+		location_r = requests.post(
+			url=url,
+			json={}
+		)
+
+		self.assertEqual(location_r.status_code, 400)
+		self.assertEqual(location_r.json()['name'], 'name field is required')
+		self.assertEqual(location_r.json()['email'], 'email field is required')
+		self.assertEqual(location_r.json()['password'], 'password field is required')
+
+
+		# Add User: failure due to no name in data:
+		location_r = requests.post(
+			url=url,
+			json={
+				'email': 'mcrosby15@hotmail.com',
+				'password': 'mABC123'
+			}
+		)
+
+		self.assertEqual(location_r.status_code, 400)
+		self.assertEqual(location_r.json()['name'], 'name field is required')
+
+
+		# Add User: failure due to empty name in data:
+		location_r = requests.post(
+			url=url,
+			json={
+				'name': "",
+				'email': 'mcrosby15@hotmail.com',
+				'password': 'mABC123'
+			}
+		)
+
+		self.assertEqual(location_r.status_code, 400)
+		self.assertEqual(location_r.json()['name'], "a value of '' is not valid for field name")
+
+
+		# Add User: failure due to no email in data:
+		location_r = requests.post(
+			url=url,
+			json={
+				'name': "Madison Crosby",
+				'password': 'mABC123'
+			}
+		)
+
+		self.assertEqual(location_r.status_code, 400)
+		self.assertEqual(location_r.json()['email'], 'email field is required')
+
+		# Add User: failure due to empty email:
+		location_r = requests.post(
+			url=url,
+			json={
+				'name': "Madison Crosby",
+				'email': '',
+				'password': 'mABC123'
+			}
+		)
+
+		self.assertEqual(location_r.status_code, 400)
+		self.assertEqual(location_r.json()['email'], "a value of '' is not valid for field email")
+
+
+		# Add User: failure due to invalid email:
+		location_r = requests.post(
+			url=url,
+			json={
+				'name': "Madison Crosby",
+				'email': 'mcrosby15hotmail.com',
+				'password': 'mABC123'
+			}
+		)
+
+		self.assertEqual(location_r.status_code, 400)
+		self.assertEqual(location_r.json()['email'], "a value of 'mcrosby15hotmail.com' is not valid for field email")
+
+
+
+		# Add User: failure due to no password in data:
+		location_r = requests.post(
+			url=url,
+			json={
+				'name': "Madison Crosby",
+				'email': 'mcrosby15@hotmail.com',
+			}
+		)
+
+		self.assertEqual(location_r.status_code, 400)
+		self.assertEqual(location_r.json()['password'], 'password field is required')
+
+
+		# Add User: failure due to empty password in data:
+		location_r = requests.post(
+			url=url,
+			json={
+				'name': "Madison Crosby",
+				'email': 'mcrosby15@hotmail.com',
+				'password': ''
+			}
+		)
+
+		self.assertEqual(location_r.status_code, 400)
+		self.assertEqual(location_r.json()['password'], "a value of '' is not valid for field password")
+
+
+		# Add User: success:
+		location_r = requests.post(
+			url=url,
+			json={
+				'name': "Madison Crosby",
+				'email': 'mcrosby15@hotmail.com',
+				'password': 'mABC123'
+			}
+		)
+
+		self.assertEqual(location_r.status_code, 201)		
+		self.assertTrue('token' in location_r.json().keys())
+
+
+		# Test login:
+
+		url = self.build_url(path_parts=['api', 'login'])
+
+		# Login failure, no data: 
+		location_r = requests.post(
+			url=url
+		)
+
+		self.assertEqual(location_r.status_code, 404)
+
+
+
+		# Login failure, incorrect email: 
+		location_r = requests.post(
+			url=url,
+			json={
+				'email': 'crosby15@hotmail.com',
+				'password': 'mABC123'
+			}
+		)
+
+		self.assertEqual(location_r.status_code, 404)
+
+
+		# Login failure, no email: 
+		location_r = requests.post(
+			url=url,
+			json={
+				'password': 'mABC123'
+			}
+		)
+
+		self.assertEqual(location_r.status_code, 404)
+
+		# Login failure, incorrect password: 
+		location_r = requests.post(
+			url=url,
+			json={
+				'email': 'mcrosby15@hotmail.com',
+				'password': 'maBC123'
+			}
+		)
+
+		self.assertEqual(location_r.status_code, 404)
+
+		# Login failure, no password: 
+		location_r = requests.post(
+			url=url,
+			json={
+				'email': 'mcrosby15@hotmail.com',
+			}
+		)
+
+		self.assertEqual(location_r.status_code, 404)
+
+
+		# Login success: 
+		location_r = requests.post(
+			url=url,
+			json={
+				'email': 'mcrosby15@hotmail.com',
+				'password': 'mABC123'
+			}
+		)
+
+		self.assertEqual(location_r.status_code, 404)
+
+
+
+		# Login success: 
+		location_r = requests.post(
+			url=url,
+			json={
+				'email': 'mcrosby15@hotmail.com',
+				'password': 'mABC123'
+			}
+		)
+
+		self.assertEqual(location_r.status_code, 201)
+		self.assertTrue('token' in location_r.json().keys())
+
+
 
 if __name__ == '__main__':
 	unittest.main()

@@ -6,6 +6,8 @@ import my_loc8r.app_server.controllers.locations_ctrl as loc_ctrl
 
 # import my_loc8r.app_api.controllers.locs_api_ctrl as locs_api_ctrl
 from my_loc8r.app_api.controllers.locations_api_controller import LocationsAPIController
+from my_loc8r.app_api.controllers.users_api_controller import UsersAPIController
+
 
 # import my_loc8r.app_api.controllers.reviews_api_ctrl as reviews_api_ctrl 
 
@@ -135,6 +137,28 @@ def api_review_CRUD(locationid, reviewid):
 
 	return (loc_api_controller.data, loc_api_controller.status_code)
 
+
+# Authentication routes:
+@app.route('/api/register', methods=['POST'])
+def api_register():
+	users_api_controller = UsersAPIController()
+	users_api_controller.register(request=request)
+
+	print("users_api_controller.status_code = {}".format(users_api_controller.status_code))
+	print("users_api_controller.data = {}".format(users_api_controller.data))
+
+	return (users_api_controller.data, users_api_controller.status_code)
+
+
+@app.route('/api/login', methods=['POST'])
+def api_login():
+	users_api_controller = UsersAPIController()
+	users_api_controller.login(request=request)
+
+	# print("users_api_controller.status_code = {}".format(users_api_controller.status_code))
+	# print("users_api_controller.data = {}".format(users_api_controller.data))
+	
+	return (users_api_controller.data, users_api_controller.status_code)
 
 
 # *************************************************************

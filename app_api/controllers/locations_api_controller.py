@@ -334,6 +334,7 @@ class LocationsAPIController(object):
 						'distanceField': 'dist_calc',
 						'maxDistance': max_dist_m,
 						'distanceMultiplier': 1/1000,
+						'key': 'coords'
 					}
 				}
 			]
@@ -1066,8 +1067,16 @@ class LocationsAPIController(object):
 			opening_time['_id'] = str(opening_time['_id'])
 
 		# convert the ObjectId for each review sub document
+		# pdb.set_trace()
 		for review in record['reviews']:
-			review['review_id'] = str(review['review_id'])
+			print("review.keys() = {}".format(review.keys()))
+
+			if review.get('review_id'):
+				review['review_id'] = str(review['review_id'])
+
+			else:
+				review['_id'] = str(review['_id'])
+
 			# review['_id'] = str(review['_id'])
 
 
@@ -1138,10 +1147,6 @@ class LocationsAPIController(object):
 		# seperate 'coords' into longatude and lattitude and then remove 'coords'
 		location_data['lng'] = location_data['coords']['coordinates'][0]
 		location_data['lat'] = location_data['coords']['coordinates'][1]
-		# dist_calc is in radians. Must convert back to km by multiplying by
-		# radius of the Earth (6371km):
-		# location_data['dist_calc'] = location_data['dist_calc'] * 6371
-		# location_data['distance'] = location_data['dist_calc']
 
 		# remove coords from dictionary:
 		location_data = dict([(k, v) for k, v in location_data.items() if k not in ['coords']])

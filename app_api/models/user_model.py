@@ -1,17 +1,22 @@
 import mongoengine as me
 
 
+import rlcompleter
+import pdb 
+pdb.Pdb.complete = rlcompleter.Completer(locals()).complete
+
+
 class User(me.EmbeddedDocument):
 	name = me.StringField(min_length=1)
 	# name = me.StringField()
 	email = me.EmailField()
-	# hash = me.StringField()
+	hash = me.StringField()
 
 
-	def setPassword(self, password):
+	def set_password(self, password):
 		'''
 
 		'''
 
-		pass 
+		pdb.set_trace()
 

@@ -25,12 +25,12 @@ class Users(me.Document):
 		self.password_hash = pbkdf2_sha256.hash(password)
 
 
-	def password_is_valid(self, password):
+	def password_matches(self, password):
 		'''
 
 		'''
 
-		return self.password_hash == pbkdf2_sha256.hash(password)
+		return pbkdf2_sha256.verify(password, self.password_hash)
 
 
 	def validate_password(self, password):

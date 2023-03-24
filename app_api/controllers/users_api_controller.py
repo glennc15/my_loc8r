@@ -105,36 +105,37 @@ class UsersAPIController(object):
 		'''
 
 
-		pass 
+		login_data = request.json 
+
+		if self.is_user_ok(registration_data=login_data, required_keys=self._required_login_keys):
+
+			try:
+				user = Users.objects(email=login_data['email']).get()
+
+			except Exception as e:
+				if isinstance(e, me.errors.DoesNotExist):
+					self.status_code = 400
+					self.data = {"error": "No user for email {}".format(login_data['email'])}
+
+					return None 
+
+				else:
+					raise e 
 
 
-	# def is_user_ok(self, registration_data):
-	# 	'''
+			# verify password:
+			if user.password_matches(password=login_data['password']):
+				self.status_code = 200
+				self.data = {'token': user.generate_jwt()}
 
 
-	# 	'''
-
-	# 	registration_data_ok = True
-	# 	error_dict = dict()
-
-
-	# 	for key, value in registration_data.items():
-	# 		if key in ['name', 'email', 'password']:
-	# 			pass 
-
-	# 		else:
-	# 			error_dict[required_key] = "{} field is required".format(required_key)
-	# 			registration_data_ok = False
+			else:
+				self.status_code = 401
+				self.data = {'error': "password for {} is incorrect.".format(login_data['email'])}
 
 
-	# 	if registration_data_ok == False:
-	# 		self.status_code = 400
-	# 		self.data = error_dict
 
-
-	# 	return registration_data_ok
-
-
+			
 
 
 	def is_user_ok(self, registration_data, required_keys):
@@ -158,7 +159,7 @@ class UsersAPIController(object):
 		for key, value in registration_data.items():
 
 			user = Users()
-			
+
 			if (key in required_keys) and (key!='password'):
 
 

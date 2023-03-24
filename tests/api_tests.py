@@ -1865,6 +1865,20 @@ class APITests(unittest.TestCase):
 		self.assertEqual(login_r.json()['password'], "a value of '   ' is not valid for field password")
 
 
+		# Login User: failure due to incorrect password:
+		login_r = requests.post(
+			url=url,
+			json={
+				'name': "Madison Crosby",
+				'email': 'mcrosby15@hotmail.com',
+				'password': 'mABC1234'
+			}
+		)
+
+		self.assertEqual(login_r.status_code, 401)
+		self.assertEqual(login_r.json()['error'], "password for mcrosby15@hotmail.com is incorrect.")
+
+
 		# Login User: success:
 		login_r = requests.post(
 			url=url,
@@ -1875,7 +1889,7 @@ class APITests(unittest.TestCase):
 			}
 		)
 
-		self.assertEqual(login_r.status_code, 201)		
+		self.assertEqual(login_r.status_code, 200)		
 		self.assertTrue('token' in login_r.json().keys())
 
 

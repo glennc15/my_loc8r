@@ -81,7 +81,7 @@ class UsersAPIController(object):
 				user.save()
 
 			except Exception as e:
-
+				# raise e 
 				if isinstance(e, me.errors.NotUniqueError):
 					self.status_code = 400
 					self.data = {"error": "A user for {} already exists".format(registration_data['email'])}
@@ -113,6 +113,7 @@ class UsersAPIController(object):
 				user = Users.objects(email=login_data['email']).get()
 
 			except Exception as e:
+				# raise e
 				if isinstance(e, me.errors.DoesNotExist):
 					self.status_code = 400
 					self.data = {"error": "No user for email {}".format(login_data['email'])}

@@ -1430,14 +1430,26 @@ class APITests(unittest.TestCase):
 			self.assertEqual(r.status_code, 204)
 
 
+	def reset_users_collection(self):
+		'''
+
+		'''
+
+		# drop users collection and recreate it with a unique index for email:
+		APITests.mongo_client[self.db_name].drop_collection('users')
+		APITests.mongo_client[self.db_name].create_collection('users')
+		APITests.mongo_client[self.db_name]['users'].create_index('email', unique=True)
+
+		
+
+
 
 	def test_authencation_01(self):
 		'''
 
 		'''
 
-		# drop users collection:
-		APITests.mongo_client[self.db_name].drop_collection('users')
+		self.reset_users_collection()
 
 		# Test registration:
 
@@ -1651,6 +1663,7 @@ class APITests(unittest.TestCase):
 		self.assertEqual(register_r.status_code, 201)		
 		self.assertTrue('token' in register_r.json().keys())
 
+		# time.sleep(1)
 
 		# Add User: failure because the user already exists:
 		register_r = requests.post(
@@ -1664,7 +1677,6 @@ class APITests(unittest.TestCase):
 
 		self.assertEqual(register_r.status_code, 400)		
 		self.assertEqual(register_r.json()['error'], "A user for mcrosby15@hotmail.com already exists")
-
 
 		# Test login:
 

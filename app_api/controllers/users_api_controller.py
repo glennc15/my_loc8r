@@ -1,6 +1,7 @@
+import datetime
+import mongoengine as me
 
-from my_loc8r.app_api.models.user_model import User
-
+from my_loc8r.app_api.models.user_model import Users
 
 import rlcompleter
 import pdb 
@@ -63,11 +64,34 @@ class UsersAPIController(object):
 
 		'''
 
+		registration_data = request.json
 
-		if self.is_registration_data_ok(registration_data=request.json):
-			pass 
+		if self.is_user_data_ok(registration_data=registration_data, required_keys=self._required_registration_keys):
+
+			user = Users(
+				name=registration_data['name'],
+				email=registration_data['email'],
+			)
+
+			user.set_password(password=registration_data['password'])
+
+			try:
+				user.save()
+
+			except Exception as e:
+
+				if isinstance(e, me.errors.NotUniqueError):
+					self.status_code = 400
+					self.data = {"error": "A user for {} already exists".format(registration_data['email'])}
+
+					return None 
+
+				else:
+					raise e 
 
 
+			self.status_code = 201
+			self.data = {'token': user.generate_jwt()}
 
 
 
@@ -84,7 +108,7 @@ class UsersAPIController(object):
 
 
 
-	def is_registration_data_ok(self, registration_data):
+	def is_user_data_ok(self, registration_data, required_keys):
 		'''
 
 
@@ -94,11 +118,9 @@ class UsersAPIController(object):
 
 		error_dict = dict()
 
-		user = User()
-
 
 		# check all required keys are in registartion data:
-		for required_key in self._required_registration_keys:
+		for required_key in required_keys:
 			if required_key not in registration_data.keys():
 				error_dict[required_key] = "{} field is required".format(required_key)
 				registration_data_ok = False
@@ -107,8 +129,8 @@ class UsersAPIController(object):
 		for key, value in registration_data.items():
 			
 			# empty string:
-			if isinstance(value, str) and (len(value)==0):
-				error_dict[key] = "a value of '{}' is not valid for field {}".format(registration_data[key], key)
+			if isinstance(value, str) and (len(value.strip())==0):
+				error_dict[key] = "a value of '{}' is not valid for field {}".format(value, key)
 				registration_data_ok = False
 
 
@@ -118,29 +140,25 @@ class UsersAPIController(object):
 
 			# validations for remaining keys:
 			else:
-				user = User()
-				user[key] = registration_data[key]
+				user = Users()
+
+				if isinstance(value, str):
+					user[key] = value.strip()
+
+				else:
+					user[key] = value
 
 				try:
 					user.validate()
 
 				except Exception as e:
-					error_dict[key] = "a value of '{}' is not valid for field {}".format(registration_data[key], key)
+					error_dict[key] = "a value of '{}' is not valid for field {}".format(value, key)
 					registration_data_ok = False
-
-
-
 
 
 		if registration_data_ok == False:
 			self.status_code = 400
 			self.data = error_dict
-
-
-
-		# pdb.set_trace()
-
-
 
 
 		return registration_data_ok

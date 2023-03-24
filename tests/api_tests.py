@@ -13,7 +13,7 @@ import datetime
 import time 
 
 # import tzlocal
-import pytz
+# import pytz
 
 
 import requests
@@ -34,6 +34,7 @@ class APITests(unittest.TestCase):
 
 	mongo_address = "mongodb://192.168.1.2:27017"
 	mongo_client = MongoClient(mongo_address)
+	
 
 	@classmethod
 	def setUpClass(cls):
@@ -1434,6 +1435,10 @@ class APITests(unittest.TestCase):
 		'''
 
 		'''
+
+		# drop users collection:
+		APITests.mongo_client[self.db_name].drop_collection('users')
+
 		# Test registration:
 
 		url = self.build_url(path_parts=['api', 'register'])
@@ -1475,6 +1480,22 @@ class APITests(unittest.TestCase):
 
 		self.assertEqual(location_r.status_code, 400)
 		self.assertEqual(location_r.json()['name'], "a value of '' is not valid for field name")
+
+
+
+		# Add User: failure due to empty name in data:
+		location_r = requests.post(
+			url=url,
+			json={
+				'name': "   ",
+				'email': 'mcrosby15@hotmail.com',
+				'password': 'mABC123'
+			}
+		)
+
+		self.assertEqual(location_r.status_code, 400)
+		self.assertEqual(location_r.json()['name'], "a value of '   ' is not valid for field name")
+
 
 
 		# Add User: failure due to no email in data:
@@ -1545,6 +1566,20 @@ class APITests(unittest.TestCase):
 		self.assertEqual(location_r.json()['password'], "a value of '' is not valid for field password")
 
 
+		# Add User: failure due to empty password in data:
+		location_r = requests.post(
+			url=url,
+			json={
+				'name': "Madison Crosby",
+				'email': 'mcrosby15@hotmail.com',
+				'password': '   '
+			}
+		)
+
+		self.assertEqual(location_r.status_code, 400)
+		self.assertEqual(location_r.json()['password'], "a value of '   ' is not valid for field password")
+
+
 		# Add User: success:
 		location_r = requests.post(
 			url=url,
@@ -1557,6 +1592,20 @@ class APITests(unittest.TestCase):
 
 		self.assertEqual(location_r.status_code, 201)		
 		self.assertTrue('token' in location_r.json().keys())
+
+
+		# Add User: failure because the user already exists:
+		location_r = requests.post(
+			url=url,
+			json={
+				'name': "Simon Crosby",
+				'email': 'mcrosby15@hotmail.com',
+				'password': 'mABC123'
+			}
+		)
+
+		self.assertEqual(location_r.status_code, 400)		
+		self.assertEqual(location_r.json()['error'], "A user for mcrosby15@hotmail.com already exists")
 
 
 		# Test login:

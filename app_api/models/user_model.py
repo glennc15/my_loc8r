@@ -2,6 +2,7 @@ import mongoengine as me
 import datetime
 from passlib.hash import pbkdf2_sha256
 import jwt
+import re 
 
 
 import rlcompleter
@@ -10,7 +11,7 @@ pdb.Pdb.complete = rlcompleter.Completer(locals()).complete
 
 
 class Users(me.Document):
-	name = me.StringField(min_length=1)
+	name = me.StringField(min_length=5)
 	# name = me.StringField()
 	email = me.EmailField(unique=True)
 	password_hash = me.StringField()
@@ -30,6 +31,18 @@ class Users(me.Document):
 		'''
 
 		return self.password_hash == pbkdf2_sha256.hash(password)
+
+
+	def validate_password(self, password):
+		'''
+
+
+		'''
+		# requires special characters:
+		# re.search(r'^(?=\S{6,20}$)(?=.*?\d)(?=.*?[a-z])(?=.*?[A-Z])(?=.*?[^A-Za-z\s0-9])', key)
+	
+
+		return re.search(r'^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{5,20}$', password) != None
 
 
 	def generate_jwt(self):

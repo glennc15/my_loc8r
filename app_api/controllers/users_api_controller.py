@@ -1,5 +1,6 @@
 import datetime
 import mongoengine as me
+import re 
 
 from my_loc8r.app_api.models.user_model import Users
 
@@ -66,7 +67,8 @@ class UsersAPIController(object):
 
 		registration_data = request.json
 
-		if self.is_user_data_ok(registration_data=registration_data, required_keys=self._required_registration_keys):
+		# if self.is_user_data_ok(registration_data=registration_data, required_keys=self._required_registration_keys):
+		if self.is_user_ok(registration_data=registration_data, required_keys=self._required_registration_keys):
 
 			user = Users(
 				name=registration_data['name'],
@@ -106,9 +108,36 @@ class UsersAPIController(object):
 		pass 
 
 
+	# def is_user_ok(self, registration_data):
+	# 	'''
 
 
-	def is_user_data_ok(self, registration_data, required_keys):
+	# 	'''
+
+	# 	registration_data_ok = True
+	# 	error_dict = dict()
+
+
+	# 	for key, value in registration_data.items():
+	# 		if key in ['name', 'email', 'password']:
+	# 			pass 
+
+	# 		else:
+	# 			error_dict[required_key] = "{} field is required".format(required_key)
+	# 			registration_data_ok = False
+
+
+	# 	if registration_data_ok == False:
+	# 		self.status_code = 400
+	# 		self.data = error_dict
+
+
+	# 	return registration_data_ok
+
+
+
+
+	def is_user_ok(self, registration_data, required_keys):
 		'''
 
 
@@ -127,21 +156,14 @@ class UsersAPIController(object):
 
 		# validate each value and check for empty strings:
 		for key, value in registration_data.items():
+
+			user = Users()
 			
-			# empty string:
-			if isinstance(value, str) and (len(value.strip())==0):
-				error_dict[key] = "a value of '{}' is not valid for field {}".format(value, key)
-				registration_data_ok = False
+			if (key in required_keys) and (key!='password'):
 
 
-			# validations for password:
-			elif key == 'password':
-				pass
 
-			# validations for remaining keys:
-			else:
-				user = Users()
-
+				# remove all leading and trailing spaces from strings:
 				if isinstance(value, str):
 					user[key] = value.strip()
 
@@ -152,8 +174,22 @@ class UsersAPIController(object):
 					user.validate()
 
 				except Exception as e:
+
+					if isinstance(e, me.errors.ValidationError):
+						error_dict[key] = "a value of '{}' is not valid for field {}".format(value, key)
+						registration_data_ok = False						
+
+					else:
+						print("e = {}".format(e))
+						print("type(e) = {}".format(type(e)))
+						raise e 
+
+
+			elif (key in required_keys) and (key=='password'):
+				if not user.validate_password(password=value):
 					error_dict[key] = "a value of '{}' is not valid for field {}".format(value, key)
-					registration_data_ok = False
+					registration_data_ok = False	
+
 
 
 		if registration_data_ok == False:

@@ -3,7 +3,8 @@ import datetime
 from passlib.hash import pbkdf2_sha256
 import jwt
 import re 
-
+from dotenv import load_dotenv
+import os
 
 import rlcompleter
 import pdb 
@@ -49,6 +50,7 @@ class Users(me.Document):
 		'''
 
 		'''
+		load_dotenv()
 
 		jwt_data = {
 			"_id": str(self.id),
@@ -58,7 +60,8 @@ class Users(me.Document):
 		}
 
 
-		return jwt.encode(jwt_data, "secret", algorithm="HS256")
+
+		return jwt.encode(jwt_data, os.environ.get("JWT_SECRETE"), algorithm="HS256")
 
 
 

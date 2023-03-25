@@ -126,7 +126,8 @@ def api_location(locationid):
 @auth.login_required
 def api_review_create(locationid):
 	loc_api_controller = LocationsAPIController()
-	loc_api_controller.reviews(request=request, location_id=locationid, review_id=None)
+	# loc_api_controller.reviews(request=request, location_id=locationid, review_id=None)
+	loc_api_controller.create_review(location_id=locationid, review_data=request.get_json())
 
 	print("loc_api_controller.status_code = {}".format(loc_api_controller.status_code))
 	print("loc_api_controller.data = {}".format(loc_api_controller.data))

@@ -761,6 +761,20 @@ class APITests(unittest.TestCase):
 		self.assertEqual(review1_r.status_code, 400)
 
 
+		# CREATE failure due to invalid rating:		
+		review1_r = requests.post(
+			url=self.build_url(path_parts=['api', 'locations', location_r.json()['_id'], 'reviews']),
+			json={
+				'author': 'Simon Holmes',	
+				'rating': 0,	
+				'reviewText': "No wifi. Has male and female a go-go dances. Will be back with the family!",
+			}
+		)
+
+		self.assertEqual(review1_r.status_code, 400)
+
+
+
 		# CREATE failure due to no author (author is a required):		
 		url = self.build_url(path_parts=['api', 'locations', location_r.json()['_id'], 'reviews'])
 		review1_r = requests.post(
@@ -774,6 +788,19 @@ class APITests(unittest.TestCase):
 		self.assertEqual(review1_r.status_code, 400)
 
 
+		# CREATE failure due to invalid author:		
+		url = self.build_url(path_parts=['api', 'locations', location_r.json()['_id'], 'reviews'])
+		review1_r = requests.post(
+			url=self.build_url(path_parts=['api', 'locations', location_r.json()['_id'], 'reviews']),
+			json={
+				'rating': 5,
+				'author': '',		
+				'reviewText': "No wifi. Has male and female a go-go dances. Will be back with the family!",
+			}
+		)
+
+		self.assertEqual(review1_r.status_code, 400)
+
 		# CREATE failure due to no review text (review text is a required):		
 		url = self.build_url(path_parts=['api', 'locations', location_r.json()['_id'], 'reviews'])
 		review1_r = requests.post(
@@ -785,6 +812,21 @@ class APITests(unittest.TestCase):
 		)
 
 		self.assertEqual(review1_r.status_code, 400)
+
+		
+		# CREATE failure due to invalid review text:		
+		url = self.build_url(path_parts=['api', 'locations', location_r.json()['_id'], 'reviews'])
+		review1_r = requests.post(
+			url=self.build_url(path_parts=['api', 'locations', location_r.json()['_id'], 'reviews']),
+			json={
+				'author': 'Simon Holmes',
+				'rating': 5,
+				'reviewText': ''		
+			}
+		)
+
+		self.assertEqual(review1_r.status_code, 400)
+
 
 
 

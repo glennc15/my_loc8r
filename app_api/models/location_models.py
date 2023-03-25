@@ -4,9 +4,9 @@ from bson import ObjectId
 
 class Review(me.EmbeddedDocument):
 	review_id = me.ObjectIdField(required=True, default=ObjectId)
-	author = me.StringField(required=True)
-	rating = me.IntField(required=True, min_value=0, max_value=5)
-	review_text = me.StringField(required=True)
+	author = me.StringField(required=True, min_length=2)
+	rating = me.IntField(required=True, min_value=1, max_value=5)
+	review_text = me.StringField(required=True, min_length=2)
 	created_on = me.DateTimeField(default=datetime.datetime.utcnow)
 
 class OpeningTime(me.EmbeddedDocument):

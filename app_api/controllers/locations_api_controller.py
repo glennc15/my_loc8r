@@ -166,78 +166,92 @@ class LocationsAPIController(object):
 
 
 
-	def reviews(self, request, location_id=None, review_id=None):
-		'''
+	# # POST: /api/locations/<locationid>/reviews
+	# def create_review(self. request, location_id):
+	# 	'''
+
+
+	# 	'''
+
+	# 	if is_object_id_ok(request=request, object_id=)
+
+
+
+	# reviews is going the way of the dodo bird and will be replaced with 1
+	# method for each crud operation. Flask will handle all 405 errors (as it
+	# should be!)
+	# def reviews(self, request, location_id=None, review_id=None):
+	# 	'''
 		
-		acceptable routes:
+	# 	acceptable routes:
 
-		1) url = /api/locations/<locationid>/reviews = ['POST']
+	# 	1) url = /api/locations/<locationid>/reviews = ['POST']
 		
-		2) url = /api/locations/<locationid>/reviews/<reviewid>, methods = ['GET', 'PUT', 'DELETE']
+	# 	2) url = /api/locations/<locationid>/reviews/<reviewid>, methods = ['GET', 'PUT', 'DELETE']
 
 
-		'''
+	# 	'''
 
-		# scheme, netloc, path, query, fragment = urlsplit(request.base_url)
+	# 	# scheme, netloc, path, query, fragment = urlsplit(request.base_url)
 
-		# if (path=='/api/locations/reviews') and (request.method=='POST'):
-		# 	pdb.set_trace()
+	# 	# if (path=='/api/locations/reviews') and (request.method=='POST'):
+	# 	# 	pdb.set_trace()
 
-		if (request.method == 'POST') and (location_id is not None):
-			if self.is_object_id_ok(request=request, object_id=location_id):
-				self.create_review(location_id=location_id, new_data=request.get_json())
-				return None
+	# 	if (request.method == 'POST') and (location_id is not None):
+	# 		if self.is_object_id_ok(request=request, object_id=location_id):
+	# 			self.create_review(location_id=location_id, new_data=request.get_json())
+	# 			return None
 
-		elif (request.method == 'GET') and (location_id is not None) and (review_id is not None):
-			if self.is_object_id_ok(request=request, object_id=location_id) and (self.is_object_id_ok(request=request, object_id=review_id)):
-				self.read_review(location_id=location_id, review_id=review_id)
-				return None
+	# 	elif (request.method == 'GET') and (location_id is not None) and (review_id is not None):
+	# 		if self.is_object_id_ok(request=request, object_id=location_id) and (self.is_object_id_ok(request=request, object_id=review_id)):
+	# 			self.read_review(location_id=location_id, review_id=review_id)
+	# 			return None
 
-		elif (request.method == 'PUT') and (location_id is not None) and (review_id is not None):
-			if self.is_object_id_ok(request=request, object_id=location_id) and (self.is_object_id_ok(request=request, object_id=review_id)):
-				self.update_review(location_id=location_id, review_id=review_id, new_data=request.get_json())
-				return None
+	# 	elif (request.method == 'PUT') and (location_id is not None) and (review_id is not None):
+	# 		if self.is_object_id_ok(request=request, object_id=location_id) and (self.is_object_id_ok(request=request, object_id=review_id)):
+	# 			self.update_review(location_id=location_id, review_id=review_id, new_data=request.get_json())
+	# 			return None
 
-		elif (request.method == 'DELETE') and (location_id is not None) and (review_id is not None):
-			if self.is_object_id_ok(request=request, object_id=location_id) and (self.is_object_id_ok(request=request, object_id=review_id)):
-				self.delete_review(location_id=location_id, review_id=review_id)
-				return None
+	# 	elif (request.method == 'DELETE') and (location_id is not None) and (review_id is not None):
+	# 		if self.is_object_id_ok(request=request, object_id=location_id) and (self.is_object_id_ok(request=request, object_id=review_id)):
+	# 			self.delete_review(location_id=location_id, review_id=review_id)
+	# 			return None
 
 
-		else:
+	# 	else:
 
-			# 405 and 404 errors:
-			#if we made it this far then something is wrong with the request
+	# 		# 405 and 404 errors:
+	# 		#if we made it this far then something is wrong with the request
 			
-			scheme, netloc, path, query, fragment = urlsplit(request.base_url)
+	# 		scheme, netloc, path, query, fragment = urlsplit(request.base_url)
 
 
 
-			# 405 errors for route /api/locations. allowed methods = ['GET', 'POST']
-			if (re.search(r'/api/locations/[a-f\d]{24}/reviews', path)) and (request.method not in ['POST']):
-				error_msg = "{} request is not valid for url {}".format(request.method, path)
-				self.data = {'message': error_msg}
-				self.status_code = 405
+	# 		# 405 errors for route /api/locations. allowed methods = ['GET', 'POST']
+	# 		if (re.search(r'/api/locations/[a-f\d]{24}/reviews', path)) and (request.method not in ['POST']):
+	# 			error_msg = "{} request is not valid for url {}".format(request.method, path)
+	# 			self.data = {'message': error_msg}
+	# 			self.status_code = 405
 
-				return None
-
-			
-			# 405 errors for route /api/locations/:locationid. allowed methods = ['GET', 'PUT', 'DELETE']
-			if (re.search(r'/api/locations/[a-f\d]{24}/reviews/[a-f\d]{24}', path, re.I)) and (request.method not in ['GET', 'PUT', 'DELETE']):
-				error_msg = "{} request is not valid for url {}".format(request.method, path)
-				self.data = {'message': error_msg}
-				self.status_code = 405
-
-				return None
+	# 			return None
 
 			
-			# all 404 requests:
-			else:
-				error_msg = "{} {}{} is not valid. Check the url or the request method".format(request.method, path, query)
-				self.data = {'message': error_msg}
-				self.status_code = 404
+	# 		# 405 errors for route /api/locations/:locationid. allowed methods = ['GET', 'PUT', 'DELETE']
+	# 		if (re.search(r'/api/locations/[a-f\d]{24}/reviews/[a-f\d]{24}', path, re.I)) and (request.method not in ['GET', 'PUT', 'DELETE']):
+	# 			error_msg = "{} request is not valid for url {}".format(request.method, path)
+	# 			self.data = {'message': error_msg}
+	# 			self.status_code = 405
 
-				return None
+	# 			return None
+
+			
+	# 		# all 404 requests:
+	# 		else:
+	# 			error_msg = "{} {}{} is not valid. Check the url or the request method".format(request.method, path, query)
+	# 			self.data = {'message': error_msg}
+	# 			self.status_code = 404
+
+	# 			return None
 
 
 
@@ -498,71 +512,190 @@ class LocationsAPIController(object):
 		return None 
 
 
-	def create_review(self, location_id, new_data):
+	# POST: /api/locations/<locationid>/reviews
+	def create_review(self, location_id, review_data):
 		'''
 
-
+ 
 		'''
-		# print('location_id={}'.format(location_id))
-		# print('new_data={}'.format(new_data))
 
-		# pdb.set_trace()
+		# sometimes review_data['reviewData'] exists, convert it to review_data['review_text']
+		if review_data.get('reviewText'):
+			review_data['review_text'] = review_data['reviewText']
 
-
-		if not self.is_review_data_ok(review_data=new_data):
-			# the review data is invalid so exit:
-			return None 
+		# remove any unnessary fields from review_data:
+		review_data = dict([(k, v) for k, v in review_data.items() if k in ['author', 'rating', 'review_text']])
 
 
+		review = Review(**review_data)
 
-		# Find the location by id:
+
+		try:
+			review.validate()
+
+		except Exception as e:
+			if isinstance(e, me.errors.ValidationError):
+				self.status_code = 400
+				self.data = {'error': e.message}
+				return None 
+
+			else:
+				raise e 
+
+
+		# Get the location:
 		try:
 			location = Location.objects(id=location_id).get()
 
 		except Exception as e:
+			if isinstance(e, me.errors.ValidationError):
+				self.status_code = 404
+				self.data = {'error': e.message}
+				return None 
 
-			error_msg = "No location record with id = {} found.".format(location_id)
-			self.data = {'message': error_msg}
-			self.status_code = 404
+			else:
+				raise e 
 
-			return None
 
-		# create a Review, add it to locations['reviews'], and save to the database.
-		review = Review(
-			author=new_data['author'],
-			rating=new_data['rating'],
-			review_text=new_data['reviewText']
-		)
-
+		# add the review to the location:
 		location.reviews.append(review)
 		location.rating = self.get_location_rating(location_obj=location)
 
-		# pdb.set_trace()
-
-		try:
+		try: 
 			location.save()
-			location_data = self.format_location(document=location)
-
-			this_review = [x for x in location_data['reviews'] if x['author'] == new_data['author']][0]
-			
-			self.data = this_review
-			self.status_code = 201
-
 
 		except Exception as e:
-			# not sure how to test this
-			print("500 Error!")
-			print(e)
-
-			self.data = {'message': 'database error!'}
-			self.status_code = 500
-
-		return None 
+			print("500 Error!!!")
+			raise e 
 
 
+		# convert review.review_id to a string before sending the response:
+		review_dict = review.to_mongo().to_dict()
+		review_dict['review_id'] = str(review_dict['review_id'])
 
-		self.data = {}
+		self.data = review_dict
 		self.status_code = 201
+
+
+
+
+
+
+		# # check review data for all required fields:
+		# if self.is_review_data_ok(review_data=review_data):
+
+		# 	pdb.set_trace()
+
+		# 	review = Review(
+		# 		author=review_data['author'],
+		# 		rating=review_data['rating'],
+		# 		review_text=review_data['reviewText']
+		# 	)
+
+
+		# 	try:
+		# 		review.validate()
+
+		# 	except Exception as e:
+		# 		if isinstance(e, me.errors.ValidationError):
+		# 			self.status_code = 400
+		# 			self.data = {'error': e.message}
+		# 			return None 
+
+		# 		else:
+		# 			raise e 
+
+
+		# 	# Get the location:
+		# 	try:
+		# 		location = Location.objects(id=location_id).get()
+
+		# 	except Exception as e:
+		# 		if isinstance(e, me.errors.ValidationError):
+		# 			self.status_code = 404
+		# 			self.data = {'error': e.message}
+		# 			return None 
+
+		# 		else:
+		# 			raise e 
+
+
+		# 	# add the review to the location:
+		# 	location.reviews.append(review)
+		# 	location.rating = self.get_location_rating(location_obj=location)
+
+		# 	try: 
+		# 		location.save()
+
+		# 	except Exception as e:
+		# 		print("500 Error!!!")
+		# 		raise e 
+
+
+		# 	# convert review.review_id to a string before sending the response:
+		# 	review_dict = review.to_mongo().to_dict()
+		# 	review_dict['review_id'] = str(review_dict['review_id'])
+
+		# 	self.data = review_dict
+		# 	self.status_code = 201
+
+
+	# try:
+	# 	pass
+	# except Exception as e:
+	# 	raise e
+	# else:
+	# 	pass
+
+
+		# # Find the location by id:
+		# try:
+		# 	location = Location.objects(id=location_id).get()
+
+		# except Exception as e:
+
+		# 	error_msg = "No location record with id = {} found.".format(location_id)
+		# 	self.data = {'message': error_msg}
+		# 	self.status_code = 404
+
+		# 	return None
+
+		# # create a Review, add it to locations['reviews'], and save to the database.
+		# review = Review(
+		# 	author=new_data['author'],
+		# 	rating=new_data['rating'],
+		# 	review_text=new_data['reviewText']
+		# )
+
+		# location.reviews.append(review)
+		# location.rating = self.get_location_rating(location_obj=location)
+
+		# # pdb.set_trace()
+
+		# try:
+		# 	location.save()
+		# 	location_data = self.format_location(document=location)
+
+		# 	this_review = [x for x in location_data['reviews'] if x['author'] == new_data['author']][0]
+			
+		# 	self.data = this_review
+		# 	self.status_code = 201
+
+
+		# except Exception as e:
+		# 	# not sure how to test this
+		# 	print("500 Error!")
+		# 	print(e)
+
+		# 	self.data = {'message': 'database error!'}
+		# 	self.status_code = 500
+
+		# return None 
+
+
+
+		# self.data = {}
+		# self.status_code = 201
 
 
 
@@ -953,92 +1086,127 @@ class LocationsAPIController(object):
 
 		# the opening recod data is valid:
 		return True
-	
+
 
 	def is_review_data_ok(self, review_data):
-		'''
-
 
 		'''
+		 
+		checks review_data contains the required fields:
 
-		# check review_data is a dict:
-		if not isinstance(review_data, dict):
-			error_msg = "Invalid type for a review record.\n"
-			error_msg += "This review record is of type {}".format(type(opening_record))
+		'''
 
-			self.data = {"message": error_msg}
+		review_data_ok = True
+		error_dict = dict()
+
+		# check all required keys are in review_data:
+		for required_key in self._required_review_keys:
+			if required_key not in review_data.keys():
+				error_dict[required_key] = "{} field is required".format(required_key)
+				review_data_ok = False
+
+
+		if review_data_ok == False:
 			self.status_code = 400
-
-			return False
-
-
-		# check review_data for the required values:
-		for review_key in self._required_review_keys:
-			if review_key not in review_data:
-				error_msg = "Invalid data for this review.\n"
-				error_msg += "review['{}'] is required.".format(review_key)
-
-				self.data = {"message": error_msg}
-				self.status_code = 400
-
-				return False
-
-		# validate review_data['author']: 
-		if (isinstance(review_data['author'], str)):
-			if len(review_data['author']) == 0:
-				error_msg = "Invalid data for review['author'].\n"
-				error_msg += "review['author'] an empty string."
-
-				self.data = {"message": error_msg}
-				self.status_code = 400
-
-				return False
-
-		else:
-				error_msg = "review['author'] must be a string.\n"
-				error_msg += "review['author'] is type {}".format(type(review_data['author']))
-
-				self.data = {"message": error_msg}
-				self.status_code = 400
-				location_data_ok = False
-
-				return location_data_ok
-
-		# validate review_data['reviewText']: 
-		if (isinstance(review_data['reviewText'], str)):
-			if len(review_data['reviewText']) == 0:
-				error_msg = "Invalid data for review['reviewText'].\n"
-				error_msg += "review['reviewText'] an empty string."
-
-				self.data = {"message": error_msg}
-				self.status_code = 400
-
-				return False
-
-		else:
-				error_msg = "review['reviewText'] must be a string.\n"
-				error_msg += "review['reviewText'] is type {}".format(type(review_data['reviewText']))
-
-				self.data = {"message": error_msg}
-				self.status_code = 400
-				location_data_ok = False
-
-				return location_data_ok
-
-		# validate review_data['rating']: 
-		if not (isinstance(review_data['rating'], int)):
-				error_msg = "review['rating'] must be a int.\n"
-				error_msg += "review['rating'] is type {}".format(type(review_data['rating']))
-
-				self.data = {"message": error_msg}
-				self.status_code = 400
-				location_data_ok = False
-
-				return location_data_ok
+			self.data = error_dict
 
 
-		# the review data is valid:
-		return True	
+		return review_data_ok
+
+		# review = Review(
+		# 	author=review_data['author'],
+		# 	rating=review_data['rating'],
+		# 	review_text=review_data['reviewText']
+		# )
+
+		# validate each field in review_data using the  
+
+
+
+	# def is_review_data_ok(self, review_data):
+	# 	'''
+
+
+	# 	'''
+
+	# 	# check review_data is a dict:
+	# 	if not isinstance(review_data, dict):
+	# 		error_msg = "Invalid type for a review record.\n"
+	# 		error_msg += "This review record is of type {}".format(type(opening_record))
+
+	# 		self.data = {"message": error_msg}
+	# 		self.status_code = 400
+
+	# 		return False
+
+
+	# 	# check review_data for the required values:
+	# 	for review_key in self._required_review_keys:
+	# 		if review_key not in review_data:
+	# 			error_msg = "Invalid data for this review.\n"
+	# 			error_msg += "review['{}'] is required.".format(review_key)
+
+	# 			self.data = {"message": error_msg}
+	# 			self.status_code = 400
+
+	# 			return False
+
+	# 	# validate review_data['author']: 
+	# 	if (isinstance(review_data['author'], str)):
+	# 		if len(review_data['author']) == 0:
+	# 			error_msg = "Invalid data for review['author'].\n"
+	# 			error_msg += "review['author'] an empty string."
+
+	# 			self.data = {"message": error_msg}
+	# 			self.status_code = 400
+
+	# 			return False
+
+	# 	else:
+	# 			error_msg = "review['author'] must be a string.\n"
+	# 			error_msg += "review['author'] is type {}".format(type(review_data['author']))
+
+	# 			self.data = {"message": error_msg}
+	# 			self.status_code = 400
+	# 			location_data_ok = False
+
+	# 			return location_data_ok
+
+	# 	# validate review_data['reviewText']: 
+	# 	if (isinstance(review_data['reviewText'], str)):
+	# 		if len(review_data['reviewText']) == 0:
+	# 			error_msg = "Invalid data for review['reviewText'].\n"
+	# 			error_msg += "review['reviewText'] an empty string."
+
+	# 			self.data = {"message": error_msg}
+	# 			self.status_code = 400
+
+	# 			return False
+
+	# 	else:
+	# 			error_msg = "review['reviewText'] must be a string.\n"
+	# 			error_msg += "review['reviewText'] is type {}".format(type(review_data['reviewText']))
+
+	# 			self.data = {"message": error_msg}
+	# 			self.status_code = 400
+	# 			location_data_ok = False
+
+	# 			return location_data_ok
+
+	# 	# validate review_data['rating']: 
+	# 	if not (isinstance(review_data['rating'], int)):
+	# 			error_msg = "review['rating'] must be a int.\n"
+	# 			error_msg += "review['rating'] is type {}".format(type(review_data['rating']))
+
+	# 			self.data = {"message": error_msg}
+	# 			self.status_code = 400
+	# 			location_data_ok = False
+
+	# 			return location_data_ok
+
+
+	# 	# the review data is valid:
+	# 	return True	
 
 
 	def convert_object_ids(self, document):

@@ -172,6 +172,8 @@ def api_review_update(locationid, reviewid):
 	if request.method == "PUT":
 		loc_api_controller.update_review(location_id=locationid, review_id=reviewid, review_data=request.get_json())
 
+	if request.method == 'DELETE':
+		loc_api_controller.delete_review(location_id=locationid, review_id=reviewid)
 
 
 	print("loc_api_controller.status_code = {}".format(loc_api_controller.status_code))

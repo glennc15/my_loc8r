@@ -575,6 +575,7 @@ class LocationsAPIController(object):
 		self.data = review_dict
 		self.status_code = 201
 
+
 	# GET: /api/locations/<locationid>/reviews/<reviewid>
 	def read_review(self, location_id, review_id):
 		'''
@@ -700,112 +701,73 @@ class LocationsAPIController(object):
 
 
 
-
-	# def update_review(self, location_id, review_id, new_data):
-	# 	'''
-
-
-	# 	'''
-	# 	# Question.objects(id="question_id", answers__uid="uid").update(set__answers__S__answer__status="new_status")
-
-	# 	# Validate the review data:
-
-	# 	if not self.is_review_data_ok(review_data=new_data):
-	# 		# the review data is invalid so exit:
-	# 		return None 
-
-	# 	raw_set_query = {
-	# 		'$set': {
-	# 			'reviews.$.author': new_data['author'],
-	# 			'reviews.$.rating': new_data['rating'], 
-	# 			'reviews.$.review_text': new_data['reviewText'], 
-
-	# 		}
-	# 	}
-
-	# 	# # Verify the location exits:
-	# 	# try:
-	# 	# 	location = Location.objects(id=location_id).get()
-
-	# 	# except Exception as e:
-
-	# 	# 	print('Exception e = {}'.format(e))
-
-	# 	# 	error_msg = "No location record with id = {} found.".format(location_id)
-	# 	# 	self.data = {'message': error_msg}
-	# 	# 	self.status_code = 404
-
-	# 	# 	return None
-
-
-	# 	# Find the location and review exits:
-	# 	try:
-	# 		location = Location.objects(id=location_id, reviews__review_id=review_id).get()
-
-	# 	except Exception as e:
-
-	# 		print('Exception e = {}'.format(e))
-
-	# 		error_msg = "No location with _id = {}, and review _id = {} found.".format(location_id, review_id)
-	# 		self.data = {'message': error_msg}
-	# 		self.status_code = 404
-
-	# 		return None
-
-
-	# 	location = Location.objects(id=location_id, reviews__review_id=review_id).update(__raw__=raw_set_query)
-
-	# 	if location == 1:
-	# 		# update the location review:
-	# 		location = Location.objects(id=location_id).get()
-	# 		location.rating = self.get_location_rating(location_obj=location)
-	# 		location.save()
-
-
-	# 		self.read_review(location_id=location_id, review_id=review_id)	
-
-
-	# 	else:
-	# 		raise ValueError("Problem with update review!")
-
-
-
-
-
+	# DELETE: /api/locations/<locationid>/reviews/<reviewid>
 	def delete_review(self, location_id, review_id):
 		'''
 
 
 		'''
 
-
-		# db.collection.update({ d : 2014001 , m :123456789},
-        #               {$pull : { "topups.data" : {"val":NumberLong(200)} } } )
-
-
-
-		# Find the location and review exits:
+		# if review_id is invalid then ObjectId(review_id) will throw and error:
 		try:
-			location = Location.objects(id=location_id, reviews__review_id=review_id).get()
+			raw_query = {
+				"$pull": {
+					"reviews": {'_id': ObjectId(review_id)}
+				}
+			}
 
 		except Exception as e:
 
-			print('Exception e = {}'.format(e))
+			if isinstance(e, bson.errors.InvalidId):
+				self.status_code = 404
+				self.data = {'error': str(e)}
+				return None
 
-			error_msg = "No location with _id = {}, and review _id = {} found.".format(location_id, review_id)
-			self.data = {'message': error_msg}
+
+
+		try:
+			location = Location.objects(__raw__={'_id': ObjectId(location_id), 'reviews._id': ObjectId(review_id)}).update(__raw__=raw_query)
+
+
+		except Exception as e:
+			if isinstance(e, me.errors.ValidationError):
+				self.status_code = 404
+				self.data = {'error': e.message}
+				return None
+
+			elif isinstance(e, Location.DoesNotExist):
+				self.status_code = 404
+				self.data = {'error': str(e)}
+				return None
+
+			elif isinstance(e, bson.errors.InvalidId):
+				self.status_code = 404
+				self.data = {'error': str(e)}
+				return None
+
+			else:
+				raise e 
+
+
+		# on a successful delete location is an interger = 1:
+		if location == 1:
+			# update the location rating:
+			location = Location.objects(id=location_id).get()
+			location.rating = self.get_location_rating(location_obj=location)
+			location.save()
+
+			self.data = {'message': "deleted review with id = {}".format(review_id)}
+			self.status_code = 204
+
+		# only happens with an invalid location or review id
+		elif location == 0:
 			self.status_code = 404
-
+			self.data = {'error': 'No location with an id = {} and/or a review with and id = {}'.format(location_id,  review_id)}
 			return None
 
-		# removing the review manually because I cannot get the $pull update to work properly
+		else:
+			raise ValueError("unknow error, location = {}".format(location))
 
-		location.reviews = [x for x in location.reviews if str(x.review_id) != review_id]
-		location.rating = self.get_location_rating(location_obj=location)
-		location.save()
-
-		self.data = {'message': "deleted review with id = {}".format(review_id)}
-		self.status_code = 204
 
 
 	def is_location_data_ok(self, location_data):

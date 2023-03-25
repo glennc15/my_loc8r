@@ -1145,6 +1145,11 @@ class APITests(unittest.TestCase):
 		review2_delete_r = requests.delete(url=url)
 		self.assertEqual(review2_delete_r.status_code, 404)
 
+		# DELETE failure due to non existing location id:
+		url = self.build_url(path_parts=['api', 'locations', '640ceee95fedd040ba74a736', 'reviews', review2_r.json()['_id']])
+		review2_delete_r = requests.delete(url=url)
+		self.assertEqual(review2_delete_r.status_code, 404)
+
 		# DELETE failure due to no location id:
 		url = self.build_url(path_parts=['api', 'locations', 'reviews', review2_r.json()['_id']])
 		review2_delete_r = requests.delete(url=url)
@@ -1152,6 +1157,12 @@ class APITests(unittest.TestCase):
 		
 		# DELETE failure due to incorrect review id:
 		url = self.build_url(path_parts=['api', 'locations', location_r.json()['_id'], 'reviews', review2_r.json()['_id'][1:]])
+		review2_delete_r = requests.delete(url=url)
+		self.assertEqual(review2_delete_r.status_code, 404)
+
+
+		# DELETE failure due to non existing review id:
+		url = self.build_url(path_parts=['api', 'locations', location_r.json()['_id'], 'reviews', '640ceee95fedd040ba74a736'])
 		review2_delete_r = requests.delete(url=url)
 		self.assertEqual(review2_delete_r.status_code, 404)
 		

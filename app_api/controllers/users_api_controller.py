@@ -75,7 +75,7 @@ class UsersAPIController(object):
 				email=registration_data['email'],
 			)
 
-			user.set_password(password=registration_data['password'])
+			user.hash_password(password=registration_data['password'])
 
 			try:
 				user.save()
@@ -125,7 +125,7 @@ class UsersAPIController(object):
 
 
 			# verify password:
-			if user.password_matches(password=login_data['password']):
+			if user.verify_password(password=login_data['password']):
 				self.status_code = 200
 				self.data = {'token': user.generate_jwt()}
 

@@ -18,7 +18,7 @@ class Users(me.Document):
 	password_hash = me.StringField()
 
 
-	def set_password(self, password):
+	def hash_password(self, password):
 		'''
 
 		'''
@@ -26,7 +26,7 @@ class Users(me.Document):
 		self.password_hash = pbkdf2_sha256.hash(password)
 
 
-	def password_matches(self, password):
+	def verify_password(self, password):
 		'''
 
 		'''
@@ -36,6 +36,13 @@ class Users(me.Document):
 
 	def validate_password(self, password):
 		'''
+		
+		password validation: 
+		length: 5 - 20 characters
+		requirements:
+		1. Must contain a uppercase letter.
+		2. Must contain a lowercase letter.
+		3. Must contain a digit. 
 
 
 		'''

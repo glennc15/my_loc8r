@@ -168,10 +168,14 @@ def api_review_get(locationid, reviewid):
 @auth.login_required
 def api_review_update(locationid, reviewid):
 	loc_api_controller = LocationsAPIController()
-	loc_api_controller.reviews(request=request, location_id=locationid, review_id=reviewid)
 
-	# print("loc_api_controller.status_code = {}".format(loc_api_controller.status_code))
-	# print("loc_api_controller.data = {}".format(loc_api_controller.data))
+	if request.method == "PUT":
+		loc_api_controller.update_review(location_id=locationid, review_id=reviewid, review_data=request.get_json())
+
+
+
+	print("loc_api_controller.status_code = {}".format(loc_api_controller.status_code))
+	print("loc_api_controller.data = {}".format(loc_api_controller.data))
 
 
 	return (loc_api_controller.data, loc_api_controller.status_code)

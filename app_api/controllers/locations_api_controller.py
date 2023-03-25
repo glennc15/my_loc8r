@@ -635,65 +635,69 @@ class LocationsAPIController(object):
 
 		# Validate the review data:
 
-		return None 
+		# return None 
 
-		if not self.is_review_data_ok(review_data=new_data):
+		if not self.is_review_data_ok(review_data=review_data):
 			# the review data is invalid so exit:
 			return None 
 
+
+		# sometimes review_data['reviewData'] exists, convert it to review_data['review_text']
+		if review_data.get('reviewText'):
+			review_data['review_text'] = review_data['reviewText']
+
 		raw_set_query = {
 			'$set': {
-				'reviews.$.author': new_data['author'],
-				'reviews.$.rating': new_data['rating'], 
-				'reviews.$.review_text': new_data['reviewText'], 
+				'reviews.$.author': review_data['author'],
+				'reviews.$.rating': review_data['rating'], 
+				'reviews.$.review_text': review_data['review_text'], 
 
 			}
 		}
 
-		# # Verify the location exits:
-		# try:
-		# 	location = Location.objects(id=location_id).get()
 
-		# except Exception as e:
-
-		# 	print('Exception e = {}'.format(e))
-
-		# 	error_msg = "No location record with id = {} found.".format(location_id)
-		# 	self.data = {'message': error_msg}
-		# 	self.status_code = 404
-
-		# 	return None
-
-
-		# Find the location and review exits:
 		try:
-			location = Location.objects(id=location_id, reviews__review_id=review_id).get()
+			location = Location.objects(__raw__={'_id': ObjectId(location_id), 'reviews._id': ObjectId(review_id)}).update(__raw__=raw_set_query)
 
 		except Exception as e:
+			if isinstance(e, me.errors.ValidationError):
+				self.status_code = 404
+				self.data = {'error': e.message}
+				return None
 
-			print('Exception e = {}'.format(e))
+			elif isinstance(e, Location.DoesNotExist):
+				self.status_code = 404
+				self.data = {'error': str(e)}
+				return None
 
-			error_msg = "No location with _id = {}, and review _id = {} found.".format(location_id, review_id)
-			self.data = {'message': error_msg}
-			self.status_code = 404
+			elif isinstance(e, bson.errors.InvalidId):
+				self.status_code = 404
+				self.data = {'error': str(e)}
+				return None
 
-			return None
+			else:
+				raise e 
 
 
-		location = Location.objects(id=location_id, reviews__review_id=review_id).update(__raw__=raw_set_query)
-
+		# on a successful update location is an interger = 1. The location
+		# rating needs to be updated after updating the review.
 		if location == 1:
-			# update the location review:
 			location = Location.objects(id=location_id).get()
 			location.rating = self.get_location_rating(location_obj=location)
 			location.save()
 
+			self.read_review(location_id=location_id, review_id=review_id)
 
-			self.read_review(location_id=location_id, review_id=review_id)	
+
+		elif location == 0:
+			self.status_code = 404
+			self.data = {'error': 'No location with an id = {} and/or a review with and id = {}'.format(location_id,  review_id)}
+			return None
 
 
 		else:
-			raise ValueError("Problem with update review!")
+			raise ValueError("location = {}".format(location))
+
 
 
 

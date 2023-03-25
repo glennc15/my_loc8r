@@ -1,6 +1,9 @@
 from flask import Flask, request
 from flask_mongoengine import MongoEngine
 # from flask import render_template
+from flask_httpauth import HTTPBasicAuth
+
+
 
 import my_loc8r.app_server.controllers.locations_ctrl as loc_ctrl
 
@@ -35,6 +38,8 @@ app.config['MONGODB_SETTINGS'] = [
 db = MongoEngine()
 db.init_app(app)
 
+
+auth = HTTPBasicAuth()
 
 
 
@@ -82,6 +87,12 @@ def about():
 # *************************************************************
 # api_server routers:
 
+
+@auth.verify_password
+def verify_password(username_or_token, password):
+	return True
+
+
 # Location routes:
 @app.route('/api/locations', methods=['GET', 'POST', 'PUT', 'DELETE'])
 def api_locations():
@@ -111,7 +122,8 @@ def api_location(locationid):
 
 
 # Review routes:
-@app.route('/api/locations/<locationid>/reviews', methods=['GET', 'POST', 'PUT', 'DELETE'])
+@app.route('/api/locations/<locationid>/reviews', methods=['POST'])
+@auth.login_required
 def api_review_create(locationid):
 	loc_api_controller = LocationsAPIController()
 	loc_api_controller.reviews(request=request, location_id=locationid, review_id=None)
@@ -125,9 +137,41 @@ def api_review_create(locationid):
 
 
 
+@app.route('/api/locations/<locationid>/reviews', methods=['GET', 'PUT', 'DELETE'])
+def api_review_indalid(locationid):
+	# GET, PUT, DELETE are invalid for this endpoing and are handled by the controller
+	loc_api_controller = LocationsAPIController()
+	loc_api_controller.reviews(request=request, location_id=locationid, review_id=None)
 
-@app.route('/api/locations/<locationid>/reviews/<reviewid>', methods=['GET', 'POST', 'PUT', 'DELETE'])
-def api_review_CRUD(locationid, reviewid):
+	print("loc_api_controller.status_code = {}".format(loc_api_controller.status_code))
+	print("loc_api_controller.data = {}".format(loc_api_controller.data))
+
+	# pdb.set_trace()
+	
+	return (loc_api_controller.data, loc_api_controller.status_code)
+
+
+
+
+
+# authencation is requried for updateing or deleting a review:
+@app.route('/api/locations/<locationid>/reviews/<reviewid>', methods=['PUT', 'DELETE'])
+@auth.login_required
+def api_review_update(locationid, reviewid):
+	loc_api_controller = LocationsAPIController()
+	loc_api_controller.reviews(request=request, location_id=locationid, review_id=reviewid)
+
+	# print("loc_api_controller.status_code = {}".format(loc_api_controller.status_code))
+	# print("loc_api_controller.data = {}".format(loc_api_controller.data))
+
+
+	return (loc_api_controller.data, loc_api_controller.status_code)
+
+
+
+@app.route('/api/locations/<locationid>/reviews/<reviewid>', methods=['GET', 'POST'])
+def api_review_get(locationid, reviewid):
+	# A POST to this endpoint is invalid and is handled by the controller
 	loc_api_controller = LocationsAPIController()
 	loc_api_controller.reviews(request=request, location_id=locationid, review_id=reviewid)
 

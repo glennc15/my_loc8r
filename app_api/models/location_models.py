@@ -3,7 +3,7 @@ import datetime
 from bson import ObjectId
 
 class Review(me.EmbeddedDocument):
-	review_id = me.ObjectIdField(required=True, default=ObjectId)
+	_id = me.ObjectIdField(required=True, default=ObjectId)
 	author = me.StringField(required=True, min_length=2)
 	rating = me.IntField(required=True, min_value=1, max_value=5)
 	review_text = me.StringField(required=True, min_length=2)

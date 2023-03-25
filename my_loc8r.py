@@ -154,13 +154,11 @@ def api_review_create(locationid):
 # @app.route('/api/locations/<locationid>/reviews/<reviewid>', methods=['GET', 'POST'])
 @app.route('/api/locations/<locationid>/reviews/<reviewid>', methods=['GET'])
 def api_review_get(locationid, reviewid):
-	# A POST to this endpoint is invalid and is handled by the controller
 	loc_api_controller = LocationsAPIController()
-	loc_api_controller.reviews(request=request, location_id=locationid, review_id=reviewid)
+	loc_api_controller.read_review(location_id=locationid, review_id=reviewid)
 
-	# print("loc_api_controller.status_code = {}".format(loc_api_controller.status_code))
-	# print("loc_api_controller.data = {}".format(loc_api_controller.data))
-
+	print("loc_api_controller.status_code = {}".format(loc_api_controller.status_code))
+	print("loc_api_controller.data = {}".format(loc_api_controller.data))
 
 	return (loc_api_controller.data, loc_api_controller.status_code)
 

@@ -526,9 +526,8 @@ class LocationsAPIController(object):
 		# remove any unnessary fields from review_data:
 		review_data = dict([(k, v) for k, v in review_data.items() if k in ['author', 'rating', 'review_text']])
 
-
+		# Build a Review model using review_data and validate:
 		review = Review(**review_data)
-
 
 		try:
 			review.validate()
@@ -569,138 +568,14 @@ class LocationsAPIController(object):
 			raise e 
 
 
-		# convert review.review_id to a string before sending the response:
+		# convert review._id to a string before sending the response:
 		review_dict = review.to_mongo().to_dict()
-		review_dict['review_id'] = str(review_dict['review_id'])
+		review_dict['_id'] = str(review_dict['_id'])
 
 		self.data = review_dict
 		self.status_code = 201
 
-
-
-
-
-
-		# # check review data for all required fields:
-		# if self.is_review_data_ok(review_data=review_data):
-
-		# 	pdb.set_trace()
-
-		# 	review = Review(
-		# 		author=review_data['author'],
-		# 		rating=review_data['rating'],
-		# 		review_text=review_data['reviewText']
-		# 	)
-
-
-		# 	try:
-		# 		review.validate()
-
-		# 	except Exception as e:
-		# 		if isinstance(e, me.errors.ValidationError):
-		# 			self.status_code = 400
-		# 			self.data = {'error': e.message}
-		# 			return None 
-
-		# 		else:
-		# 			raise e 
-
-
-		# 	# Get the location:
-		# 	try:
-		# 		location = Location.objects(id=location_id).get()
-
-		# 	except Exception as e:
-		# 		if isinstance(e, me.errors.ValidationError):
-		# 			self.status_code = 404
-		# 			self.data = {'error': e.message}
-		# 			return None 
-
-		# 		else:
-		# 			raise e 
-
-
-		# 	# add the review to the location:
-		# 	location.reviews.append(review)
-		# 	location.rating = self.get_location_rating(location_obj=location)
-
-		# 	try: 
-		# 		location.save()
-
-		# 	except Exception as e:
-		# 		print("500 Error!!!")
-		# 		raise e 
-
-
-		# 	# convert review.review_id to a string before sending the response:
-		# 	review_dict = review.to_mongo().to_dict()
-		# 	review_dict['review_id'] = str(review_dict['review_id'])
-
-		# 	self.data = review_dict
-		# 	self.status_code = 201
-
-
-	# try:
-	# 	pass
-	# except Exception as e:
-	# 	raise e
-	# else:
-	# 	pass
-
-
-		# # Find the location by id:
-		# try:
-		# 	location = Location.objects(id=location_id).get()
-
-		# except Exception as e:
-
-		# 	error_msg = "No location record with id = {} found.".format(location_id)
-		# 	self.data = {'message': error_msg}
-		# 	self.status_code = 404
-
-		# 	return None
-
-		# # create a Review, add it to locations['reviews'], and save to the database.
-		# review = Review(
-		# 	author=new_data['author'],
-		# 	rating=new_data['rating'],
-		# 	review_text=new_data['reviewText']
-		# )
-
-		# location.reviews.append(review)
-		# location.rating = self.get_location_rating(location_obj=location)
-
-		# # pdb.set_trace()
-
-		# try:
-		# 	location.save()
-		# 	location_data = self.format_location(document=location)
-
-		# 	this_review = [x for x in location_data['reviews'] if x['author'] == new_data['author']][0]
-			
-		# 	self.data = this_review
-		# 	self.status_code = 201
-
-
-		# except Exception as e:
-		# 	# not sure how to test this
-		# 	print("500 Error!")
-		# 	print(e)
-
-		# 	self.data = {'message': 'database error!'}
-		# 	self.status_code = 500
-
-		# return None 
-
-
-
-		# self.data = {}
-		# self.status_code = 201
-
-
-
-
-
+	# GET: /api/locations/<locationid>/reviews/<reviewid>
 	def read_review(self, location_id, review_id):
 		'''
 
@@ -716,35 +591,122 @@ class LocationsAPIController(object):
 		So finding the review in the location manually until I have more knowledge to build a better query.
 
 		'''
-		try:
-			location = Location.objects(id=location_id).get()
 
-			# location = Location.objects()
+		try:
+			# location = Location.objects(id=location_id).get()
+			# location = Location.objects(=review_id).get()
+			location = Location.objects(__raw__={'_id': ObjectId(location_id), 'reviews._id': ObjectId(review_id)}).get()
+
+			print("location_id = {}".format(location_id))
+			print("review_id = {}".format(review_id))
+			print("location = {}".format(location))
+
+
+			# pdb.set_trace()
+
 
 		except Exception as e:
+			if isinstance(e, me.errors.ValidationError):
+				self.status_code = 404
+				self.data = {'error': e.message}
+				return None
 
-			print("Exception = {}".format(e))
+			elif isinstance(e, Location.DoesNotExist):
+				self.status_code = 404
+				self.data = {'error': str(e)}
+				return None
 
-			error_msg = "No location record with id = {} found.".format(location_id)
-			self.data = {'message': error_msg}
-			self.status_code = 404
+			elif isinstance(e, bson.errors.InvalidId):
+				self.status_code = 404
+				self.data = {'error': str(e)}
+				return None
 
-			return None
+			else:
+				raise e 
 
-		location_data = self.format_location(document=location)
-		# location_data = location.to_mongo().to_dict()		
-		# print("location_data = {}".format(location_data))
 
-		target_review = [x for x in location_data['reviews'] if x['review_id']==review_id]
+		# get the right review:
+		target_review = [x for x in location.reviews if x._id == ObjectId(review_id)][0].to_mongo().to_dict()
+		target_review['_id'] = str(target_review['_id'])
 
-		if len(target_review) == 1:
-			self.data = target_review[0]
-			self.status_code = 200
+		self.status_code = 200
+		self.data = target_review
 
-		else:
-			error_msg = "No reveiw record with id = {} found.".format(review_id)
-			self.data = {'message': error_msg}
-			self.status_code = 404
+
+
+
+
+		# 	# print("Exception = {}".format(e))
+
+		# 	# error_msg = "No location record with id = {} found.".format(location_id)
+		# 	# self.data = {'message': error_msg}
+		# 	# self.status_code = 404
+
+		# 	# return None
+
+		# location_data = self.format_location(document=location)
+		# # location_data = location.to_mongo().to_dict()		
+		# # print("location_data = {}".format(location_data))
+
+		# target_review = [x for x in location_data['reviews'] if x['review_id']==review_id]
+
+		# if len(target_review) == 1:
+		# 	self.data = target_review[0]
+		# 	self.status_code = 200
+
+		# else:
+		# 	error_msg = "No reveiw record with id = {} found.".format(review_id)
+		# 	self.data = {'message': error_msg}
+		# 	self.status_code = 404
+
+
+
+
+
+	# def read_review(self, location_id, review_id):
+	# 	'''
+
+	# 	# 12Mar23: I cannot come up with a query to return just a review that matches review_id.
+		
+	# 	These queryies all return a Location:
+	# 	location = Location.objects(id=location_id).get()
+	# 	location = Location.objects(id=location_id, reviews__review_id=review).get()
+	# 	location = Location.objects(reviews__review_id=review).get()
+
+	# 	I've also tried .only('reviews') but still returns a Location.
+
+	# 	So finding the review in the location manually until I have more knowledge to build a better query.
+
+	# 	'''
+	# 	try:
+	# 		location = Location.objects(id=location_id).get()
+
+	# 		# location = Location.objects()
+
+	# 	except Exception as e:
+
+	# 		print("Exception = {}".format(e))
+
+	# 		error_msg = "No location record with id = {} found.".format(location_id)
+	# 		self.data = {'message': error_msg}
+	# 		self.status_code = 404
+
+	# 		return None
+
+	# 	location_data = self.format_location(document=location)
+	# 	# location_data = location.to_mongo().to_dict()		
+	# 	# print("location_data = {}".format(location_data))
+
+	# 	target_review = [x for x in location_data['reviews'] if x['review_id']==review_id]
+
+	# 	if len(target_review) == 1:
+	# 		self.data = target_review[0]
+	# 		self.status_code = 200
+
+	# 	else:
+	# 		error_msg = "No reveiw record with id = {} found.".format(review_id)
+	# 		self.data = {'message': error_msg}
+	# 		self.status_code = 404
 
 
 	def update_review(self, location_id, review_id, new_data):

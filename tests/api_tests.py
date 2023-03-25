@@ -1109,10 +1109,12 @@ class APITests(unittest.TestCase):
 		review2_delete_r = requests.delete(url=url)
 		self.assertEqual(review2_delete_r.status_code, 404)
 		
-		# DELETE failure due to no review id:
-		url = self.build_url(path_parts=['api', 'locations', location_r.json()['_id'][1:], 'reviews'])
+		# DELETE failure due to no review id. Without a review id the api
+		# endpoint becomes /api/locations/<locationid>/reviews and delete is
+		# an invalid method for this endpoint.
+		url = self.build_url(path_parts=['api', 'locations', location_r.json()['_id'], 'reviews'])
 		review2_delete_r = requests.delete(url=url)
-		self.assertEqual(review2_delete_r.status_code, 404)
+		self.assertEqual(review2_delete_r.status_code, 405)
 		
 		# DELETE 2nd review: success
 		url = self.build_url(path_parts=['api', 'locations', location_r.json()['_id'], 'reviews', review2_r.json()['review_id']])

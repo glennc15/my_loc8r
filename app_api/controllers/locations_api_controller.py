@@ -600,7 +600,7 @@ class LocationsAPIController(object):
 		'''
 
 		try:
-			location = Location.objects(__raw__={'_id': ObjectId(location_id), 'reviews._id': ObjectId(review_id)}).get()
+			location = Locations.objects(__raw__={'_id': ObjectId(location_id), 'reviews._id': ObjectId(review_id)}).get()
 
 		except Exception as e:
 			if isinstance(e, me.errors.ValidationError):
@@ -608,7 +608,7 @@ class LocationsAPIController(object):
 				self.data = {'error': e.message}
 				return None
 
-			elif isinstance(e, Location.DoesNotExist):
+			elif isinstance(e, Locations.DoesNotExist):
 				self.status_code = 404
 				self.data = {'error': str(e)}
 				return None

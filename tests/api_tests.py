@@ -1320,7 +1320,7 @@ class APITests(unittest.TestCase):
 			expected_reviews=3, 
 			expected_rating=4, 
 		)
-		
+
 
 		# CREATE review #2 success:
 		review2_r = requests.post(
@@ -1353,6 +1353,237 @@ class APITests(unittest.TestCase):
 
 		# End: Create a review with login:	
 		# *******************************************************
+
+	def test_review_read_01(self):
+		'''
+		
+		GET review requests don't require any authorization:
+
+		'''
+
+		# Set up:
+		self.reset_users_collection()
+		self.reset_locations_collection()
+
+		# create a test location:
+		url = self.build_url(path_parts=['api', 'locations'])
+		location_r = requests.post(
+			url=url,
+			json={
+				'name': 'Burger Queen',		
+				'address': "783 High Street, Reading, RG6 1PS",
+				'facilities': "Food,Premium wifi",
+				'lng': -0.9690854,
+				'lat': 51.455051,
+				'openingTimes': [
+					{
+						'days': "Thursday - Saturday",
+						'opening': "1:00am",
+						'closing': "10:00am",
+						'closed': False
+					},
+					{
+						'days': "Monday - Wednesday",
+						'closed': True
+					}
+				]
+			}
+		)
+
+		self.assertEqual(location_r.status_code, 201)
+		self.assertEqual(len(location_r.json()['reviews']), 0)
+
+		location_id = location_r.json()['_id']
+
+		# Add 2 reviews:
+
+		# Review 1:
+
+		# User 1
+		register1_r = requests.post(
+			url=self.build_url(path_parts=['api', 'register']),
+			json={
+				'name': "Madison Voorhees",
+				'email': 'mvoorhees@hotmail.com',
+				'password': 'mABC123'
+			}
+		)
+
+		self.assertEqual(register1_r.status_code, 201)		
+		self.assertTrue('token' in register1_r.json().keys())
+
+		user1_token = register1_r.json()['token']
+
+
+		review1_r = requests.post(
+			url=self.build_url(path_parts=['api', 'locations', location_id, 'reviews']),
+			auth=(user1_token, str(None)),
+			json={
+				'rating': 5,		
+				'reviewText': "No wifi. Has male and female a go-go dances. Will be back with the family!",
+			}
+		)
+
+		self.assertEqual(review1_r.status_code, 201)
+		self.assertEqual(review1_r.json()['author'], 'Madison Voorhees')
+		self.assertEqual(review1_r.json()['rating'], 5)
+		self.assertEqual(review1_r.json()['review_text'], 'No wifi. Has male and female a go-go dances. Will be back with the family!')
+
+		self.location_tests(
+			location_id=location_id, 
+			expected_reviews=1, 
+			expected_rating=5, 
+		)
+
+		# Review 2:
+
+		# User 2:
+		register2_r = requests.post(
+			url=self.build_url(path_parts=['api', 'register']),
+			json={
+				'name': "Simon Hardy",
+				'email': 'mhardy@hotmail.com',
+				'password': 'sABC123'
+			}
+		)
+
+		self.assertEqual(register2_r.status_code, 201)		
+		self.assertTrue('token' in register1_r.json().keys())
+
+		user2_token = register2_r.json()['token']
+
+
+		review2_r = requests.post(
+			url=self.build_url(path_parts=['api', 'locations', location_id, 'reviews']),
+			auth=(user2_token, str(None)),
+			json={	
+				'rating': 2,
+				'reviewText': "Didn't get any work done, great place!",
+			}
+		)
+
+		self.assertEqual(review2_r.status_code, 201)
+
+		# a review's author is the name of the authenticated user. If the post
+		# data contains an author field it is ignored.
+		self.assertEqual(review2_r.json()['author'], 'Simon Hardy')
+		self.assertEqual(review2_r.json()['rating'], 2)
+		self.assertEqual(review2_r.json()['review_text'], "Didn't get any work done, great place!")
+
+
+		self.location_tests(
+			location_id=location_id, 
+			expected_reviews=2, 
+			expected_rating=3, 
+		)
+
+
+		review1_id = review1_r.json()['_id']
+		review2_id = review2_r.json()['_id']
+
+
+		# READ a review with no authorization:
+
+		# READ failure due to incorrect location id:
+		review1_err_r = requests.get(
+			url=self.build_url(path_parts=['api', 'locations', location_id[1:], 'reviews', review1_id])
+		)
+		self.assertEqual(review1_err_r.status_code, 404)
+
+		# READ failure due to no location id:
+		url = self.build_url(path_parts=['api', 'locations', 'reviews', review1_id])
+		review1_err_r = requests.get(url=url)
+		self.assertEqual(review1_err_r.status_code, 404)
+
+
+		# READ failure due to non existing location id:
+		url = self.build_url(path_parts=['api', 'locations', '640ceee95fedd040ba74a736', 'reviews', review1_id[1:]])
+		review1_err_r = requests.get(url=url)
+		self.assertEqual(review1_err_r.status_code, 404)
+
+
+		# READ failure due to incorrect review id:
+		url = self.build_url(path_parts=['api', 'locations', location_id, 'reviews', review1_id[1:]])
+		review1_err_r = requests.get(url=url)
+		self.assertEqual(review1_err_r.status_code, 404)
+
+
+		# READ failure due non exixting review id:
+		url = self.build_url(path_parts=['api', 'locations', location_id, 'reviews', '640ceee95fedd040ba74a736'])
+		review1_err_r = requests.get(url=url)
+		self.assertEqual(review1_err_r.status_code, 404)
+
+
+		# READ failure due to no review id:
+		url = self.build_url(path_parts=['api', 'locations', location_id, 'reviews'])
+		review1_err_r = requests.get(url=url)
+		self.assertEqual(review1_err_r.status_code, 405)
+		
+
+		# READ success
+		url = self.build_url(path_parts=['api', 'locations', location_id, 'reviews', review1_id])
+		read_review1_r = requests.get(url=url)
+		self.assertEqual(read_review1_r.status_code, 200)
+		self.assertEqual(read_review1_r.json()['_id'], review1_id)
+
+
+		# READ a review with with authorization (no change expected as reading
+		# a review does not require authorization):
+
+		# READ failure due to incorrect location id:
+		review1_err_r = requests.get(
+			url=self.build_url(path_parts=['api', 'locations', location_id[1:], 'reviews', review1_id]),
+			auth=(user1_token, str(None))
+		)
+		self.assertEqual(review1_err_r.status_code, 404)
+
+		# READ failure due to no location id:
+		review1_err_r = requests.get(
+			url=self.build_url(path_parts=['api', 'locations', 'reviews', review1_id]),
+			auth=(user1_token, str(None)),
+		)
+		self.assertEqual(review1_err_r.status_code, 404)
+
+
+		# READ failure due to non existing location id:
+		review1_err_r = requests.get(
+			url=self.build_url(path_parts=['api', 'locations', '640ceee95fedd040ba74a736', 'reviews', review1_id[1:]]),
+			auth=(user1_token, str(None)),
+		)
+		self.assertEqual(review1_err_r.status_code, 404)
+
+
+		# READ failure due to incorrect review id:
+		review1_err_r = requests.get(
+			url=self.build_url(path_parts=['api', 'locations', location_id, 'reviews', review1_id[1:]]),
+			auth=(user1_token, str(None)),
+		)
+		self.assertEqual(review1_err_r.status_code, 404)
+
+
+		# READ failure due non exixting review id:
+		review1_err_r = requests.get(
+			url=self.build_url(path_parts=['api', 'locations', location_id, 'reviews', '640ceee95fedd040ba74a736']),
+			auth=(user1_token, str(None)),
+		)
+		self.assertEqual(review1_err_r.status_code, 404)
+
+
+		# READ failure due to no review id:
+		review1_err_r = requests.get(
+			url=self.build_url(path_parts=['api', 'locations', location_id, 'reviews']),
+			auth=(user1_token, str(None)),
+		)
+		self.assertEqual(review1_err_r.status_code, 405)
+		
+
+		# READ success
+		read_review1_r = requests.get(
+			url=self.build_url(path_parts=['api', 'locations', location_id, 'reviews', review1_id]),
+			auth=(user1_token, str(None)),
+		)
+		self.assertEqual(read_review1_r.status_code, 200)
+		self.assertEqual(read_review1_r.json()['_id'], review1_id)
 
 
 
@@ -1607,50 +1838,50 @@ class APITests(unittest.TestCase):
 
 
 
-		# READ a review:
+		# # READ a review:
 
-		# READ failure due to incorrect location id:
+		# # READ failure due to incorrect location id:
+		# # url = self.build_url(path_parts=['api', 'locations', location_r.json()['_id'][1:], 'reviews', review1_r.json()['_id']])
+
 		# url = self.build_url(path_parts=['api', 'locations', location_r.json()['_id'][1:], 'reviews', review1_r.json()['_id']])
+		# review1_err_r = requests.get(url=url)
+		# self.assertEqual(review1_err_r.status_code, 404)
 
-		url = self.build_url(path_parts=['api', 'locations', location_r.json()['_id'][1:], 'reviews', review1_r.json()['_id']])
-		review1_err_r = requests.get(url=url)
-		self.assertEqual(review1_err_r.status_code, 404)
-
-		# READ failure due to no location id:
-		url = self.build_url(path_parts=['api', 'locations', 'reviews', review1_r.json()['_id']])
-		review1_err_r = requests.get(url=url)
-		self.assertEqual(review1_err_r.status_code, 404)
+		# # READ failure due to no location id:
+		# url = self.build_url(path_parts=['api', 'locations', 'reviews', review1_r.json()['_id']])
+		# review1_err_r = requests.get(url=url)
+		# self.assertEqual(review1_err_r.status_code, 404)
 
 
-		# READ failure due to non existing location id:
-		url = self.build_url(path_parts=['api', 'locations', '640ceee95fedd040ba74a736', 'reviews', review1_r.json()['_id'][1:]])
-		review1_err_r = requests.get(url=url)
-		self.assertEqual(review1_err_r.status_code, 404)
+		# # READ failure due to non existing location id:
+		# url = self.build_url(path_parts=['api', 'locations', '640ceee95fedd040ba74a736', 'reviews', review1_r.json()['_id'][1:]])
+		# review1_err_r = requests.get(url=url)
+		# self.assertEqual(review1_err_r.status_code, 404)
 
 
-		# READ failure due to incorrect review id:
-		url = self.build_url(path_parts=['api', 'locations', location_r.json()['_id'], 'reviews', review1_r.json()['_id'][1:]])
-		review1_err_r = requests.get(url=url)
-		self.assertEqual(review1_err_r.status_code, 404)
+		# # READ failure due to incorrect review id:
+		# url = self.build_url(path_parts=['api', 'locations', location_r.json()['_id'], 'reviews', review1_r.json()['_id'][1:]])
+		# review1_err_r = requests.get(url=url)
+		# self.assertEqual(review1_err_r.status_code, 404)
 
 
-		# READ failure due non exixting review id:
-		url = self.build_url(path_parts=['api', 'locations', location_r.json()['_id'], 'reviews', '640ceee95fedd040ba74a736'])
-		review1_err_r = requests.get(url=url)
-		self.assertEqual(review1_err_r.status_code, 404)
+		# # READ failure due non exixting review id:
+		# url = self.build_url(path_parts=['api', 'locations', location_r.json()['_id'], 'reviews', '640ceee95fedd040ba74a736'])
+		# review1_err_r = requests.get(url=url)
+		# self.assertEqual(review1_err_r.status_code, 404)
 
 
-		# READ failure due to no review id:
-		url = self.build_url(path_parts=['api', 'locations', location_r.json()['_id'], 'reviews'])
-		review1_err_r = requests.get(url=url)
-		self.assertEqual(review1_err_r.status_code, 405)
+		# # READ failure due to no review id:
+		# url = self.build_url(path_parts=['api', 'locations', location_r.json()['_id'], 'reviews'])
+		# review1_err_r = requests.get(url=url)
+		# self.assertEqual(review1_err_r.status_code, 405)
 		
 
-		# READ success
-		url = self.build_url(path_parts=['api', 'locations', location_r.json()['_id'], 'reviews', review1_r.json()['_id']])
-		read_review1_r = requests.get(url=url)
-		self.assertEqual(read_review1_r.status_code, 200)
-		self.assertEqual(read_review1_r.json()['_id'], review1_r.json()['_id'])
+		# # READ success
+		# url = self.build_url(path_parts=['api', 'locations', location_r.json()['_id'], 'reviews', review1_r.json()['_id']])
+		# read_review1_r = requests.get(url=url)
+		# self.assertEqual(read_review1_r.status_code, 200)
+		# self.assertEqual(read_review1_r.json()['_id'], review1_r.json()['_id'])
 
 
 		# UPDATE a review:

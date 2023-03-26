@@ -1065,10 +1065,14 @@ class APITests(unittest.TestCase):
 			}
 		)
 
+
+		author_data = self.decode_token(token=registration_token)
+
 		self.assertEqual(review1_r.status_code, 201)
 		self.assertEqual(review1_r.json()['author'], 'Madison Voorhees')
 		self.assertEqual(review1_r.json()['rating'], 5)
 		self.assertEqual(review1_r.json()['review_text'], 'No wifi. Has male and female a go-go dances. Will be back with the family!')
+		self.assertEqual(review1_r.json()['author_id'], author_data['_id'])
 
 		self.location_tests(
 			location_id=location_id, 
@@ -1095,6 +1099,7 @@ class APITests(unittest.TestCase):
 		self.assertEqual(review2_r.json()['author'], 'Madison Voorhees')
 		self.assertEqual(review2_r.json()['rating'], 2)
 		self.assertEqual(review2_r.json()['review_text'], "Didn't get any work done, great place!")
+		self.assertEqual(review2_r.json()['author_id'], author_data['_id'])
 
 
 		self.location_tests(
@@ -1310,10 +1315,14 @@ class APITests(unittest.TestCase):
 			}
 		)
 
+		author_data = self.decode_token(token=login_token)
+
 		self.assertEqual(review1_r.status_code, 201)
 		self.assertEqual(review1_r.json()['author'], 'Simon Hardy')
 		self.assertEqual(review1_r.json()['rating'], 5)
 		self.assertEqual(review1_r.json()['review_text'], 'No wifi. Has male and female a go-go dances. Will be back with the family!')
+		self.assertEqual(review1_r.json()['author_id'], author_data['_id'])
+
 
 		self.location_tests(
 			location_id=location_id, 
@@ -1340,6 +1349,8 @@ class APITests(unittest.TestCase):
 		self.assertEqual(review2_r.json()['author'], 'Simon Hardy')
 		self.assertEqual(review2_r.json()['rating'], 2)
 		self.assertEqual(review2_r.json()['review_text'], "Didn't get any work done, great place!")
+		self.assertEqual(review2_r.json()['author_id'], author_data['_id'])
+
 
 
 		self.location_tests(
@@ -1353,6 +1364,9 @@ class APITests(unittest.TestCase):
 
 		# End: Create a review with login:	
 		# *******************************************************
+
+
+
 
 	def test_review_read_01(self):
 		'''
@@ -2442,13 +2456,20 @@ class APITests(unittest.TestCase):
 
 
 		'''
-		load_dotenv()
-		
-		user_data = jwt.decode(token, os.environ.get("JWT_SECRETE"), algorithms=["HS256"])
+		user_data = self.decode_token(token=token)
 		user_data['exp'] = int((datetime.datetime.utcnow() - datetime.timedelta(days=7)).timestamp())
 		
-
 		return jwt.encode(user_data, os.environ.get("JWT_SECRETE"), algorithm="HS256")
+
+
+	def decode_token(self, token):
+		'''
+
+		'''
+		load_dotenv()
+
+		return jwt.decode(token, os.environ.get("JWT_SECRETE"), algorithms=["HS256"])
+		
 
 
 	def test_authencation_01(self):

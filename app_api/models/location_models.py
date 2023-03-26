@@ -5,6 +5,7 @@ from bson import ObjectId
 class Review(me.EmbeddedDocument):
 	_id = me.ObjectIdField(required=True, default=ObjectId)
 	author = me.StringField(required=True, min_length=2)
+	author_id = me.ObjectIdField(required=True)
 	rating = me.IntField(required=True, min_value=1, max_value=5)
 	review_text = me.StringField(required=True, min_length=2)
 	created_on = me.DateTimeField(default=datetime.datetime.utcnow)

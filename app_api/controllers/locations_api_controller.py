@@ -513,7 +513,7 @@ class LocationsAPIController(object):
 
 
 	# POST: /api/locations/<locationid>/reviews
-	def create_review(self, location_id, review_data, author):
+	def create_review(self, location_id, review_data, user_data):
 		'''
 		
 		author: user name from the authenticated user credentials.
@@ -528,7 +528,8 @@ class LocationsAPIController(object):
 		review_data = dict([(k, v) for k, v in review_data.items() if k in ['rating', 'review_text']])
 
 		# add author as the verified user name
-		review_data['author'] = author
+		review_data['author'] = user_data.name
+		review_data['author_id'] = user_data.id
 
 		# Build a Review model using review_data and validate:
 		review = Review(**review_data)
@@ -575,6 +576,8 @@ class LocationsAPIController(object):
 		# convert review._id to a string before sending the response:
 		review_dict = review.to_mongo().to_dict()
 		review_dict['_id'] = str(review_dict['_id'])
+		review_dict['author_id'] = str(review_dict['author_id'])
+
 
 		self.data = review_dict
 		self.status_code = 201

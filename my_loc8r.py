@@ -93,6 +93,7 @@ def about():
 def auth_error(status):
     return g.error_msg, status
 
+
 @auth.verify_password
 def verify_password(username, password):
 
@@ -144,7 +145,7 @@ def api_location(locationid):
 def api_review_create(locationid):
 
 	loc_api_controller = LocationsAPIController()
-	loc_api_controller.create_review(location_id=locationid, review_data=request.get_json(), author=g.user.name)
+	loc_api_controller.create_review(location_id=locationid, review_data=request.get_json(), user_data=g.user)
 
 	print("loc_api_controller.status_code = {}".format(loc_api_controller.status_code))
 	print("loc_api_controller.data = {}".format(loc_api_controller.data))

@@ -16,6 +16,50 @@ class Users(me.Document):
 	# name = me.StringField()
 	email = me.EmailField(unique=True)
 	password_hash = me.StringField()
+   
+
+
+	@staticmethod
+	def verify_jwt(jwt_token):
+		'''
+
+		'''
+
+		try:
+			user_data = jwt.decode(jwt_token, os.environ.get("JWT_SECRETE"), algorithms=["HS256"])
+
+		except Exception as e:
+			# invalide jwt_token
+			if isinstance(e, jwt.exceptions.InvalidSignatureError):
+				error_msg = {'error': "the authorization token is invalid"}
+				return (None, error_msg)
+
+			elif isinstance(e, jwt.exceptions.ExpiredSignatureError):
+				error_msg = {'error': "the authorization token is expired"}
+				return (None, error_msg)
+
+			elif isinstance(e, jwt.exceptions.DecodeError):
+				error_msg = {'error': "authorization token is required"}
+				return (None, error_msg)
+
+
+			else:
+				raise e  
+
+
+		try:
+			user = Users.objects(email=user_data['email']).get()
+
+		except Exception as e:
+			raise e 
+			# error_msg = {'error': "user for {} does not exists".format(user_data['email'])}
+			# return (None, error_msg) 
+
+
+
+
+		return (user, None) 
+
 
 
 	def hash_password(self, password):

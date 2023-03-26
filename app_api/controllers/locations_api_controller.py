@@ -513,9 +513,10 @@ class LocationsAPIController(object):
 
 
 	# POST: /api/locations/<locationid>/reviews
-	def create_review(self, location_id, review_data):
+	def create_review(self, location_id, review_data, author):
 		'''
-
+		
+		author: user name from the authenticated user credentials.
  
 		'''
 
@@ -524,7 +525,10 @@ class LocationsAPIController(object):
 			review_data['review_text'] = review_data['reviewText']
 
 		# remove any unnessary fields from review_data:
-		review_data = dict([(k, v) for k, v in review_data.items() if k in ['author', 'rating', 'review_text']])
+		review_data = dict([(k, v) for k, v in review_data.items() if k in ['rating', 'review_text']])
+
+		# add author as the verified user name
+		review_data['author'] = author
 
 		# Build a Review model using review_data and validate:
 		review = Review(**review_data)
@@ -544,7 +548,7 @@ class LocationsAPIController(object):
 
 		# Get the location:
 		try:
-			location = Location.objects(id=location_id).get()
+			location = Locations.objects(id=location_id).get()
 
 		except Exception as e:
 			if isinstance(e, me.errors.ValidationError):

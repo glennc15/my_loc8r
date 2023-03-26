@@ -1,4 +1,4 @@
-from flask import Flask, request
+from flask import Flask, request, g 
 from flask_mongoengine import MongoEngine
 # from flask import render_template
 from flask_httpauth import HTTPBasicAuth
@@ -11,6 +11,7 @@ import my_loc8r.app_server.controllers.locations_ctrl as loc_ctrl
 from my_loc8r.app_api.controllers.locations_api_controller import LocationsAPIController
 from my_loc8r.app_api.controllers.users_api_controller import UsersAPIController
 
+from my_loc8r.app_api.models.user_model import Users
 
 # import my_loc8r.app_api.controllers.reviews_api_ctrl as reviews_api_ctrl 
 
@@ -88,10 +89,25 @@ def about():
 # api_server routers:
 
 
+@auth.error_handler
+def auth_error(status):
+    return g.error_msg, status
+
 @auth.verify_password
-def verify_password(username_or_token, password):
-	# only token is used
-	return False
+def verify_password(username, password):
+
+	user, error_msg = Users.verify_jwt(jwt_token=username)
+
+	if isinstance(user, Users):
+		g.user = user
+		g.error_msg = None  
+		return True
+
+	else:
+		g.user = None
+		g.error_msg = error_msg  
+		return False
+
 
 
 # Location routes:
@@ -126,9 +142,9 @@ def api_location(locationid):
 @app.route('/api/locations/<locationid>/reviews', methods=['POST'])
 @auth.login_required
 def api_review_create(locationid):
+
 	loc_api_controller = LocationsAPIController()
-	# loc_api_controller.reviews(request=request, location_id=locationid, review_id=None)
-	loc_api_controller.create_review(location_id=locationid, review_data=request.get_json())
+	loc_api_controller.create_review(location_id=locationid, review_data=request.get_json(), author=g.user.name)
 
 	print("loc_api_controller.status_code = {}".format(loc_api_controller.status_code))
 	print("loc_api_controller.data = {}".format(loc_api_controller.data))

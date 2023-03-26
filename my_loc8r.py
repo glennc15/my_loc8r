@@ -90,7 +90,8 @@ def about():
 
 @auth.verify_password
 def verify_password(username_or_token, password):
-	return True
+	# only token is used
+	return False
 
 
 # Location routes:

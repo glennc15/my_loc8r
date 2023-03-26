@@ -91,7 +91,18 @@ class APITests(unittest.TestCase):
 		db_location = APITests.mongo_client[self.db_name]['location'].find_one({'_id': ObjectId(location_id)})
 
 		self.assertEqual(db_location['rating'], expected_rating)
-		self.assertEqual(len(db_location['reviews']), expected_reviews)
+		
+		# for whatever reason when all reviews are removed the location
+		# ['reviews'] no longer exists in the database. But can add another
+		# reviews without issues. When another review is added then location
+		# ['reviews'] is present again.
+
+		if db_location.get('reviews'):
+			self.assertEqual(len(db_location['reviews']), expected_reviews)
+
+		else:
+			self.assertEqual(0, expected_reviews)
+
 
 
 
@@ -681,14 +692,15 @@ class APITests(unittest.TestCase):
 		self.assertEqual(location_r.status_code, 405)
 
 
-
-	def test_review_crud_01(self):
-		
+	def test_review_create_01(self):
 		'''
-		
 
 
 		'''
+
+
+		# *******************************************************
+		# Start: create a review without any authorization:
 
 
 		# create a test location and then add reviews:
@@ -929,6 +941,511 @@ class APITests(unittest.TestCase):
 			expected_reviews=2, 
 			expected_rating=3, 
 		)
+
+
+		# Stop: create a review without any authorization:
+		# *******************************************************
+
+
+
+		# *******************************************************
+		# Start: Create a review with authorization:
+
+
+		# create a test location and then add reviews:
+		url = self.build_url(path_parts=['api', 'locations'])
+		location_r = requests.post(
+			url=url,
+			json={
+				'name': 'Burger Queen',		
+				'address': "783 High Street, Reading, RG6 1PS",
+				'facilities': "Food,Premium wifi",
+				'lng': -0.9690854,
+				'lat': 51.455051,
+				'openingTimes': [
+					{
+						'days': "Thursday - Saturday",
+						'opening': "1:00am",
+						'closing': "10:00am",
+						'closed': False
+					},
+					{
+						'days': "Monday - Wednesday",
+						'closed': True
+					}
+				]
+			}
+		)
+
+		self.assertEqual(location_r.status_code, 201)
+		self.assertEqual(len(location_r.json()['reviews']), 0)
+
+		# CREATE a review:
+
+		# CREATE failure due to incorrect location id:
+		url = self.build_url(path_parts=['api', 'locations', location_r.json()['_id'][1:], 'reviews'])
+		review1_r = requests.post(
+			url=url,
+			json={
+				'author': 'Simon Holmes',		
+				'rating': "5",
+				'reviewText': "No wifi. Has male and female a go-go dances. Will be back with the family!",
+			}
+		)
+
+		self.assertEqual(review1_r.status_code, 404)
+
+
+		# CREATE failure due to no location id:
+		url = self.build_url(path_parts=['api', 'locations', 'reviews'])
+		review1_r = requests.post(
+			url=url,
+			json={
+				'author': 'Simon Holmes',		
+				'rating': "5",
+				'reviewText': "No wifi. Has male and female a go-go dances. Will be back with the family!",
+			}
+		)
+
+		self.assertEqual(review1_r.status_code, 401)
+
+
+		# CREATE failure due to no rating (rating is a required):		
+		review1_r = requests.post(
+			url=self.build_url(path_parts=['api', 'locations', location_r.json()['_id'], 'reviews']),
+			json={
+				'author': 'Simon Holmes',		
+				'reviewText': "No wifi. Has male and female a go-go dances. Will be back with the family!",
+			}
+		)
+
+		self.assertEqual(review1_r.status_code, 400)
+
+
+		# CREATE failure due to invalid rating:		
+		review1_r = requests.post(
+			url=self.build_url(path_parts=['api', 'locations', location_r.json()['_id'], 'reviews']),
+			json={
+				'author': 'Simon Holmes',	
+				'rating': 0,	
+				'reviewText': "No wifi. Has male and female a go-go dances. Will be back with the family!",
+			}
+		)
+
+		self.assertEqual(review1_r.status_code, 400)
+
+
+
+		# CREATE failure due to no author (author is a required):		
+		url = self.build_url(path_parts=['api', 'locations', location_r.json()['_id'], 'reviews'])
+		review1_r = requests.post(
+			url=self.build_url(path_parts=['api', 'locations', location_r.json()['_id'], 'reviews']),
+			json={
+				'rating': 5,		
+				'reviewText': "No wifi. Has male and female a go-go dances. Will be back with the family!",
+			}
+		)
+
+		self.assertEqual(review1_r.status_code, 400)
+
+
+		# CREATE failure due to invalid author:		
+		url = self.build_url(path_parts=['api', 'locations', location_r.json()['_id'], 'reviews'])
+		review1_r = requests.post(
+			url=self.build_url(path_parts=['api', 'locations', location_r.json()['_id'], 'reviews']),
+			json={
+				'rating': 5,
+				'author': '',		
+				'reviewText': "No wifi. Has male and female a go-go dances. Will be back with the family!",
+			}
+		)
+
+		self.assertEqual(review1_r.status_code, 400)
+
+		# CREATE failure due to no review text (review text is a required):		
+		url = self.build_url(path_parts=['api', 'locations', location_r.json()['_id'], 'reviews'])
+		review1_r = requests.post(
+			url=self.build_url(path_parts=['api', 'locations', location_r.json()['_id'], 'reviews']),
+			json={
+				'author': 'Simon Holmes',
+				'rating': 5,		
+			}
+		)
+
+		self.assertEqual(review1_r.status_code, 400)
+
+		
+		# CREATE failure due to invalid review text:		
+		url = self.build_url(path_parts=['api', 'locations', location_r.json()['_id'], 'reviews'])
+		review1_r = requests.post(
+			url=self.build_url(path_parts=['api', 'locations', location_r.json()['_id'], 'reviews']),
+			json={
+				'author': 'Simon Holmes',
+				'rating': 5,
+				'reviewText': ''		
+			}
+		)
+
+		self.assertEqual(review1_r.status_code, 400)
+
+
+
+
+		# CREATE unsuccessful due to imporper request (GET not allowed):
+		url = self.build_url(path_parts=['api', 'locations', location_r.json()['_id'], 'reviews'])
+		review1_r = requests.get(
+			url=url,
+			json={
+				'author': 'Simmon Holmes',		
+				'rating': 5,
+				'reviewText': "No wifi. Has male and female a go-go dances. Will be back with the family!",
+			}
+		)
+
+		self.assertEqual(review1_r.status_code, 405)
+
+		# CREATE unsuccessful due to imporper request (PUT not allowed):
+		url = self.build_url(path_parts=['api', 'locations', location_r.json()['_id'], 'reviews'])
+		review1_r = requests.put(
+			url=url,
+			json={
+				'author': 'Simmon Holmes',		
+				'rating': 5,
+				'reviewText': "No wifi. Has male and female a go-go dances. Will be back with the family!",
+			}
+		)
+
+		self.assertEqual(review1_r.status_code, 405)
+
+
+		# CREATE unsuccessful due to imporper request (DELETE not allowed):
+		url = self.build_url(path_parts=['api', 'locations', location_r.json()['_id'], 'reviews'])
+		review1_r = requests.delete(
+			url=url,
+			json={
+				'author': 'Simmon Holmes',		
+				'rating': 5,
+				'reviewText': "No wifi. Has male and female a go-go dances. Will be back with the family!",
+			}
+		)
+
+		self.assertEqual(review1_r.status_code, 405)
+
+		
+		# CREATE review #1 success:
+		location_id = location_r.json()['_id']
+
+		# url = self.build_url(path_parts=['api', 'locations', location_r.json()['_id'], 'reviews'])
+		review1_r = requests.post(
+			url=self.build_url(path_parts=['api', 'locations', location_id, 'reviews']),
+			json={
+				'author': 'Simmon Holmes',		
+				'rating': 5,
+				'reviewText': "No wifi. Has male and female a go-go dances. Will be back with the family!",
+			}
+		)
+
+		self.assertEqual(review1_r.status_code, 201)
+
+
+		# self.assertTrue('_id' in review1_r.json())
+
+		# self.assertTrue('_id' in review1_r.json())
+
+		# read location and verify the review was added and rating updated:
+
+		# location_r = self.location_tests(
+		# 	location_id='640c131b0eff6bceca9e57b8', 
+		# 	expected_reviews=1, 
+		# 	expected_rating=5, 
+		# )
+
+
+		self.location_tests(
+			location_id=location_id, 
+			expected_reviews=1, 
+			expected_rating=5, 
+		)
+		
+
+
+		# CREATE review #2 success:
+
+		# url = self.build_url(path_parts=['api', 'locations', location_r.json()['_id'], 'reviews'])
+		review2_r = requests.post(
+			url=self.build_url(path_parts=['api', 'locations', location_id, 'reviews']),
+			json={
+				'author': 'Charlie Chaplin',		
+				'rating': 2,
+				'reviewText': "Didn't get any work done, great place!",
+			}
+		)
+
+		self.assertEqual(review2_r.status_code, 201)
+
+		# read location and verify the review was added and rating updated:
+
+		self.location_tests(
+			location_id=location_id, 
+			expected_reviews=2, 
+			expected_rating=3, 
+		)
+
+
+
+		# End: Create a review with authorization:	
+		# *******************************************************
+
+
+
+
+	def test_review_crud_01(self):
+		
+		'''
+		
+
+
+		'''
+
+
+		# # create a test location and then add reviews:
+		# url = self.build_url(path_parts=['api', 'locations'])
+		# location_r = requests.post(
+		# 	url=url,
+		# 	json={
+		# 		'name': 'Burger Queen',		
+		# 		'address': "783 High Street, Reading, RG6 1PS",
+		# 		'facilities': "Food,Premium wifi",
+		# 		'lng': -0.9690854,
+		# 		'lat': 51.455051,
+		# 		'openingTimes': [
+		# 			{
+		# 				'days': "Thursday - Saturday",
+		# 				'opening': "1:00am",
+		# 				'closing': "10:00am",
+		# 				'closed': False
+		# 			},
+		# 			{
+		# 				'days': "Monday - Wednesday",
+		# 				'closed': True
+		# 			}
+		# 		]
+		# 	}
+		# )
+
+		# self.assertEqual(location_r.status_code, 201)
+		# self.assertEqual(len(location_r.json()['reviews']), 0)
+
+		# # CREATE a review:
+
+		# # CREATE failure due to incorrect location id:
+		# url = self.build_url(path_parts=['api', 'locations', location_r.json()['_id'][1:], 'reviews'])
+		# review1_r = requests.post(
+		# 	url=url,
+		# 	json={
+		# 		'author': 'Simon Holmes',		
+		# 		'rating': "5",
+		# 		'reviewText': "No wifi. Has male and female a go-go dances. Will be back with the family!",
+		# 	}
+		# )
+
+		# self.assertEqual(review1_r.status_code, 404)
+
+
+		# # CREATE failure due to no location id:
+		# url = self.build_url(path_parts=['api', 'locations', 'reviews'])
+		# review1_r = requests.post(
+		# 	url=url,
+		# 	json={
+		# 		'author': 'Simon Holmes',		
+		# 		'rating': "5",
+		# 		'reviewText': "No wifi. Has male and female a go-go dances. Will be back with the family!",
+		# 	}
+		# )
+
+		# self.assertEqual(review1_r.status_code, 401)
+
+
+		# # CREATE failure due to no rating (rating is a required):		
+		# review1_r = requests.post(
+		# 	url=self.build_url(path_parts=['api', 'locations', location_r.json()['_id'], 'reviews']),
+		# 	json={
+		# 		'author': 'Simon Holmes',		
+		# 		'reviewText': "No wifi. Has male and female a go-go dances. Will be back with the family!",
+		# 	}
+		# )
+
+		# self.assertEqual(review1_r.status_code, 400)
+
+
+		# # CREATE failure due to invalid rating:		
+		# review1_r = requests.post(
+		# 	url=self.build_url(path_parts=['api', 'locations', location_r.json()['_id'], 'reviews']),
+		# 	json={
+		# 		'author': 'Simon Holmes',	
+		# 		'rating': 0,	
+		# 		'reviewText': "No wifi. Has male and female a go-go dances. Will be back with the family!",
+		# 	}
+		# )
+
+		# self.assertEqual(review1_r.status_code, 400)
+
+
+
+		# # CREATE failure due to no author (author is a required):		
+		# url = self.build_url(path_parts=['api', 'locations', location_r.json()['_id'], 'reviews'])
+		# review1_r = requests.post(
+		# 	url=self.build_url(path_parts=['api', 'locations', location_r.json()['_id'], 'reviews']),
+		# 	json={
+		# 		'rating': 5,		
+		# 		'reviewText': "No wifi. Has male and female a go-go dances. Will be back with the family!",
+		# 	}
+		# )
+
+		# self.assertEqual(review1_r.status_code, 400)
+
+
+		# # CREATE failure due to invalid author:		
+		# url = self.build_url(path_parts=['api', 'locations', location_r.json()['_id'], 'reviews'])
+		# review1_r = requests.post(
+		# 	url=self.build_url(path_parts=['api', 'locations', location_r.json()['_id'], 'reviews']),
+		# 	json={
+		# 		'rating': 5,
+		# 		'author': '',		
+		# 		'reviewText': "No wifi. Has male and female a go-go dances. Will be back with the family!",
+		# 	}
+		# )
+
+		# self.assertEqual(review1_r.status_code, 400)
+
+		# # CREATE failure due to no review text (review text is a required):		
+		# url = self.build_url(path_parts=['api', 'locations', location_r.json()['_id'], 'reviews'])
+		# review1_r = requests.post(
+		# 	url=self.build_url(path_parts=['api', 'locations', location_r.json()['_id'], 'reviews']),
+		# 	json={
+		# 		'author': 'Simon Holmes',
+		# 		'rating': 5,		
+		# 	}
+		# )
+
+		# self.assertEqual(review1_r.status_code, 400)
+
+		
+		# # CREATE failure due to invalid review text:		
+		# url = self.build_url(path_parts=['api', 'locations', location_r.json()['_id'], 'reviews'])
+		# review1_r = requests.post(
+		# 	url=self.build_url(path_parts=['api', 'locations', location_r.json()['_id'], 'reviews']),
+		# 	json={
+		# 		'author': 'Simon Holmes',
+		# 		'rating': 5,
+		# 		'reviewText': ''		
+		# 	}
+		# )
+
+		# self.assertEqual(review1_r.status_code, 400)
+
+
+
+
+		# # CREATE unsuccessful due to imporper request (GET not allowed):
+		# url = self.build_url(path_parts=['api', 'locations', location_r.json()['_id'], 'reviews'])
+		# review1_r = requests.get(
+		# 	url=url,
+		# 	json={
+		# 		'author': 'Simmon Holmes',		
+		# 		'rating': 5,
+		# 		'reviewText': "No wifi. Has male and female a go-go dances. Will be back with the family!",
+		# 	}
+		# )
+
+		# self.assertEqual(review1_r.status_code, 405)
+
+		# # CREATE unsuccessful due to imporper request (PUT not allowed):
+		# url = self.build_url(path_parts=['api', 'locations', location_r.json()['_id'], 'reviews'])
+		# review1_r = requests.put(
+		# 	url=url,
+		# 	json={
+		# 		'author': 'Simmon Holmes',		
+		# 		'rating': 5,
+		# 		'reviewText': "No wifi. Has male and female a go-go dances. Will be back with the family!",
+		# 	}
+		# )
+
+		# self.assertEqual(review1_r.status_code, 405)
+
+
+		# # CREATE unsuccessful due to imporper request (DELETE not allowed):
+		# url = self.build_url(path_parts=['api', 'locations', location_r.json()['_id'], 'reviews'])
+		# review1_r = requests.delete(
+		# 	url=url,
+		# 	json={
+		# 		'author': 'Simmon Holmes',		
+		# 		'rating': 5,
+		# 		'reviewText': "No wifi. Has male and female a go-go dances. Will be back with the family!",
+		# 	}
+		# )
+
+		# self.assertEqual(review1_r.status_code, 405)
+
+		
+		# # CREATE review #1 success:
+		# location_id = location_r.json()['_id']
+
+		# # url = self.build_url(path_parts=['api', 'locations', location_r.json()['_id'], 'reviews'])
+		# review1_r = requests.post(
+		# 	url=self.build_url(path_parts=['api', 'locations', location_id, 'reviews']),
+		# 	json={
+		# 		'author': 'Simmon Holmes',		
+		# 		'rating': 5,
+		# 		'reviewText': "No wifi. Has male and female a go-go dances. Will be back with the family!",
+		# 	}
+		# )
+
+		# self.assertEqual(review1_r.status_code, 201)
+
+
+		# # self.assertTrue('_id' in review1_r.json())
+
+		# # self.assertTrue('_id' in review1_r.json())
+
+		# # read location and verify the review was added and rating updated:
+
+		# # location_r = self.location_tests(
+		# # 	location_id='640c131b0eff6bceca9e57b8', 
+		# # 	expected_reviews=1, 
+		# # 	expected_rating=5, 
+		# # )
+
+
+		# self.location_tests(
+		# 	location_id=location_id, 
+		# 	expected_reviews=1, 
+		# 	expected_rating=5, 
+		# )
+		
+
+
+		# # CREATE review #2 success:
+
+		# # url = self.build_url(path_parts=['api', 'locations', location_r.json()['_id'], 'reviews'])
+		# review2_r = requests.post(
+		# 	url=self.build_url(path_parts=['api', 'locations', location_id, 'reviews']),
+		# 	json={
+		# 		'author': 'Charlie Chaplin',		
+		# 		'rating': 2,
+		# 		'reviewText': "Didn't get any work done, great place!",
+		# 	}
+		# )
+
+		# self.assertEqual(review2_r.status_code, 201)
+
+		# # read location and verify the review was added and rating updated:
+
+		# self.location_tests(
+		# 	location_id=location_id, 
+		# 	expected_reviews=2, 
+		# 	expected_rating=3, 
+		# )
 
 
 
@@ -1195,24 +1712,23 @@ class APITests(unittest.TestCase):
 		read_review_2 = requests.get(url)
 		self.assertEqual(read_review_2.status_code, 200)
 
-
 		review2_delete_r = requests.delete(url=url)
 		self.assertEqual(review2_delete_r.status_code, 204)
 
-		# for whatever reason when all reviews are removed the location
-		# ['reviews'] no longer exists in the database. But can add another
-		# reviews without issues. When another review is added then location
-		# ['reviews'] is present again.
-
-		# self.location_tests(
-		# 	location_id=location_r.json()['_id'], 
-		# 	expected_reviews=0, 
-		# 	expected_rating=0, 
-		# )
+		self.location_tests(
+			location_id=location_r.json()['_id'], 
+			expected_reviews=0, 
+			expected_rating=0, 
+		)
 
 		read_review_2 = requests.get(url)
 		self.assertEqual(read_review_2.status_code, 404)
 
+
+		# for whatever reason when all reviews are removed location
+		# ['reviews'] no longer exists for the location. But can add another
+		# reviews without issues. When another review is added then location
+		# ['reviews'] is present again.
 
 		# CREATE review #1 success:
 		location_id = location_r.json()['_id']
@@ -1500,6 +2016,16 @@ class APITests(unittest.TestCase):
 		APITests.mongo_client[self.db_name]['users'].create_index('email', unique=True)
 
 		
+	def reset_locations_collection(self):
+		'''
+
+		'''
+
+		# drop users collection and recreate it with a unique index for email:
+		APITests.mongo_client[self.db_name].drop_collection('locations')
+		APITests.mongo_client[self.db_name].create_collection('locations')
+		APITests.mongo_client[self.db_name]['locations'].create_index([('coords', pymongo.GEOSPHERE)])
+
 
 
 

@@ -17,7 +17,7 @@ class OpeningTime(me.EmbeddedDocument):
 	closed = me.BooleanField(default=True)
 
 
-class Location(me.Document):
+class Locations(me.Document):
 	name = me.StringField(required=True)
 	address = me.StringField()
 	rating = me.IntField(default=0, min_value=0, max_value=5)

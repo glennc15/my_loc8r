@@ -7,7 +7,7 @@ import mongoengine as me
 
 
 
-from my_loc8r.app_api.models.location_models import Location, OpeningTime, Review
+from my_loc8r.app_api.models.location_models import Locations, OpeningTime, Review
 
 import rlcompleter
 import pdb 
@@ -278,7 +278,7 @@ class LocationsAPIController(object):
 			return None
 
 
-		location = Location(
+		location = Locations(
 			name=data['name'],
 			address=data['address'],
 			facilities=data['facilities'],
@@ -354,7 +354,7 @@ class LocationsAPIController(object):
 			]
 
 
-			locations = Location.objects().aggregate(pipeline)
+			locations = Locations.objects().aggregate(pipeline)
 
 			self.data = [self.format_location(document=x) for x in locations]
 			self.status_code = 200
@@ -429,7 +429,7 @@ class LocationsAPIController(object):
 
 		try:
 
-			location = Location.objects(id=location_id).get()
+			location = Locations.objects(id=location_id).get()
 			
 			location_data = self.format_location(document=location)
 
@@ -454,7 +454,7 @@ class LocationsAPIController(object):
 		'''
 		# Find the location by id:
 		try:
-			location = Location.objects(id=location_id).get()
+			location = Locations.objects(id=location_id).get()
 
 		except Exception as e:
 
@@ -497,7 +497,7 @@ class LocationsAPIController(object):
 		'''
 
 		try:
-			location = Location.objects(id=location_id).get().delete()
+			location = Locations.objects(id=location_id).get().delete()
 			self.data = {'message': "location with id = {} was successfully removed".format(location_id)}
 			self.status_code = 204
 
@@ -717,7 +717,6 @@ class LocationsAPIController(object):
 			}
 
 		except Exception as e:
-
 			if isinstance(e, bson.errors.InvalidId):
 				self.status_code = 404
 				self.data = {'error': str(e)}
@@ -727,7 +726,6 @@ class LocationsAPIController(object):
 
 		try:
 			location = Location.objects(__raw__={'_id': ObjectId(location_id), 'reviews._id': ObjectId(review_id)}).update(__raw__=raw_query)
-
 
 		except Exception as e:
 			if isinstance(e, me.errors.ValidationError):
@@ -759,7 +757,7 @@ class LocationsAPIController(object):
 			self.data = {'message': "deleted review with id = {}".format(review_id)}
 			self.status_code = 204
 
-		# only happens with an invalid location or review id
+		# happens with the location and/or the review do not exists:
 		elif location == 0:
 			self.status_code = 404
 			self.data = {'error': 'No location with an id = {} and/or a review with and id = {}'.format(location_id,  review_id)}

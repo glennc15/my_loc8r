@@ -123,6 +123,9 @@ def api_locations():
 	print("loc_api_controller.data = {}".format(loc_api_controller.data))
 
 
+	# pdb.set_trace()
+
+
 	return (loc_api_controller.data, loc_api_controller.status_code)
 
 

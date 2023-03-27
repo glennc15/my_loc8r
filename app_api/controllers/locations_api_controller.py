@@ -881,7 +881,7 @@ class LocationsAPIController(object):
 				raise e 
 
 		# pdb.set_trace()
-		
+
 		try:
 			location = Locations.objects(__raw__=search_query).update(__raw__=raw_query)
 
@@ -1342,22 +1342,27 @@ class LocationsAPIController(object):
 		# # convert the ObjectId in the location object:
 		record['_id'] = str(record['_id'])
 
+
+		# Convert Location ObjectIds:
+		for l_key, l_value in record.items():
+			if isinstance(l_value, ObjectId):
+				record[l_key] = str(l_value)
+
+
 		# convert the ObjectId for each opeing time sub document
 		for opening_time in record['openingTimes']:
-			opening_time['_id'] = str(opening_time['_id'])
+			for o_key, o_value in opening_time.items():
+				if isinstance(o_value, ObjectId):
+					opening_time[o_key] = str(o_value) 
+
 
 		# convert the ObjectId for each review sub document
 		# pdb.set_trace()
 		for review in record['reviews']:
-			print("review.keys() = {}".format(review.keys()))
+			for r_key, r_value in review.items():
+				if isinstance(r_value, ObjectId):
+					review[r_key] = str(r_value)
 
-			if review.get('review_id'):
-				review['review_id'] = str(review['review_id'])
-
-			else:
-				review['_id'] = str(review['_id'])
-
-			# review['_id'] = str(review['_id'])
 
 
 		return record 

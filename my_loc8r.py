@@ -211,8 +211,8 @@ def api_register():
 	users_api_controller = UsersAPIController()
 	users_api_controller.register(request=request)
 
-	# print("users_api_controller.status_code = {}".format(users_api_controller.status_code))
-	# print("users_api_controller.data = {}".format(users_api_controller.data))
+	print("users_api_controller.status_code = {}".format(users_api_controller.status_code))
+	print("users_api_controller.data = {}".format(users_api_controller.data))
 
 	return (users_api_controller.data, users_api_controller.status_code)
 
@@ -222,8 +222,8 @@ def api_login():
 	users_api_controller = UsersAPIController()
 	users_api_controller.login(request=request)
 
-	# print("users_api_controller.status_code = {}".format(users_api_controller.status_code))
-	# print("users_api_controller.data = {}".format(users_api_controller.data))
+	print("users_api_controller.status_code = {}".format(users_api_controller.status_code))
+	print("users_api_controller.data = {}".format(users_api_controller.data))
 	
 	return (users_api_controller.data, users_api_controller.status_code)
 

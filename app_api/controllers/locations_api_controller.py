@@ -557,6 +557,11 @@ class LocationsAPIController(object):
 				self.data = {'error': e.message}
 				return None 
 
+			elif isinstance(e, Locations.DoesNotExist):
+				self.status_code = 404
+				self.data = {'error': str(e)}
+				return None
+
 			else:
 				raise e 
 
@@ -628,6 +633,8 @@ class LocationsAPIController(object):
 		# get the right review:
 		target_review = [x for x in location.reviews if x._id == ObjectId(review_id)][0].to_mongo().to_dict()
 		target_review['_id'] = str(target_review['_id'])
+		target_review['author_id'] = str(target_review['author_id'])
+
 
 		self.status_code = 200
 		self.data = target_review

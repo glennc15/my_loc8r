@@ -24,6 +24,7 @@ import os
 # from components.mongo_repository import MongoRepository
 # from components.mongo_records_reader import MongoRecordsReader 
 
+from api_endpoint_tests import APIEndPointTests, endpoint_test
 
 import rlcompleter
 import pdb 
@@ -42,7 +43,8 @@ class APITests(unittest.TestCase):
 
 		'''
 
-		pass 
+		load_dotenv()
+		cls._encode_key = os.environ.get('JWT_SECRETE')
 
 
 	@classmethod
@@ -693,6 +695,32 @@ class APITests(unittest.TestCase):
 		)
 
 		self.assertEqual(location_r.status_code, 405)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 	def test_review_create_01(self):
@@ -1360,6 +1388,425 @@ class APITests(unittest.TestCase):
 		)
 
 
+
+
+		# End: Create a review with login:	
+		# *******************************************************
+
+
+
+	def test_review_create_02(self):
+		'''
+
+
+		'''
+		# Set up:
+		self.reset_users_collection()
+		self.reset_locations_collection()
+
+		# create a test location:
+		url = self.build_url(path_parts=['api', 'locations'])
+		location_r = requests.post(
+			url=url,
+			json={
+				'name': 'Burger Queen',		
+				'address': "783 High Street, Reading, RG6 1PS",
+				'facilities': "Food,Premium wifi",
+				'lng': -0.9690854,
+				'lat': 51.455051,
+				'openingTimes': [
+					{
+						'days': "Thursday - Saturday",
+						'opening': "1:00am",
+						'closing': "10:00am",
+						'closed': False
+					},
+					{
+						'days': "Monday - Wednesday",
+						'closed': True
+					}
+				]
+			}
+		)
+
+		self.assertEqual(location_r.status_code, 201)
+		self.assertEqual(len(location_r.json()['reviews']), 0)
+
+
+		location_id = location_r.json()['_id']
+
+
+
+		# *******************************************************
+		# Start: Create a review with registration authorization:
+
+		# Add User: success:
+		register1_r = requests.post(
+			url=self.build_url(path_parts=['api', 'register']),
+			json={
+				'name': "Madison Voorhees",
+				'email': 'mvoorhees@hotmail.com',
+				'password': 'mABC123'
+			}
+		)
+
+		self.assertEqual(register1_r.status_code, 201)		
+		self.assertTrue('token' in register1_r.json().keys())
+
+		registration_token = register1_r.json()['token']
+
+		# common endpoint faiulre tests. Does not do any data validation tests:
+		APIEndPointTests(
+			scheme=self.scheme,
+			url=self.url,
+			method='POST',
+			endpoint='api/locations/<parentid>/reviews',
+			auth=(registration_token, str(None)),
+			decode_key=self._encode_key,
+			parent_id=location_id,
+			child_id=None,
+			data={
+				'author': 'Simon Holmes',		
+				'rating': 5,
+				'reviewText': "No wifi. Has male and female a go-go dances. Will be back with the family!",
+			},
+			data_parameters={
+				"rating": {
+					"type": int, 
+					"min_value": 1,
+					"max_value": 5
+				},
+				"reviewText": {
+					"type": str,
+					"min_length": 5
+				}
+			}
+
+		).run_tests()
+
+
+
+		# CREATE failure due to no rating (rating is a required):
+		endpoint_test(
+			method='POST', 
+			scheme=self.scheme, 
+			url=self.url, 
+			endpoint='/'.join(['api', 'locations', location_id, 'reviews']), 
+			data={
+				'author': 'Simon Holmes',		
+				'reviewText': "No wifi. Has male and female a go-go dances. Will be back with the family!",
+			}, 
+			auth=(registration_token, str(None)), 
+			expected_status_code=400, 
+			descriptive_error_msg="data['rating'] is required"
+		)
+
+
+		# CREATE failure due to invalid rating:	
+		endpoint_test(
+			method='POST', 
+			scheme=self.scheme, 
+			url=self.url, 
+			endpoint='/'.join(['api', 'locations', location_id, 'reviews']), 
+			data={
+				'author': 'Simon Holmes',
+				'rating': 0,		
+				'reviewText': "No wifi. Has male and female a go-go dances. Will be back with the family!",
+			}, 
+			auth=(registration_token, str(None)), 
+			expected_status_code=400, 
+			descriptive_error_msg="data['rating'] = 0 not valid"
+		)
+
+
+		# CREATE failure due to no review text (review text is a required):
+		endpoint_test(
+			method='POST', 
+			scheme=self.scheme, 
+			url=self.url, 
+			endpoint='/'.join(['api', 'locations', location_id, 'reviews']), 
+			data={
+				'author': 'Simon Holmes',
+				'rating': 0,		
+			}, 
+			auth=(registration_token, str(None)), 
+			expected_status_code=400, 
+			descriptive_error_msg="data['reviewText'] is required"
+		)
+		
+		# CREATE failure due to invalid review text:
+		endpoint_test(
+			method='POST', 
+			scheme=self.scheme, 
+			url=self.url, 
+			endpoint='/'.join(['api', 'locations', location_id, 'reviews']), 
+			data={
+				'author': 'Simon Holmes',
+				'rating': 5,		
+				'reviewText': "",
+			}, 
+			auth=(registration_token, str(None)), 
+			expected_status_code=400, 
+			descriptive_error_msg="data['reviewText'] = empty is not valid"
+		)
+
+
+		# CREATE review #1 success:		
+		review1_r = endpoint_test(
+			method='POST', 
+			scheme=self.scheme, 
+			url=self.url, 
+			endpoint='/'.join(['api', 'locations', location_id, 'reviews']), 
+			data={
+				'rating': 5,		
+				'reviewText': "No wifi. Has male and female a go-go dances. Will be back with the family!",
+			}, 
+			auth=(registration_token, str(None)), 
+			expected_status_code=201, 
+			descriptive_error_msg="create review 1 success"
+		)
+
+		author_data = self.decode_token(token=registration_token)
+
+		self.assertEqual(review1_r.status_code, 201)
+		self.assertEqual(review1_r.json()['author'], 'Madison Voorhees')
+		self.assertEqual(review1_r.json()['rating'], 5)
+		self.assertEqual(review1_r.json()['review_text'], 'No wifi. Has male and female a go-go dances. Will be back with the family!')
+		self.assertEqual(review1_r.json()['author_id'], author_data['_id'])
+
+		self.location_tests(
+			location_id=location_id, 
+			expected_reviews=1, 
+			expected_rating=5, 
+		)
+
+
+		# CREATE review #2 success:
+		review2_r = endpoint_test(
+			method='POST', 
+			scheme=self.scheme, 
+			url=self.url, 
+			endpoint='/'.join(['api', 'locations', location_id, 'reviews']), 
+			data={
+				'author': 'Charlie Chaplin',		
+				'rating': 2,
+				'reviewText': "Didn't get any work done, great place!",
+			}, 
+			auth=(registration_token, str(None)), 
+			expected_status_code=201, 
+			descriptive_error_msg="create review 2 success"
+		)
+
+
+		self.assertEqual(review2_r.status_code, 201)
+
+		# a review's author is the name of the authenticated user. If the post
+		# data contains an author field it is ignored.
+		self.assertEqual(review2_r.json()['author'], 'Madison Voorhees')
+		self.assertEqual(review2_r.json()['rating'], 2)
+		self.assertEqual(review2_r.json()['review_text'], "Didn't get any work done, great place!")
+		self.assertEqual(review2_r.json()['author_id'], author_data['_id'])
+
+
+		self.location_tests(
+			location_id=location_id, 
+			expected_reviews=2, 
+			expected_rating=3, 
+		)
+
+
+		# End: Create a review with authorization:	
+		# *******************************************************
+
+
+		# *******************************************************
+		# Start: Create a review with login authorization:
+
+		# Add User: success:
+		register2_r = requests.post(
+			url=self.build_url(path_parts=['api', 'register']),
+			json={
+				'name': "Simon Hardy",
+				'email': 'mhardy@hotmail.com',
+				'password': 'sABC123'
+			}
+		)
+
+		self.assertEqual(register2_r.status_code, 201)		
+		self.assertTrue('token' in register2_r.json().keys())
+
+		# login in Simon Hardy:
+		login1_r = requests.post(
+			url=self.build_url(path_parts=['api', 'login']),
+			json={
+				'email': 'mhardy@hotmail.com',
+				'password': 'sABC123'
+			}
+		)
+
+		self.assertEqual(login1_r.status_code, 200)		
+		self.assertTrue('token' in login1_r.json().keys())
+
+
+		login_token = login1_r.json()['token']
+
+
+		# common endpoint faiulre tests. Does not do any data validation tests:
+		APIEndPointTests(
+			scheme=self.scheme,
+			url=self.url,
+			method='POST',
+			endpoint='api/locations/<parentid>/reviews',
+			auth=(login_token, str(None)),
+			decode_key=self._encode_key,
+			parent_id=location_id,
+			child_id=None,
+			data={
+				'author': 'Simon Holmes',		
+				'rating': 5,
+				'reviewText': "No wifi. Has male and female a go-go dances. Will be back with the family!",
+			},
+			data_parameters={
+				"rating": {
+					"type": int, 
+					"min_value": 1,
+					"max_value": 5
+				},
+				"reviewText": {
+					"type": str,
+					"min_length": 5
+				}
+			}
+
+		).run_tests()
+
+
+		# CREATE failure due to no rating (rating is a required):
+		endpoint_test(
+			method='POST', 
+			scheme=self.scheme, 
+			url=self.url, 
+			endpoint='/'.join(['api', 'locations', location_id, 'reviews']), 
+			data={
+				'author': 'Simon Holmes',		
+				'reviewText': "No wifi. Has male and female a go-go dances. Will be back with the family!",
+			}, 
+			auth=(login_token, str(None)), 
+			expected_status_code=400, 
+			descriptive_error_msg="data['rating'] is required"
+		)
+
+
+		# CREATE failure due to invalid rating:	
+		endpoint_test(
+			method='POST', 
+			scheme=self.scheme, 
+			url=self.url, 
+			endpoint='/'.join(['api', 'locations', location_id, 'reviews']), 
+			data={
+				'author': 'Simon Holmes',
+				'rating': 0,		
+				'reviewText': "No wifi. Has male and female a go-go dances. Will be back with the family!",
+			}, 
+			auth=(login_token, str(None)), 
+			expected_status_code=400, 
+			descriptive_error_msg="data['rating'] = 0 not valid"
+		)
+
+
+		# CREATE failure due to no review text (review text is a required):
+		endpoint_test(
+			method='POST', 
+			scheme=self.scheme, 
+			url=self.url, 
+			endpoint='/'.join(['api', 'locations', location_id, 'reviews']), 
+			data={
+				'author': 'Simon Holmes',
+				'rating': 0,		
+			}, 
+			auth=(login_token, str(None)), 
+			expected_status_code=400, 
+			descriptive_error_msg="data['reviewText'] is required"
+		)
+		
+		# CREATE failure due to invalid review text:
+		endpoint_test(
+			method='POST', 
+			scheme=self.scheme, 
+			url=self.url, 
+			endpoint='/'.join(['api', 'locations', location_id, 'reviews']), 
+			data={
+				'author': 'Simon Holmes',
+				'rating': 5,		
+				'reviewText': "",
+			}, 
+			auth=(login_token, str(None)), 
+			expected_status_code=400, 
+			descriptive_error_msg="data['reviewText'] = empty is not valid"
+		)
+
+
+		review3_r = endpoint_test(
+			method='POST', 
+			scheme=self.scheme, 
+			url=self.url, 
+			endpoint='/'.join(['api', 'locations', location_id, 'reviews']), 
+			data={
+				'rating': 5,		
+				'reviewText': "No wifi. Has male and female a go-go dances. Will be back with the family!",
+			}, 
+			auth=(login_token, str(None)), 
+			expected_status_code=201, 
+			descriptive_error_msg="create review 3 success"
+		)
+
+		author_data = self.decode_token(token=login_token)
+
+		self.assertEqual(review3_r.status_code, 201)
+		self.assertEqual(review3_r.json()['author'], 'Simon Hardy')
+		self.assertEqual(review3_r.json()['rating'], 5)
+		self.assertEqual(review3_r.json()['review_text'], 'No wifi. Has male and female a go-go dances. Will be back with the family!')
+		self.assertEqual(review3_r.json()['author_id'], author_data['_id'])
+
+
+		self.location_tests(
+			location_id=location_id, 
+			expected_reviews=3, 
+			expected_rating=4, 
+		)
+
+
+		review4_r = endpoint_test(
+			method='POST', 
+			scheme=self.scheme, 
+			url=self.url, 
+			endpoint='/'.join(['api', 'locations', location_id, 'reviews']), 
+			data={
+				'author': 'Charlie Chaplin',		
+				'rating': 2,
+				'reviewText': "Didn't get any work done, great place!",
+			}, 
+			auth=(login_token, str(None)), 
+			expected_status_code=201, 
+			descriptive_error_msg="create review 4 success"
+		)
+
+		self.assertEqual(review4_r.status_code, 201)
+
+		# a review's author is the name of the authenticated user. If the post
+		# data contains an author field it is ignored.
+		self.assertEqual(review4_r.json()['author'], 'Simon Hardy')
+		self.assertEqual(review4_r.json()['rating'], 2)
+		self.assertEqual(review4_r.json()['review_text'], "Didn't get any work done, great place!")
+		self.assertEqual(review4_r.json()['author_id'], author_data['_id'])
+
+
+
+		self.location_tests(
+			location_id=location_id, 
+			expected_reviews=4, 
+			expected_rating=3, 
+		)
 
 
 		# End: Create a review with login:	
@@ -2429,37 +2876,37 @@ class APITests(unittest.TestCase):
 		APITests.mongo_client[self.db_name].create_collection('locations')
 		APITests.mongo_client[self.db_name]['locations'].create_index([('coords', pymongo.GEOSPHERE)])
 
-	def create_invalid_token(self, token):
-		'''
+	# def create_invalid_token(self, token):
+	# 	'''
 
-		changes the 5th character in token to either a 0 or a 1.
-
-
-		'''
-
-		if token[5] == 0:
-			new_value = 1 
-
-		else:
-			new_value = 0
-
-		# reconstruct the token with the invalid bit:
-		invalid_token = token[0:5] + str(new_value) + token[6:] 
-
-		assert len(invalid_token) == len(token)
-
-		return invalid_token
+	# 	changes the 5th character in token to either a 0 or a 1.
 
 
-	def get_expired_token(self, token):
-		'''
+	# 	'''
+
+	# 	if token[5] == 0:
+	# 		new_value = 1 
+
+	# 	else:
+	# 		new_value = 0
+
+	# 	# reconstruct the token with the invalid bit:
+	# 	invalid_token = token[0:5] + str(new_value) + token[6:] 
+
+	# 	assert len(invalid_token) == len(token)
+
+	# 	return invalid_token
 
 
-		'''
-		user_data = self.decode_token(token=token)
-		user_data['exp'] = int((datetime.datetime.utcnow() - datetime.timedelta(days=7)).timestamp())
+	# def get_expired_token(self, token):
+	# 	'''
+
+
+	# 	'''
+	# 	user_data = self.decode_token(token=token)
+	# 	user_data['exp'] = int((datetime.datetime.utcnow() - datetime.timedelta(days=7)).timestamp())
 		
-		return jwt.encode(user_data, os.environ.get("JWT_SECRETE"), algorithm="HS256")
+	# 	return jwt.encode(user_data, os.environ.get("JWT_SECRETE"), algorithm="HS256")
 
 
 	def decode_token(self, token):
@@ -2468,7 +2915,7 @@ class APITests(unittest.TestCase):
 		'''
 		load_dotenv()
 
-		return jwt.decode(token, os.environ.get("JWT_SECRETE"), algorithms=["HS256"])
+		return jwt.decode(token, self._encode_key, algorithms=["HS256"])
 		
 
 

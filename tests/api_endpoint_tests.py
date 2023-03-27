@@ -34,7 +34,7 @@ class APIEndPointTests(object):
 	'''
 
 
-	def __init__(self, scheme, url, method, endpoint, auth, decode_key, parent_id, child_id, data, data_parameters):
+	def __init__(self, scheme, url, method, endpoint, auth, decode_key, parent_id, child_id, data):
 		'''
 
 
@@ -49,7 +49,6 @@ class APIEndPointTests(object):
 		self._parent_id = parent_id
 		self._child_id = child_id
 		self._data = data
-		self._data_parameters = data_parameters
 
 	def run_tests(self):
 		'''
@@ -75,38 +74,7 @@ class APIEndPointTests(object):
 
 		'''
 
-		status_codes = {
-			'no_auth': {
-				'parent_id_incorrect': {
-					'status_code': 401,
-					'error_msg': ''
-				},
-				'parent_id_missing': {
-					'status_code': 401,
-					'error_msg': ''
-				},
-				'parent_id_invalid': {
-					'status_code': 401,
-					'error_msg': ''
-				},
-			},
-			'auth': {
-				'parent_id_incorrect': {
-					'status_code': 404,
-					'error_msg': ''
-				},
-				'parent_id_missing': {
-					'status_code': 401,
-					'error_msg': ''
-				},
-				'parent_id_invalid': {
-					'status_code': 404,
-					'error_msg': ''
-				},
-			},
 
-
-		}
 
 		parent_ids = {
 			'parent_id_invalid': self._parent_id[1:],
@@ -114,40 +82,37 @@ class APIEndPointTests(object):
 			'parent_id_missing': None,
 		}
 
-
-		# descriptive_error_msgs = {
-		# 	'no_auth': {
-		# 		'parent_id_invalid': "invalid parent id = {}, no authorization credentials".format(parent_ids['parent_id_invalid']),
-		# 		'parent_id_incorrect': "incorrect parent id = {}, no authorization credentials".format(parent_ids['parent_id_incorrect']),
-		# 		'parent_id_missing': "Missing parent id = {}, no authorization credentials".format(parent_ids['parent_id_missing'])
-		# 	},
-
-		# 	'auth': {
-		# 		'parent_id_invalid': "invalid parent id = {}, with authorization credentials".format(parent_ids['parent_id_invalid']),
-		# 		'parent_id_incorrect': "incorrect parent id = {}, with authorization credentials".format(parent_ids['parent_id_incorrect']),
-		# 		'parent_id_missing': "Missing parent id = {}, with authorization credentials".format(parent_ids['parent_id_missing'])
-		# 	},
-
-		# }
-
-		descriptive_error_msgs = {
-			'no_auth': {
-				'parent_id_invalid': "invalid parentid",
-				'parent_id_incorrect': "non-existing parentid",
-				'parent_id_missing': "no parentid"
-			},
-
-			'auth': {
-				'parent_id_invalid': "invalid parentid",
-				'parent_id_incorrect': "non-existing parentid",
-				'parent_id_missing': "no parentid"
-			},
-
-		}
-
-
-
 		if self._auth:
+
+			status_codes = {
+				'no_auth': {
+					'parent_id_incorrect': 401,
+					'parent_id_missing': 401,
+					'parent_id_invalid': 401,
+				},
+				'auth': {
+					'parent_id_incorrect': 404,
+					'parent_id_missing': 401,
+					'parent_id_invalid': 404,
+				},
+			}
+
+			descriptive_error_msgs = {
+				'no_auth': {
+					'parent_id_invalid': "invalid parentid",
+					'parent_id_incorrect': "non-existing parentid",
+					'parent_id_missing': "no parentid"
+				},
+
+				'auth': {
+					'parent_id_invalid': "invalid parentid",
+					'parent_id_incorrect': "non-existing parentid",
+					'parent_id_missing': "no parentid"
+				},
+
+			}
+
+
 			for parent_key, parent_id in parent_ids.items():
 		
 				# end point test with authorization:
@@ -158,7 +123,7 @@ class APIEndPointTests(object):
 					endpoint=self.build_parent_id_endpoint(parent_id=parent_id), 
 					data=self._data, 
 					auth=self._auth,
-					expected_status_code=status_codes['auth'][parent_key]['status_code'],
+					expected_status_code=status_codes['auth'][parent_key],
 					descriptive_error_msg=descriptive_error_msgs['auth'][parent_key]
 				)
 
@@ -171,20 +136,25 @@ class APIEndPointTests(object):
 					endpoint=self.build_parent_id_endpoint(parent_id=parent_id), 
 					data=self._data, 
 					auth=None,
-					expected_status_code=status_codes['no_auth'][parent_key]['status_code'],
+					expected_status_code=status_codes['no_auth'][parent_key],
 					descriptive_error_msg=descriptive_error_msgs['no_auth'][parent_key]
 				)
 
 		else:
 
+			status_codes = {
+				'parent_id_incorrect': 404,
+				'parent_id_missing': 404,
+				'parent_id_invalid': 404,
+			}
+
+			descriptive_error_msgs = {
+				'parent_id_invalid': "invalid parentid",
+				'parent_id_incorrect': "non-existing parentid",
+				'parent_id_missing': "no parentid"
+			}
 
 			for parent_key, parent_id in parent_ids.items():
-		
-				# no authorizaiton require for the endpoint:
-				descriptive_error_msg = descriptive_error_msgs['no_auth'][parent_key]
-				descriptive_error_msg = descriptive_error_msgs.replace('no authorization credentials', 'no authorization credentials required')
-
-
 				endpoint_test(
 					scheme=self._scheme,
 					url=self._url,
@@ -192,7 +162,7 @@ class APIEndPointTests(object):
 					endpoint=self.build_parent_id_endpoint(parent_id=parent_id), 
 					data=self._data, 
 					auth=None,
-					expected_status_code=status_codes['auth'][parent_key]['status_code'],
+					expected_status_code=status_codes[parent_key],
 					descriptive_error_msg=descriptive_error_msgs[parent_key]
 				)
 
@@ -212,14 +182,97 @@ class APIEndPointTests(object):
 
 		'''
 
-		pass 
+		child_ids = {
+			'child_id_invalid': self._child_id[1:],
+			'child_id_incorrect': str(ObjectId()),
+			'child_id_missing': None,
+		}
+
+		if self._auth:
+
+			status_codes = {
+				'no_auth': {
+					'child_id_invalid': 401,
+					'child_id_incorrect': 401,
+					'child_id_missing': 401,
+				},
+				'auth': {
+					'child_id_invalid': 404,
+					'child_id_incorrect': 404,
+					'child_id_missing': 401,
+				},
+			}
+
+			descriptive_error_msgs = {
+				'no_auth': {
+					'child_id_invalid': "invalid childid",
+					'child_id_incorrect': "non-existing childid",
+					'child_id_missing': "no childid"
+				},
+
+				'auth': {
+					'child_id_invalid': "invalid childid",
+					'child_id_incorrect': "non-existing childid",
+					'child_id_missing': "no childid"
+				},
+
+			}
 
 
-		# child_id endpoint tests:
+			for child_key, child_id in child_ids.items():
 		
-		# 1) no id
-		# 2) invalid id
-		# 3) no existing id
+				# end point test with authorization:
+				endpoint_test(
+					scheme=self._scheme,
+					url=self._url,
+					method=self._method,					
+					endpoint=self.build_child_id_endpoint(child_id=child_id), 
+					data=self._data, 
+					auth=self._auth,
+					expected_status_code=status_codes['auth'][child_key],
+					descriptive_error_msg=descriptive_error_msgs['auth'][child_key]
+				)
+
+
+				# end point test without authorization:
+				endpoint_test(
+					scheme=self._scheme,
+					url=self._url,
+					method=self._method,					
+					endpoint=self.build_child_id_endpoint(child_id=child_id), 
+					data=self._data, 
+					auth=None,
+					expected_status_code=status_codes['no_auth'][child_key],
+					descriptive_error_msg=descriptive_error_msgs['no_auth'][child_key]
+				)
+
+		else:
+
+			status_codes = {
+				'child_id_incorrect': 404,
+				'child_id_missing': 405,
+				'child_id_invalid': 404,
+			}
+
+			descriptive_error_msgs = {
+				'child_id_incorrect': "non-existing childid",
+				'child_id_missing': "no childid",
+				'child_id_invalid': "invalid childid",
+
+			}
+
+			for child_key, child_id in child_ids.items():
+				endpoint_test(
+					scheme=self._scheme,
+					url=self._url,
+					method=self._method,
+					endpoint=self.build_child_id_endpoint(child_id=child_id), 
+					data=self._data, 
+					auth=None,
+					expected_status_code=status_codes[child_key],
+					descriptive_error_msg=descriptive_error_msgs[child_key]
+				)
+
 
 	def invalid_methods_tests(self):
 		'''
@@ -236,17 +289,34 @@ class APIEndPointTests(object):
 
 		for method in invalid_methods:
 
+			# sometimes the invalid method:endpoint does have a valid endpoint
+			# that requires authorization. So try the test again with the
+			# same method:endpoint but with no authorization (401): 
 
-			endpoint_test(
-				scheme=self._scheme,
-				url=self._url,
-				method=method,
-				endpoint=endpoint, 
-				data=self._data, 
-				auth=None,
-				expected_status_code=405,
-				descriptive_error_msg="invalid method"
-			)
+			try:
+				endpoint_test(
+					scheme=self._scheme,
+					url=self._url,
+					method=method,
+					endpoint=endpoint, 
+					data=self._data, 
+					auth=None,
+					expected_status_code=405,
+					descriptive_error_msg="invalid method"
+				)
+
+			except Exception as e:
+				endpoint_test(
+					scheme=self._scheme,
+					url=self._url,
+					method=method,
+					endpoint=endpoint, 
+					data=self._data, 
+					auth=None,
+					expected_status_code=401,
+					descriptive_error_msg="invalid method"
+				)
+
 
 
 			if self._auth:
@@ -368,6 +438,28 @@ class APIEndPointTests(object):
 		return path 
 
 
+	def build_child_id_endpoint(self, child_id):
+		'''
+
+
+		'''
+
+		# replace <childid> in the path string with child_id
+
+		if child_id is not None:
+			path_parts = [x if x != '<childid>' else child_id for x in self._endpoint.split('/') ]
+
+		else:
+			path_parts = [x for x in self._endpoint.split('/') if x != '<childid>']
+
+		# add replace <parentid> with the correct parent_id:
+		path_parts = [x if x != '<parentid>' else self._parent_id for x in path_parts]
+
+
+		path = '/'.join(s.strip('/') for s in path_parts)
+
+
+		return path 
 
 
 

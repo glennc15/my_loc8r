@@ -114,6 +114,7 @@ def verify_password(username, password):
 # Location routes:
 @app.route('/api/locations', methods=['GET', 'POST', 'PUT', 'DELETE'])
 def api_locations():
+	print("{}: api_locations()".format(request.method))
 
 	loc_api_controller = LocationsAPIController()
 	loc_api_controller.locations(request=request, location_id=None)
@@ -127,6 +128,7 @@ def api_locations():
 
 @app.route('/api/locations/<locationid>', methods=['GET', 'POST', 'PUT', 'DELETE'])
 def api_location(locationid):
+	print("{}: api_locations({})".format(request.method, locationid))
 
 	loc_api_controller = LocationsAPIController()
 	loc_api_controller.locations(request=request, location_id=locationid)
@@ -143,6 +145,7 @@ def api_location(locationid):
 @app.route('/api/locations/<locationid>/reviews', methods=['POST'])
 @auth.login_required
 def api_review_create(locationid):
+	print("{}: api_review_create({})".format(request.method, locationid))
 
 	loc_api_controller = LocationsAPIController()
 	loc_api_controller.create_review(location_id=locationid, review_data=request.get_json(), user_data=g.user)
@@ -172,6 +175,9 @@ def api_review_create(locationid):
 # @app.route('/api/locations/<locationid>/reviews/<reviewid>', methods=['GET', 'POST'])
 @app.route('/api/locations/<locationid>/reviews/<reviewid>', methods=['GET'])
 def api_review_get(locationid, reviewid):
+
+	print("{}: api_review_get({}, {})".format(request.method, locationid, reviewid))
+
 	loc_api_controller = LocationsAPIController()
 	loc_api_controller.read_review(location_id=locationid, review_id=reviewid)
 
@@ -185,6 +191,9 @@ def api_review_get(locationid, reviewid):
 @app.route('/api/locations/<locationid>/reviews/<reviewid>', methods=['PUT', 'DELETE'])
 @auth.login_required
 def api_review_update(locationid, reviewid):
+
+	print("{}: api_review_update({}, {})".format(request.method, locationid, reviewid))
+	
 	loc_api_controller = LocationsAPIController()
 
 	if request.method == "PUT":

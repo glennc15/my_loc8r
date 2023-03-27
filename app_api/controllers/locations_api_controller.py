@@ -32,7 +32,9 @@ class LocationsAPIController(object):
 
 		self._required_location_keys = ['name', 'lng', 'lat']
 		self._required_opening_keys = ['closed', 'days']
-		self._required_review_keys = ['author', 'rating', 'reviewText']
+		# self._required_review_keys = ['author', 'rating', 'reviewText']
+		self._required_review_keys = ['rating', 'reviewText']
+
 
 
 
@@ -513,7 +515,7 @@ class LocationsAPIController(object):
 
 
 	# POST: /api/locations/<locationid>/reviews
-	def create_review(self, location_id, review_data, user_data):
+	def create_review(self, location_id, review_data, user):
 		'''
 		
 		author: user name from the authenticated user credentials.
@@ -528,8 +530,8 @@ class LocationsAPIController(object):
 		review_data = dict([(k, v) for k, v in review_data.items() if k in ['rating', 'review_text']])
 
 		# add author as the verified user name
-		review_data['author'] = user_data.name
-		review_data['author_id'] = user_data.id
+		review_data['author'] = user.name
+		review_data['author_id'] = user.id
 
 		# Build a Review model using review_data and validate:
 		review = Review(**review_data)
@@ -641,29 +643,94 @@ class LocationsAPIController(object):
 
 
 	# PUT: /api/locations/<locationid>/reviews/<reviewid>
-	def update_review(self, location_id, review_id, review_data):
+	def update_review(self, location_id, review_id, review_data, user):
 		'''
 
 
 		'''
-		# Question.objects(id="question_id", answers__uid="uid").update(set__answers__S__answer__status="new_status")
 
-		# Validate the review data:
 
-		# return None 
+		# Validate the review_data. Locations.objects().update() will write
+		# invalid review data to the db for a subdocument. It will throw an
+		# error is a locaiton.save() operation is performed but the invalid
+		# data is still written to the db.
 
 		if not self.is_review_data_ok(review_data=review_data):
-			# the review data is invalid so exit:
 			return None 
 
-
-		# sometimes review_data['reviewData'] exists, convert it to review_data['review_text']
+		# convert 'reviewText' to 'review_text" if necessary and remove any
+		# unneeded fields.
 		if review_data.get('reviewText'):
 			review_data['review_text'] = review_data['reviewText']
 
-		raw_set_query = {
+		# remove any unnessary fields from review_data:
+		review_data = dict([(k, v) for k, v in review_data.items() if k in ['rating', 'review_text']])
+
+
+		# add author as the verified user name and id. The update only
+		# uses .rating and .review_text but the validation requires .author
+		# and .author_id
+
+		review_data['author'] = user.name
+		review_data['author_id'] = user.id
+
+		review = Review(**review_data)
+
+		# pdb.set_trace()
+
+		try:
+			review.validate()
+
+		except Exception as e:
+			if isinstance(e, me.errors.ValidationError):
+				self.status_code = 400
+				self.data = {'error': e.message}
+				return None 
+
+			else:
+				raise e 
+
+
+
+
+		# Build the seach query:
+
+		# is locaiton_id or review_id is not a valid bson string an error will be thrown:
+		try:
+			search_query = {
+				'_id': ObjectId(location_id),
+				'reviews': {
+					"$elemMatch": {
+						'_id': ObjectId(review_id),
+						'author_id': user.id
+					}
+				}
+			}
+
+
+		except Exception as e:
+			# if isinstance(e, me.errors.ValidationError):
+			# 	self.status_code = 404
+			# 	self.data = {'error': e.message}
+			# 	return None
+
+			# elif isinstance(e, Locations.DoesNotExist):
+			# 	self.status_code = 404
+			# 	self.data = {'error': str(e)}
+			# 	return None
+
+			if isinstance(e, bson.errors.InvalidId):
+				self.status_code = 404
+				self.data = {'error': str(e)}
+				return None
+
+			else:
+				raise e 
+
+
+		# Build the set query. This is what updates the review:
+		set_query = {
 			'$set': {
-				'reviews.$.author': review_data['author'],
 				'reviews.$.rating': review_data['rating'], 
 				'reviews.$.review_text': review_data['review_text'], 
 
@@ -671,8 +738,14 @@ class LocationsAPIController(object):
 		}
 
 
+		# print("search_query = {}".format(search_query))
+		# pdb.set_trace()
+
+		# pdb.set_trace()
+
 		try:
-			location = Location.objects(__raw__={'_id': ObjectId(location_id), 'reviews._id': ObjectId(review_id)}).update(__raw__=raw_set_query)
+			location = Locations.objects(__raw__=search_query).update(__raw__=set_query)
+
 
 		except Exception as e:
 			if isinstance(e, me.errors.ValidationError):
@@ -680,7 +753,7 @@ class LocationsAPIController(object):
 				self.data = {'error': e.message}
 				return None
 
-			elif isinstance(e, Location.DoesNotExist):
+			elif isinstance(e, Locations.DoesNotExist):
 				self.status_code = 404
 				self.data = {'error': str(e)}
 				return None
@@ -697,7 +770,7 @@ class LocationsAPIController(object):
 		# on a successful update location is an interger = 1. The location
 		# rating needs to be updated after updating the review.
 		if location == 1:
-			location = Location.objects(id=location_id).get()
+			location = Locations.objects(id=location_id).get()
 			location.rating = self.get_location_rating(location_obj=location)
 			location.save()
 
@@ -705,13 +778,61 @@ class LocationsAPIController(object):
 
 
 		elif location == 0:
-			self.status_code = 404
-			self.data = {'error': 'No location with an id = {} and/or a review with and id = {}'.format(location_id,  review_id)}
-			return None
+
+			# Search for the location again without the author. If the
+			# locaiton can be found and the author does match then it's a 404 error.
+
+			try:
+				location = Locations.objects(__raw__={'_id': ObjectId(location_id), 'reviews._id': ObjectId(review_id)}).get()
+
+			except Exception as e:
+				if isinstance(e, me.errors.ValidationError):
+					self.status_code = 404
+					self.data = {'error': e.message}
+					return None
+
+				elif isinstance(e, Locations.DoesNotExist):
+					self.status_code = 404
+					self.data = {'error': str(e)}
+					return None
+
+				elif isinstance(e, bson.errors.InvalidId):
+					self.status_code = 404
+					self.data = {'error': str(e)}
+					return None
+
+				else:
+					raise e
+
+
+			# get the target review and check if the authors match:
+			target_review = [x for x in location.reviews if x._id == ObjectId(review_id)][0]
+
+
+			if target_review.author_id != user.id:
+					self.status_code = 403
+					self.data = {'error': "User with id {} cannot update this review with id {}".format(user.id, target_review._id)}
+					return None
+
+			else:
+				raise ValueError("Error during update review!")
+
 
 
 		else:
 			raise ValueError("location = {}".format(location))
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

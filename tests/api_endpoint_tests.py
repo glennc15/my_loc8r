@@ -34,7 +34,7 @@ class APIEndPointTests(object):
 	'''
 
 
-	def __init__(self, scheme, url, method, endpoint, auth, decode_key, parent_id, child_id, data):
+	def __init__(self, scheme, url, method, endpoint, auth, decode_key, parent_id, child_id, data, status_codes=None):
 		'''
 
 
@@ -49,6 +49,58 @@ class APIEndPointTests(object):
 		self._parent_id = parent_id
 		self._child_id = child_id
 		self._data = data
+
+		self._status_codes = {
+			"no_auth_parentid_none": 404,
+			"no_auth_parentid_invalid": 404,
+			"no_auth_parentid_not_found": 404,
+
+			"auth_parentid_none": 401,
+			"auth_parentid_invalid": 404,
+			"auth_parentid_not_found": 404,
+
+			"auth_required_parentid_none": 401,
+			"auth_required_parentid_invalid": 401,
+			"auth_required_parentid_not_found": 401,
+
+			"no_auth_childid_none": 405,
+			"no_auth_childid_invalid": 404 ,
+			"no_auth_childid_not_found": 404,
+
+			"auth_childid_none": 405,
+			"auth_childid_invalid": 404,
+			"auth_childid_not_found": 404,
+
+			"auth_required_childid_none": 401,
+			"auth_required_childid_invalid": 401,
+			"auth_required_childid_not_found": 401,
+
+			"no_auth_post_invalid": 405,
+			"no_auth_get_invalid": 405,
+			"no_auth_put_invalid": 405,
+			"no_auth_delete_invalid": 405,
+
+			"auth_post_invalid": 405,
+			"auth_get_invalid": 405,
+			"auth_put_invalid": 405,
+			"auth_delete_invalid": 405 ,
+
+			# "auth_required_post_invalid": 404,
+			# "auth_required_get_invalid": 405,
+			# "auth_required_put_invalid": 405,
+			# "auth_required_delete_invalid": 405,
+
+			"auth_invalid_token": 401,
+			"auth_expired_token": 401,
+		}
+
+		# can update an error code but supplying the error_codes argument.
+		# This will update the default error codes as required.
+
+		if isinstance(status_codes, dict):
+			for test, new_status_code in status_codes.items():
+				self._status_codes[test] = new_status_code
+
 
 	def run_tests(self):
 		'''
@@ -74,46 +126,36 @@ class APIEndPointTests(object):
 
 		'''
 
-
-
 		parent_ids = {
-			'parent_id_invalid': self._parent_id[1:],
-			'parent_id_incorrect': str(ObjectId()),
-			'parent_id_missing': None,
+			'parentid_invalid': self._parent_id[1:],
+			'parentid_not_found': str(ObjectId()),
+			'parentid_none': None,
+		}
+
+
+		descriptive_error_msgs = {
+			'parentid_invalid': "parentid invalid",
+			'parentid_not_found': "parentid not found",
+			'parentid_none': "no parentid"
 		}
 
 		if self._auth:
-
-			status_codes = {
-				'no_auth': {
-					'parent_id_incorrect': 401,
-					'parent_id_missing': 401,
-					'parent_id_invalid': 401,
-				},
-				'auth': {
-					'parent_id_incorrect': 404,
-					'parent_id_missing': 401,
-					'parent_id_invalid': 404,
-				},
-			}
-
-			descriptive_error_msgs = {
-				'no_auth': {
-					'parent_id_invalid': "invalid parentid",
-					'parent_id_incorrect': "non-existing parentid",
-					'parent_id_missing': "no parentid"
-				},
-
-				'auth': {
-					'parent_id_invalid': "invalid parentid",
-					'parent_id_incorrect': "non-existing parentid",
-					'parent_id_missing': "no parentid"
-				},
-
-			}
-
-
 			for parent_key, parent_id in parent_ids.items():
+
+				if parent_key == 'parentid_invalid':
+					auth_test_status_code = self._status_codes['auth_parentid_invalid']
+					auth_required_test_status_code = self._status_codes['auth_required_parentid_invalid']
+
+
+				elif parent_key == 'parentid_not_found':
+					auth_test_status_code = self._status_codes['auth_parentid_not_found']
+					auth_required_test_status_code = self._status_codes['auth_required_parentid_not_found']
+
+
+				elif parent_key == 'parentid_none':
+					auth_test_status_code = self._status_codes['auth_parentid_none']
+					auth_required_test_status_code = self._status_codes['auth_required_parentid_none']
+
 		
 				# end point test with authorization:
 				endpoint_test(
@@ -123,8 +165,8 @@ class APIEndPointTests(object):
 					endpoint=self.build_parent_id_endpoint(parent_id=parent_id), 
 					data=self._data, 
 					auth=self._auth,
-					expected_status_code=status_codes['auth'][parent_key],
-					descriptive_error_msg=descriptive_error_msgs['auth'][parent_key]
+					expected_status_code=auth_test_status_code,
+					descriptive_error_msg=descriptive_error_msgs[parent_key]
 				)
 
 
@@ -135,26 +177,26 @@ class APIEndPointTests(object):
 					method=self._method,					
 					endpoint=self.build_parent_id_endpoint(parent_id=parent_id), 
 					data=self._data, 
-					auth=None,
-					expected_status_code=status_codes['no_auth'][parent_key],
-					descriptive_error_msg=descriptive_error_msgs['no_auth'][parent_key]
+					auth=(None, None),
+					expected_status_code=auth_required_test_status_code,
+					descriptive_error_msg=descriptive_error_msgs[parent_key]
 				)
 
 		else:
 
-			status_codes = {
-				'parent_id_incorrect': 404,
-				'parent_id_missing': 404,
-				'parent_id_invalid': 404,
-			}
-
-			descriptive_error_msgs = {
-				'parent_id_invalid': "invalid parentid",
-				'parent_id_incorrect': "non-existing parentid",
-				'parent_id_missing': "no parentid"
-			}
 
 			for parent_key, parent_id in parent_ids.items():
+
+				if parent_key == 'parentid_invalid':
+					no_auth_test_status_code = self._status_codes['no_auth_parentid_invalid']
+
+				elif parent_key == 'parentid_not_found':
+					no_auth_test_status_code = self._status_codes['no_auth_parentid_not_found']
+
+				elif parent_key == 'parentid_none':
+					no_auth_test_status_code = self._status_codes['no_auth_parentid_none']
+
+
 				endpoint_test(
 					scheme=self._scheme,
 					url=self._url,
@@ -162,19 +204,14 @@ class APIEndPointTests(object):
 					endpoint=self.build_parent_id_endpoint(parent_id=parent_id), 
 					data=self._data, 
 					auth=None,
-					expected_status_code=status_codes[parent_key],
+					expected_status_code=no_auth_test_status_code,
 					descriptive_error_msg=descriptive_error_msgs[parent_key]
 				)
 
 
 
-
-
-		# parent_id endpoint tests:
-		
-		# 1) no id
-		# 2) invalid id
-		# 3) no existing id
+		# returning self so can chain test methods when ran individually
+		return self
 
 
 	def child_id_endpoint_tests(self):
@@ -183,43 +220,38 @@ class APIEndPointTests(object):
 		'''
 
 		child_ids = {
-			'child_id_invalid': self._child_id[1:],
-			'child_id_incorrect': str(ObjectId()),
-			'child_id_missing': None,
+			'childid_invalid': self._child_id[1:],
+			'childid_not_found': str(ObjectId()),
+			'childid_none': None,
 		}
+
+		
+		descriptive_error_msgs = {
+			'childid_invalid': "childid invalid",
+			'childid_not_found': "childid not found",
+			'childid_none': "no childid"
+		}
+
+
 
 		if self._auth:
 
-			status_codes = {
-				'no_auth': {
-					'child_id_invalid': 401,
-					'child_id_incorrect': 401,
-					'child_id_missing': 401,
-				},
-				'auth': {
-					'child_id_invalid': 404,
-					'child_id_incorrect': 404,
-					'child_id_missing': 401,
-				},
-			}
-
-			descriptive_error_msgs = {
-				'no_auth': {
-					'child_id_invalid': "invalid childid",
-					'child_id_incorrect': "non-existing childid",
-					'child_id_missing': "no childid"
-				},
-
-				'auth': {
-					'child_id_invalid': "invalid childid",
-					'child_id_incorrect': "non-existing childid",
-					'child_id_missing': "no childid"
-				},
-
-			}
-
-
 			for child_key, child_id in child_ids.items():
+				if child_key == 'childid_invalid':
+					auth_test_status_code = self._status_codes['auth_childid_invalid']
+					auth_required_test_status_code = self._status_codes['auth_required_childid_invalid']
+
+
+				elif child_key == 'childid_not_found':
+					auth_test_status_code = self._status_codes['auth_childid_not_found']
+					auth_required_test_status_code = self._status_codes['auth_required_childid_not_found']
+
+
+				elif child_key == 'childid_none':
+					auth_test_status_code = self._status_codes['auth_childid_none']
+					auth_required_test_status_code = self._status_codes['auth_required_childid_none']
+
+
 		
 				# end point test with authorization:
 				endpoint_test(
@@ -229,8 +261,8 @@ class APIEndPointTests(object):
 					endpoint=self.build_child_id_endpoint(child_id=child_id), 
 					data=self._data, 
 					auth=self._auth,
-					expected_status_code=status_codes['auth'][child_key],
-					descriptive_error_msg=descriptive_error_msgs['auth'][child_key]
+					expected_status_code=auth_test_status_code,
+					descriptive_error_msg=descriptive_error_msgs[child_key]
 				)
 
 
@@ -241,27 +273,25 @@ class APIEndPointTests(object):
 					method=self._method,					
 					endpoint=self.build_child_id_endpoint(child_id=child_id), 
 					data=self._data, 
-					auth=None,
-					expected_status_code=status_codes['no_auth'][child_key],
-					descriptive_error_msg=descriptive_error_msgs['no_auth'][child_key]
+					auth=(None, None),
+					expected_status_code=auth_required_test_status_code,
+					descriptive_error_msg=descriptive_error_msgs[child_key]
 				)
 
 		else:
 
-			status_codes = {
-				'child_id_incorrect': 404,
-				'child_id_missing': 405,
-				'child_id_invalid': 404,
-			}
-
-			descriptive_error_msgs = {
-				'child_id_incorrect': "non-existing childid",
-				'child_id_missing': "no childid",
-				'child_id_invalid': "invalid childid",
-
-			}
-
 			for child_key, child_id in child_ids.items():
+
+				if child_key == 'childid_invalid':
+					no_auth_test_status_code = self._status_codes['no_auth_childid_invalid']
+
+				elif child_key == 'childid_not_found':
+					no_auth_test_status_code = self._status_codes['no_auth_childid_not_found']
+
+				elif child_key == 'childid_none':
+					no_auth_test_status_code = self._status_codes['no_auth_childid_none']
+
+
 				endpoint_test(
 					scheme=self._scheme,
 					url=self._url,
@@ -269,9 +299,14 @@ class APIEndPointTests(object):
 					endpoint=self.build_child_id_endpoint(child_id=child_id), 
 					data=self._data, 
 					auth=None,
-					expected_status_code=status_codes[child_key],
+					expected_status_code=no_auth_test_status_code,
 					descriptive_error_msg=descriptive_error_msgs[child_key]
 				)
+
+
+		# returning self so can chain test methods when ran individually
+		return self
+
 
 
 	def invalid_methods_tests(self):
@@ -289,38 +324,38 @@ class APIEndPointTests(object):
 
 		for method in invalid_methods:
 
-			# sometimes the invalid method:endpoint does have a valid endpoint
-			# that requires authorization. So try the test again with the
-			# same method:endpoint but with no authorization (401): 
 
-			try:
-				endpoint_test(
-					scheme=self._scheme,
-					url=self._url,
-					method=method,
-					endpoint=endpoint, 
-					data=self._data, 
-					auth=None,
-					expected_status_code=405,
-					descriptive_error_msg="invalid method"
-				)
+			if method == "POST":
+				auth_test_code = self._status_codes['auth_post_invalid']
+				no_auth_test_code = self._status_codes['no_auth_post_invalid']
 
-			except Exception as e:
-				endpoint_test(
-					scheme=self._scheme,
-					url=self._url,
-					method=method,
-					endpoint=endpoint, 
-					data=self._data, 
-					auth=None,
-					expected_status_code=401,
-					descriptive_error_msg="invalid method"
-				)
+			elif method == "GET":
+				auth_test_code = self._status_codes['auth_get_invalid']
+				no_auth_test_code = self._status_codes['no_auth_get_invalid']
 
+			elif method == "PUT":
+				auth_test_code = self._status_codes['auth_put_invalid']
+				no_auth_test_code = self._status_codes['no_auth_put_invalid']
+
+			elif method == "DELETE":
+				auth_test_code = self._status_codes['auth_delete_invalid']
+				no_auth_test_code = self._status_codes['no_auth_delete_invalid']
+
+
+
+			endpoint_test(
+				scheme=self._scheme,
+				url=self._url,
+				method=method,
+				endpoint=endpoint, 
+				data=self._data, 
+				auth=None,
+				expected_status_code=no_auth_test_code,
+				descriptive_error_msg="invalid method"
+			)
 
 
 			if self._auth:
-
 				endpoint_test(
 					scheme=self._scheme,
 					url=self._url,
@@ -328,9 +363,12 @@ class APIEndPointTests(object):
 					endpoint=endpoint, 
 					data=self._data, 
 					auth=self._auth,
-					expected_status_code=405,
+					expected_status_code=auth_test_code,
 					descriptive_error_msg="invalid method"
 				)
+
+		# returning self so can chain test methods when ran individually
+		return self
 
 
 	def data_tests(self):
@@ -364,7 +402,7 @@ class APIEndPointTests(object):
 			endpoint=endpoint, 
 			data=self._data, 
 			auth=(self.create_invalid_token(token), password),
-			expected_status_code=401,
+			expected_status_code=self._status_codes['auth_invalid_token'],
 			descriptive_error_msg="invalid authorization token"
 		)
 
@@ -377,10 +415,13 @@ class APIEndPointTests(object):
 			endpoint=endpoint, 
 			data=self._data, 
 			auth=(self.get_expired_token(token), password),
-			expected_status_code=401,
+			expected_status_code=self._status_codes['auth_expired_token'],
 			descriptive_error_msg="expired authorization token"
 		)
 
+
+		# returning self so can chain test methods when ran individually
+		return self
 
 
 	# ******************************************************************************************************
@@ -549,7 +590,14 @@ def endpoint_test(method, scheme, url, endpoint, data, auth, expected_status_cod
 		status_msg += "without authorization - "
 
 	else:
-		status_msg += "with authorization - "
+		token, password = auth
+
+		if token is None:
+			status_msg += "auth required; no auth - "
+		
+		else:
+
+			status_msg += "with authorization - "
 
 	status_msg += "expected status code: {}".format(expected_status_code)
 

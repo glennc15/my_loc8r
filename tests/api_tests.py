@@ -1757,6 +1757,7 @@ class APITests(unittest.TestCase):
 		# *******************************************************
 
 
+	# 
 
 	def test_review_read_01(self):
 		'''
@@ -1773,6 +1774,22 @@ class APITests(unittest.TestCase):
 		# print("user2_token = {}".format(user2_token))
 
 		# common endpoint faiulre tests. Does not do any data validation tests:
+
+		# chagning the status code for invalid PUT and DELETE request because there are
+		# and endpoint for: 
+
+		# PUT:api/locations/<parentid>/reviews/<childid> 
+		# DELETE:api/locations/<parentid>/reviews/<childid> 
+
+
+		# however, these endpoint requires authorization so a 401 is the
+		# correct status codes.
+
+		updated_status_codes = {
+			"no_auth_put_invalid": 401,
+			"no_auth_delete_invalid": 401,
+		}
+
 		APIEndPointTests(
 			scheme=self.scheme,
 			url=self.url,
@@ -1782,7 +1799,8 @@ class APITests(unittest.TestCase):
 			decode_key=None,
 			parent_id=location_id,
 			child_id=review1_id,
-			data=None
+			data=None,
+			status_codes=updated_status_codes
 		).run_tests()
 		
 
@@ -1822,6 +1840,238 @@ class APITests(unittest.TestCase):
 		self.assertEqual(read_review2_r.status_code, 200)
 		self.assertEqual(read_review2_r.json()['_id'], review2_id)
 		self.assertEqual(read_review2_r.json()['author_id'], author2_data['_id'])
+
+
+		# # Testing again with authorization: Should not make a difference if
+		# # autherization credentials are supplied.  However have to skip
+		# # invalid method tests for PUT and DELETE because there are endpoings
+		# # for these methods with authorization 
+		
+		# updated_status_codes = {
+		# 	"auth_required_parentid_invalid": 404,
+		# 	"auth_required_parentid_not_found": 404,
+		# 	"auth_required_parentid_none": 404,
+		# 	"auth_parentid_none": 404,
+
+		# 	"auth_required_childid_none": 404,
+		# 	"auth_required_childid_invalid": 404,
+		# 	"auth_required_childid_not_found": 404,
+
+		# 	# "no_auth_put_invalid": 401,
+		# 	# "no_auth_delete_invalid": 401,
+
+		# }
+
+		# APIEndPointTests(
+		# 	scheme=self.scheme,
+		# 	url=self.url,
+		# 	method='GET',
+		# 	endpoint='api/locations/<parentid>/reviews/<childid>',
+		# 	auth=(user1_token, str(None)),
+		# 	decode_key=None,
+		# 	parent_id=location_id,
+		# 	child_id=review1_id,
+		# 	data=None,
+		# 	status_codes=updated_status_codes
+		# ).run_tests()
+
+
+
+
+	def test_review_update_01(self):
+		'''
+
+
+		'''
+
+		location_id, review1_id, user1_token, review2_id, user2_token = self.add_test_location(reviews=2)
+
+		print("location_id = {}".format(location_id))
+
+		# UPDATE a review:
+
+		# skipping .invalid_methods_tests() because there is an API endpoint for all methods
+	
+		APIEndPointTests(
+			scheme=self.scheme,
+			url=self.url,
+			method='PUT',
+			endpoint='api/locations/<parentid>/reviews/<childid>',
+			auth=(user1_token, str(None)),
+			decode_key=self._encode_key,
+			parent_id=location_id,
+			child_id=review1_id,
+			data={
+				'author': 'Simon Holmes',		
+				'rating': 2,
+				'reviewText': "No wifi. Has male and female a go-go dances. Will be back with the family!",
+			},
+			status_codes={
+				"auth_parentid_none": 404,
+				"auth_required_parentid_none": 404,
+				"auth_childid_none": 405,
+				"auth_required_childid_none": 405,
+
+			}
+		).parent_id_endpoint_tests().child_id_endpoint_tests().authorization_tests()
+
+		
+
+		# UPDATE failure due to no rating (rating is required):
+		update_review1_r = endpoint_test(
+			method='PUT', 
+			scheme=self.scheme, 
+			url=self.url, 
+			endpoint='/'.join(['api', 'locations', location_id, 'reviews', review1_id]), 
+			data={
+				'reviewText': "No wifi.",
+			}, 
+			auth=(user1_token, (None)), 
+			expected_status_code=400, 
+			descriptive_error_msg="update failure due to no rating"
+		)
+
+
+		# UPDATE failure due to no invalid rating:
+		update_review1_r = endpoint_test(
+			method='PUT', 
+			scheme=self.scheme, 
+			url=self.url, 
+			endpoint='/'.join(['api', 'locations', location_id, 'reviews', review1_id]), 
+			data={
+				'rating': 6,		
+				'reviewText': "No wifi.",
+			}, 
+			auth=(user1_token, str(None)), 
+			expected_status_code=400, 
+			descriptive_error_msg="update failure due invalid rating"
+		)
+
+
+		# UPDATE failure due to no reviewText (empty string):
+		update_review1_r = endpoint_test(
+			method='PUT', 
+			scheme=self.scheme, 
+			url=self.url, 
+			endpoint='/'.join(['api', 'locations', location_id, 'reviews', review1_id]), 
+			data={
+				'rating': 6,		
+				'reviewText': "",
+			}, 
+			auth=(user1_token, str(None)), 
+			expected_status_code=400, 
+			descriptive_error_msg="update failure, reviewText is empty"
+		)		
+
+
+		# UPDATE failure due to no reviewText:
+		update_review1_r = endpoint_test(
+			method='PUT', 
+			scheme=self.scheme, 
+			url=self.url, 
+			endpoint='/'.join(['api', 'locations', location_id, 'reviews', review1_id]), 
+			data={
+				'rating': 5,		
+			}, 
+			auth=(user1_token, str(None)), 
+			expected_status_code=400, 
+			descriptive_error_msg="update failure, reviewText is missing"
+		)		
+
+
+		# UPDATE failure, the user credentials don't match the author of the review.
+		update_review1_r = endpoint_test(
+			method='PUT', 
+			scheme=self.scheme, 
+			url=self.url, 
+			endpoint='/'.join(['api', 'locations', location_id, 'reviews', review1_id]), 
+			data={
+				'rating': 1,
+				'reviewText': "No wifi."		
+			}, 
+			auth=(user2_token, str(None)), 
+			expected_status_code=403, 
+			descriptive_error_msg="update failure, user does not match author id"
+		)	
+
+
+		# UPDATE review 1 success:
+		update_review1_r = endpoint_test(
+			method='PUT', 
+			scheme=self.scheme, 
+			url=self.url, 
+			endpoint='/'.join(['api', 'locations', location_id, 'reviews', review1_id]), 
+			data={
+				'rating': 1,
+				'reviewText': "No wifi."		
+			}, 
+			auth=(user1_token, str(None)), 
+			expected_status_code=200, 
+			descriptive_error_msg="update success"
+		)
+
+		author1_data = self.decode_token(token=user1_token)
+
+		self.assertEqual(update_review1_r.json()['_id'], review1_id)
+		self.assertEqual(update_review1_r.json()['author_id'], author1_data['_id'])
+		self.assertEqual(update_review1_r.json()['rating'], 1)
+		self.assertEqual(update_review1_r.json()['review_text'], "No wifi.")
+		self.assertEqual(update_review1_r.json()['author'], author1_data['name'])
+
+		self.location_tests(
+			location_id=location_id, 
+			expected_reviews=2, 
+			expected_rating=1, 
+		)
+
+
+		# UPDATE failure, the user credentials don't match the author of the review.
+		update_review2_r = endpoint_test(
+			method='PUT', 
+			scheme=self.scheme, 
+			url=self.url, 
+			endpoint='/'.join(['api', 'locations', location_id, 'reviews', review2_id]), 
+			data={
+				'rating': 1,
+				'reviewText': "No wifi."		
+			}, 
+			auth=(user1_token, str(None)), 
+			expected_status_code=403, 
+			descriptive_error_msg="update failure, user does not match author id"
+		)	
+
+
+		# UPDATE review 2 success:
+		update_review2_r = endpoint_test(
+			method='PUT', 
+			scheme=self.scheme, 
+			url=self.url, 
+			endpoint='/'.join(['api', 'locations', location_id, 'reviews', review2_id]), 
+			data={
+				'rating': 5,
+				'reviewText': "great place!"		
+			}, 
+			auth=(user2_token, str(None)), 
+			expected_status_code=200, 
+			descriptive_error_msg="update success"
+		)
+
+		author2_data = self.decode_token(token=user2_token)
+
+		self.assertEqual(update_review2_r.json()['_id'], review2_id)
+		self.assertEqual(update_review2_r.json()['author_id'], author2_data['_id'])
+		self.assertEqual(update_review2_r.json()['rating'], 5)
+		self.assertEqual(update_review2_r.json()['review_text'], "great place!")
+		self.assertEqual(update_review2_r.json()['author'], author2_data['name'])
+
+		self.location_tests(
+			location_id=location_id, 
+			expected_reviews=2, 
+			expected_rating=3, 
+		)	
+
+
+
 
 
 	def test_review_crud_01(self):
@@ -2120,165 +2370,165 @@ class APITests(unittest.TestCase):
 		# self.assertEqual(read_review1_r.json()['_id'], review1_r.json()['_id'])
 
 
-		# UPDATE a review:
+		# # UPDATE a review:
 
 
-		# UPDATE failure due to incorrect location id:
-		url = self.build_url(path_parts=['api', 'locations', location_r.json()['_id'][1:], 'reviews', review1_r.json()['_id']])
-		review1_update_r = requests.put(
-			url=url,
-			json={
-				'author': 'Simon Holmes',		
-				'rating': 5,
-				'reviewText': "No wifi. Has male and female a go-go dances. Will be back with the family!",
-			}
-		)
-		self.assertEqual(review1_update_r.status_code, 404)
+		# # UPDATE failure due to incorrect location id:
+		# url = self.build_url(path_parts=['api', 'locations', location_r.json()['_id'][1:], 'reviews', review1_r.json()['_id']])
+		# review1_update_r = requests.put(
+		# 	url=url,
+		# 	json={
+		# 		'author': 'Simon Holmes',		
+		# 		'rating': 5,
+		# 		'reviewText': "No wifi. Has male and female a go-go dances. Will be back with the family!",
+		# 	}
+		# )
+		# self.assertEqual(review1_update_r.status_code, 404)
 
 
-		# UPDATE failure due to non existing location id:
-		url = self.build_url(path_parts=['api', 'locations', '640ceee95fedd040ba74a736', 'reviews', review1_r.json()['_id']])
-		review1_update_r = requests.put(
-			url=url,
-			json={
-				'author': 'Simon Holmes',		
-				'rating': 5,
-				'reviewText': "No wifi. Has male and female a go-go dances. Will be back with the family!",
-			}
-		)
-		self.assertEqual(review1_update_r.status_code, 404)
+		# # UPDATE failure due to non existing location id:
+		# url = self.build_url(path_parts=['api', 'locations', '640ceee95fedd040ba74a736', 'reviews', review1_r.json()['_id']])
+		# review1_update_r = requests.put(
+		# 	url=url,
+		# 	json={
+		# 		'author': 'Simon Holmes',		
+		# 		'rating': 5,
+		# 		'reviewText': "No wifi. Has male and female a go-go dances. Will be back with the family!",
+		# 	}
+		# )
+		# self.assertEqual(review1_update_r.status_code, 404)
 
 
-		# UPDATE failure due to no location id:
-		url = self.build_url(path_parts=['api', 'locations', 'reviews', review1_r.json()['_id']])
-		review1_update_r = requests.put(
-			url=url,
-			json={
-				'author': 'Simon Holmes',		
-				'rating': 5,
-				'reviewText': "No wifi. Has male and female a go-go dances. Will be back with the family!",
-			}
-		)
-		self.assertEqual(review1_update_r.status_code, 404)
+		# # UPDATE failure due to no location id:
+		# url = self.build_url(path_parts=['api', 'locations', 'reviews', review1_r.json()['_id']])
+		# review1_update_r = requests.put(
+		# 	url=url,
+		# 	json={
+		# 		'author': 'Simon Holmes',		
+		# 		'rating': 5,
+		# 		'reviewText': "No wifi. Has male and female a go-go dances. Will be back with the family!",
+		# 	}
+		# )
+		# self.assertEqual(review1_update_r.status_code, 404)
 
-		# UPDATE failure due to incorrect review id:
-		url = self.build_url(path_parts=['api', 'locations', location_r.json()['_id'], 'reviews', review1_r.json()['_id'][1:]])
-		review1_update_r = requests.put(
-			url=url,
-			json={
-				'author': 'Simon Holmes',		
-				'rating': 5,
-				'reviewText': "No wifi. Has male and female a go-go dances. Will be back with the family!",
-			}
-		)
-		self.assertEqual(review1_update_r.status_code, 404)
+		# # UPDATE failure due to incorrect review id:
+		# url = self.build_url(path_parts=['api', 'locations', location_r.json()['_id'], 'reviews', review1_r.json()['_id'][1:]])
+		# review1_update_r = requests.put(
+		# 	url=url,
+		# 	json={
+		# 		'author': 'Simon Holmes',		
+		# 		'rating': 5,
+		# 		'reviewText': "No wifi. Has male and female a go-go dances. Will be back with the family!",
+		# 	}
+		# )
+		# self.assertEqual(review1_update_r.status_code, 404)
 
 
-		# UPDATE failure due to non existing review id:
-		url = self.build_url(path_parts=['api', 'locations', location_r.json()['_id'], 'reviews', '640ceee95fedd040ba74a736'])
-		review1_update_r = requests.put(
-			url=url,
-			json={
-				'author': 'Simon Holmes',		
-				'rating': 5,
-				'reviewText': "No wifi. Has male and female a go-go dances. Will be back with the family!",
-			}
-		)
-		self.assertEqual(review1_update_r.status_code, 404)
+		# # UPDATE failure due to non existing review id:
+		# url = self.build_url(path_parts=['api', 'locations', location_r.json()['_id'], 'reviews', '640ceee95fedd040ba74a736'])
+		# review1_update_r = requests.put(
+		# 	url=url,
+		# 	json={
+		# 		'author': 'Simon Holmes',		
+		# 		'rating': 5,
+		# 		'reviewText': "No wifi. Has male and female a go-go dances. Will be back with the family!",
+		# 	}
+		# )
+		# self.assertEqual(review1_update_r.status_code, 404)
 
-		# UPDATE failure due to no review id:
-		url = self.build_url(path_parts=['api', 'locations', location_r.json()['_id'], 'reviews'])
-		review1_update_r = requests.put(
-			url=url,
-			json={
-				'author': 'Simon Holmes',		
-				'rating': 5,
-				'reviewText': "No wifi. Has male and female a go-go dances. Will be back with the family!",
-			}
-		)
-		self.assertEqual(review1_update_r.status_code, 405)
+		# # UPDATE failure due to no review id:
+		# url = self.build_url(path_parts=['api', 'locations', location_r.json()['_id'], 'reviews'])
+		# review1_update_r = requests.put(
+		# 	url=url,
+		# 	json={
+		# 		'author': 'Simon Holmes',		
+		# 		'rating': 5,
+		# 		'reviewText': "No wifi. Has male and female a go-go dances. Will be back with the family!",
+		# 	}
+		# )
+		# self.assertEqual(review1_update_r.status_code, 405)
 		
 
-		# UPDATE failure due to no rating (rating is required):
-		url = self.build_url(path_parts=['api', 'locations', location_r.json()['_id'], 'reviews', review1_r.json()['_id']])
-		review1_update_r = requests.put(
-			url=url,
-			json={
-				'author': 'Simon Holmes',		
-				'reviewText': "No wifi. Has male and female a go-go dances. Will be back with the family!",
-			}
-		)
-		self.assertEqual(review1_update_r.status_code, 400)
+		# # UPDATE failure due to no rating (rating is required):
+		# url = self.build_url(path_parts=['api', 'locations', location_r.json()['_id'], 'reviews', review1_r.json()['_id']])
+		# review1_update_r = requests.put(
+		# 	url=url,
+		# 	json={
+		# 		'author': 'Simon Holmes',		
+		# 		'reviewText': "No wifi. Has male and female a go-go dances. Will be back with the family!",
+		# 	}
+		# )
+		# self.assertEqual(review1_update_r.status_code, 400)
 
 
-		# UPDATE failure due to no author (author is required):
-		url = self.build_url(path_parts=['api', 'locations', location_r.json()['_id'], 'reviews', review1_r.json()['_id']])
-		review1_update_r = requests.put(
-			url=url,
-			json={
-				'author': 5,
-				'reviewText': "No wifi. Has male and female a go-go dances. Will be back with the family!",
-			}
-		)
-		self.assertEqual(review1_update_r.status_code, 400)
+		# # UPDATE failure due to no author (author is required):
+		# url = self.build_url(path_parts=['api', 'locations', location_r.json()['_id'], 'reviews', review1_r.json()['_id']])
+		# review1_update_r = requests.put(
+		# 	url=url,
+		# 	json={
+		# 		'author': 5,
+		# 		'reviewText': "No wifi. Has male and female a go-go dances. Will be back with the family!",
+		# 	}
+		# )
+		# self.assertEqual(review1_update_r.status_code, 400)
 
 
-		# UPDATE failure due to no review text (review is required):
-		url = self.build_url(path_parts=['api', 'locations', location_r.json()['_id'], 'reviews', review1_r.json()['_id']])
-		review1_update_r = requests.put(
-			url=url,
-			json={
-				'author': 'Simon Holmes',		
-				'author': 5,
-			}
-		)
-		self.assertEqual(review1_update_r.status_code, 400)
+		# # UPDATE failure due to no review text (review is required):
+		# url = self.build_url(path_parts=['api', 'locations', location_r.json()['_id'], 'reviews', review1_r.json()['_id']])
+		# review1_update_r = requests.put(
+		# 	url=url,
+		# 	json={
+		# 		'author': 'Simon Holmes',		
+		# 		'author': 5,
+		# 	}
+		# )
+		# self.assertEqual(review1_update_r.status_code, 400)
 
 
-		# UPDATE success
+		# # UPDATE success
 
-		# author needs to be correct from 'Simmon Holmes' to 'Simon Holmes'
-		self.assertEqual(review1_r.json()['author'], 'Simmon Holmes')
+		# # author needs to be correct from 'Simmon Holmes' to 'Simon Holmes'
+		# self.assertEqual(review1_r.json()['author'], 'Simmon Holmes')
 
-		url = self.build_url(path_parts=['api', 'locations', location_r.json()['_id'], 'reviews', review1_r.json()['_id']])
-		review1_update_r = requests.put(
-			url=url,
-			json={
-				'author': 'Simon Holmes',		
-				'rating': 5,
-				'reviewText': "No wifi. Has male and female a go-go dances. Will be back with the family!",
-			}
-		)
-		self.assertEqual(review1_update_r.status_code, 200)
+		# url = self.build_url(path_parts=['api', 'locations', location_r.json()['_id'], 'reviews', review1_r.json()['_id']])
+		# review1_update_r = requests.put(
+		# 	url=url,
+		# 	json={
+		# 		'author': 'Simon Holmes',		
+		# 		'rating': 5,
+		# 		'reviewText': "No wifi. Has male and female a go-go dances. Will be back with the family!",
+		# 	}
+		# )
+		# self.assertEqual(review1_update_r.status_code, 200)
 
-		self.location_tests(
-			location_id=location_r.json()['_id'], 
-			expected_reviews=2, 
-			expected_rating=3, 
-		)
+		# self.location_tests(
+		# 	location_id=location_r.json()['_id'], 
+		# 	expected_reviews=2, 
+		# 	expected_rating=3, 
+		# )
 
-		# updated_review = location_r.json()['reviews'][0]
-		self.assertEqual(review1_update_r.json()['author'], 'Simon Holmes')
+		# # updated_review = location_r.json()['reviews'][0]
+		# self.assertEqual(review1_update_r.json()['author'], 'Simon Holmes')
 
-		# update the second review's rating to 5
-		url = self.build_url(path_parts=['api', 'locations', location_r.json()['_id'], 'reviews', review2_r.json()['_id']])
+		# # update the second review's rating to 5
+		# url = self.build_url(path_parts=['api', 'locations', location_r.json()['_id'], 'reviews', review2_r.json()['_id']])
 
-		review2_update_r = requests.put(
-			url=url,
-			json={
-				'author': 'Charlie Chaplin',		
-				'rating': 5,
-				'reviewText': "Didn't get any work done, great place!",
-			}
-		)
+		# review2_update_r = requests.put(
+		# 	url=url,
+		# 	json={
+		# 		'author': 'Charlie Chaplin',		
+		# 		'rating': 5,
+		# 		'reviewText': "Didn't get any work done, great place!",
+		# 	}
+		# )
 
-		self.assertEqual(review2_update_r.status_code, 200)
+		# self.assertEqual(review2_update_r.status_code, 200)
 
-		self.location_tests(
-			location_id=location_r.json()['_id'], 
-			expected_reviews=2, 
-			expected_rating=5, 
-		)
+		# self.location_tests(
+		# 	location_id=location_r.json()['_id'], 
+		# 	expected_reviews=2, 
+		# 	expected_rating=5, 
+		# )
 
 		# DELETE a review:
 

@@ -148,7 +148,11 @@ def api_review_create(locationid):
 	print("{}: api_review_create({})".format(request.method, locationid))
 
 	loc_api_controller = LocationsAPIController()
-	loc_api_controller.create_review(location_id=locationid, review_data=request.get_json(), user_data=g.user)
+	loc_api_controller.create_review(
+		location_id=locationid, 
+		review_data=request.get_json(), 
+		user=g.user
+	)
 
 	print("loc_api_controller.status_code = {}".format(loc_api_controller.status_code))
 	print("loc_api_controller.data = {}".format(loc_api_controller.data))
@@ -197,7 +201,12 @@ def api_review_update(locationid, reviewid):
 	loc_api_controller = LocationsAPIController()
 
 	if request.method == "PUT":
-		loc_api_controller.update_review(location_id=locationid, review_id=reviewid, review_data=request.get_json())
+		loc_api_controller.update_review(
+			location_id=locationid, 
+			review_id=reviewid, 
+			review_data=request.get_json(), 
+			user=g.user
+		)
 
 	if request.method == 'DELETE':
 		loc_api_controller.delete_review(location_id=locationid, review_id=reviewid)

@@ -824,20 +824,8 @@ class LocationsAPIController(object):
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
 	# DELETE: /api/locations/<locationid>/reviews/<reviewid>
-	def delete_review(self, location_id, review_id):
+	def delete_review(self, location_id, review_id, user):
 		'''
 
 
@@ -858,9 +846,44 @@ class LocationsAPIController(object):
 				return None
 
 
+		# Build the seach query:
 
+		# is locaiton_id or review_id is not a valid bson string an error will be thrown:
 		try:
-			location = Location.objects(__raw__={'_id': ObjectId(location_id), 'reviews._id': ObjectId(review_id)}).update(__raw__=raw_query)
+			search_query = {
+				'_id': ObjectId(location_id),
+				'reviews': {
+					"$elemMatch": {
+						'_id': ObjectId(review_id),
+						'author_id': user.id
+					}
+				}
+			}
+
+
+		except Exception as e:
+			# if isinstance(e, me.errors.ValidationError):
+			# 	self.status_code = 404
+			# 	self.data = {'error': e.message}
+			# 	return None
+
+			# elif isinstance(e, Locations.DoesNotExist):
+			# 	self.status_code = 404
+			# 	self.data = {'error': str(e)}
+			# 	return None
+
+			if isinstance(e, bson.errors.InvalidId):
+				self.status_code = 404
+				self.data = {'error': str(e)}
+				return None
+
+			else:
+				raise e 
+
+		# pdb.set_trace()
+		
+		try:
+			location = Locations.objects(__raw__=search_query).update(__raw__=raw_query)
 
 		except Exception as e:
 			if isinstance(e, me.errors.ValidationError):
@@ -885,18 +908,58 @@ class LocationsAPIController(object):
 		# on a successful delete location is an interger = 1:
 		if location == 1:
 			# update the location rating:
-			location = Location.objects(id=location_id).get()
+			location = Locations.objects(id=location_id).get()
 			location.rating = self.get_location_rating(location_obj=location)
 			location.save()
 
 			self.data = {'message': "deleted review with id = {}".format(review_id)}
 			self.status_code = 204
 
-		# happens with the location and/or the review do not exists:
 		elif location == 0:
-			self.status_code = 404
-			self.data = {'error': 'No location with an id = {} and/or a review with and id = {}'.format(location_id,  review_id)}
-			return None
+			# Search for the location again without the author. If the
+			# locaiton can be found and the author does match then it's a 404 error.
+
+			try:
+				location = Locations.objects(__raw__={'_id': ObjectId(location_id), 'reviews._id': ObjectId(review_id)}).get()
+
+			except Exception as e:
+				if isinstance(e, me.errors.ValidationError):
+					self.status_code = 404
+					self.data = {'error': e.message}
+					return None
+
+				elif isinstance(e, Locations.DoesNotExist):
+					self.status_code = 404
+					self.data = {'error': str(e)}
+					return None
+
+				elif isinstance(e, bson.errors.InvalidId):
+					self.status_code = 404
+					self.data = {'error': str(e)}
+					return None
+
+				else:
+					raise e
+
+
+			# get the target review and check if the authors match:
+			target_review = [x for x in location.reviews if x._id == ObjectId(review_id)][0]
+
+
+			if target_review.author_id != user.id:
+					self.status_code = 403
+					self.data = {'error': "User with id {} cannot delete this review with id {}".format(user.id, target_review._id)}
+					return None
+
+			else:
+				raise ValueError("Error during update review!")
+
+
+		# # happens with the location and/or the review do not exists:
+		# elif location == 0:
+		# 	self.status_code = 404
+		# 	self.data = {'error': 'No location with an id = {} and/or a review with and id = {}'.format(location_id,  review_id)}
+		# 	return None
 
 		else:
 			raise ValueError("unknow error, location = {}".format(location))

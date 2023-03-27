@@ -162,28 +162,17 @@ def api_review_create(locationid):
 	return (loc_api_controller.data, loc_api_controller.status_code)
 
 
-# @app.route('/api/locations/<locationid>/reviews', methods=['GET', 'PUT', 'DELETE'])
-# def api_review_indalid(locationid):
-# 	# GET, PUT, DELETE are invalid for this endpoing and are handled by the controller
-# 	loc_api_controller = LocationsAPIController()
-# 	loc_api_controller.reviews(request=request, location_id=locationid, review_id=None)
 
-# 	print("loc_api_controller.status_code = {}".format(loc_api_controller.status_code))
-# 	print("loc_api_controller.data = {}".format(loc_api_controller.data))
-
-# 	# pdb.set_trace()
-	
-# 	return (loc_api_controller.data, loc_api_controller.status_code)
-
-
-# @app.route('/api/locations/<locationid>/reviews/<reviewid>', methods=['GET', 'POST'])
 @app.route('/api/locations/<locationid>/reviews/<reviewid>', methods=['GET'])
 def api_review_get(locationid, reviewid):
 
 	print("{}: api_review_get({}, {})".format(request.method, locationid, reviewid))
 
 	loc_api_controller = LocationsAPIController()
-	loc_api_controller.read_review(location_id=locationid, review_id=reviewid)
+	loc_api_controller.read_review(
+		location_id=locationid, 
+		review_id=reviewid
+	)
 
 	print("loc_api_controller.status_code = {}".format(loc_api_controller.status_code))
 	print("loc_api_controller.data = {}".format(loc_api_controller.data))
@@ -209,7 +198,11 @@ def api_review_update(locationid, reviewid):
 		)
 
 	if request.method == 'DELETE':
-		loc_api_controller.delete_review(location_id=locationid, review_id=reviewid)
+		loc_api_controller.delete_review(
+			location_id=locationid, 
+			review_id=reviewid,
+			user=g.user
+		)
 
 
 	print("loc_api_controller.status_code = {}".format(loc_api_controller.status_code))

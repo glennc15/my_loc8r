@@ -2072,6 +2072,88 @@ class APITests(unittest.TestCase):
 
 
 
+	def test_review_delete_01(self):
+		'''
+
+
+		'''
+
+
+		location_id, review1_id, user1_token, review2_id, user2_token = self.add_test_location(reviews=2)
+
+		# skipping .invalid_methods_tests() because there is an API endpoint for all methods
+		APIEndPointTests(
+			scheme=self.scheme,
+			url=self.url,
+			method='DELETE',
+			endpoint='api/locations/<parentid>/reviews/<childid>',
+			auth=(user1_token, str(None)),
+			decode_key=self._encode_key,
+			parent_id=location_id,
+			child_id=review1_id,
+			data=None,
+			status_codes={
+				"auth_parentid_none": 404,
+				"auth_required_parentid_none": 404,
+				"auth_childid_none": 405,
+				"auth_required_childid_none": 405,
+
+			}
+		).parent_id_endpoint_tests().child_id_endpoint_tests().authorization_tests()
+
+
+		# DELETE failure due to invalid author:
+		delete_review1_r = endpoint_test(
+			method='DELETE', 
+			scheme=self.scheme, 
+			url=self.url, 
+			endpoint='/'.join(['api', 'locations', location_id, 'reviews', review1_id]), 
+			data=None, 
+			auth=(user2_token, str(None)), 
+			expected_status_code=403, 
+			descriptive_error_msg="delete failure, user does not match author id"
+		)	
+
+
+		# DELETE reviw 1 success:
+		delete_review1_r = endpoint_test(
+			method='DELETE', 
+			scheme=self.scheme, 
+			url=self.url, 
+			endpoint='/'.join(['api', 'locations', location_id, 'reviews', review1_id]), 
+			data=None, 
+			auth=(user1_token, str(None)), 
+			expected_status_code=204, 
+			descriptive_error_msg="delete success"
+		)	
+
+
+
+		# DELETE failure due to invalid author:
+		delete_review2_r = endpoint_test(
+			method='DELETE', 
+			scheme=self.scheme, 
+			url=self.url, 
+			endpoint='/'.join(['api', 'locations', location_id, 'reviews', review2_id]), 
+			data=None, 
+			auth=(user1_token, str(None)), 
+			expected_status_code=403, 
+			descriptive_error_msg="delete failure, user does not match author id"
+		)	
+
+
+		# DELETE reviw 1 success:
+		delete_review2_r = endpoint_test(
+			method='DELETE', 
+			scheme=self.scheme, 
+			url=self.url, 
+			endpoint='/'.join(['api', 'locations', location_id, 'reviews', review2_id]), 
+			data=None, 
+			auth=(user2_token, str(None)), 
+			expected_status_code=204, 
+			descriptive_error_msg="delete success"
+		)
+
 
 
 	def test_review_crud_01(self):
@@ -2082,7 +2164,8 @@ class APITests(unittest.TestCase):
 
 		'''
 
-
+		pass 
+		
 		# # create a test location and then add reviews:
 		# url = self.build_url(path_parts=['api', 'locations'])
 		# location_r = requests.post(
@@ -2530,101 +2613,101 @@ class APITests(unittest.TestCase):
 		# 	expected_rating=5, 
 		# )
 
-		# DELETE a review:
+		# # DELETE a review:
 
-		# DELETE failure due to incorrect location id:
-		url = self.build_url(path_parts=['api', 'locations', location_r.json()['_id'][1:], 'reviews', review2_r.json()['_id']])
-		review2_delete_r = requests.delete(url=url)
-		self.assertEqual(review2_delete_r.status_code, 404)
+		# # DELETE failure due to incorrect location id:
+		# url = self.build_url(path_parts=['api', 'locations', location_r.json()['_id'][1:], 'reviews', review2_r.json()['_id']])
+		# review2_delete_r = requests.delete(url=url)
+		# self.assertEqual(review2_delete_r.status_code, 404)
 
-		# DELETE failure due to non existing location id:
-		url = self.build_url(path_parts=['api', 'locations', '640ceee95fedd040ba74a736', 'reviews', review2_r.json()['_id']])
-		review2_delete_r = requests.delete(url=url)
-		self.assertEqual(review2_delete_r.status_code, 404)
+		# # DELETE failure due to non existing location id:
+		# url = self.build_url(path_parts=['api', 'locations', '640ceee95fedd040ba74a736', 'reviews', review2_r.json()['_id']])
+		# review2_delete_r = requests.delete(url=url)
+		# self.assertEqual(review2_delete_r.status_code, 404)
 
-		# DELETE failure due to no location id:
-		url = self.build_url(path_parts=['api', 'locations', 'reviews', review2_r.json()['_id']])
-		review2_delete_r = requests.delete(url=url)
-		self.assertEqual(review2_delete_r.status_code, 404)
+		# # DELETE failure due to no location id:
+		# url = self.build_url(path_parts=['api', 'locations', 'reviews', review2_r.json()['_id']])
+		# review2_delete_r = requests.delete(url=url)
+		# self.assertEqual(review2_delete_r.status_code, 404)
 		
-		# DELETE failure due to incorrect review id:
-		url = self.build_url(path_parts=['api', 'locations', location_r.json()['_id'], 'reviews', review2_r.json()['_id'][1:]])
-		review2_delete_r = requests.delete(url=url)
-		self.assertEqual(review2_delete_r.status_code, 404)
+		# # DELETE failure due to incorrect review id:
+		# url = self.build_url(path_parts=['api', 'locations', location_r.json()['_id'], 'reviews', review2_r.json()['_id'][1:]])
+		# review2_delete_r = requests.delete(url=url)
+		# self.assertEqual(review2_delete_r.status_code, 404)
 
 
-		# DELETE failure due to non existing review id:
-		url = self.build_url(path_parts=['api', 'locations', location_r.json()['_id'], 'reviews', '640ceee95fedd040ba74a736'])
-		review2_delete_r = requests.delete(url=url)
-		self.assertEqual(review2_delete_r.status_code, 404)
+		# # DELETE failure due to non existing review id:
+		# url = self.build_url(path_parts=['api', 'locations', location_r.json()['_id'], 'reviews', '640ceee95fedd040ba74a736'])
+		# review2_delete_r = requests.delete(url=url)
+		# self.assertEqual(review2_delete_r.status_code, 404)
 		
-		# DELETE failure due to no review id. Without a review id the api
-		# endpoint becomes /api/locations/<locationid>/reviews and delete is
-		# an invalid method for this endpoint.
-		url = self.build_url(path_parts=['api', 'locations', location_r.json()['_id'], 'reviews'])
-		review2_delete_r = requests.delete(url=url)
-		self.assertEqual(review2_delete_r.status_code, 405)
-		
-		# DELETE 2nd review: success
-		url = self.build_url(path_parts=['api', 'locations', location_r.json()['_id'], 'reviews', review2_r.json()['_id']])
-		read_review_1 = requests.get(url)
-		self.assertEqual(read_review_1.status_code, 200)
-
-		review2_delete_r = requests.delete(url=url)
-		self.assertEqual(review2_delete_r.status_code, 204)
-
-		read_review_1 = requests.get(url)
-		self.assertEqual(read_review_1.status_code, 404)
-
-		self.location_tests(
-			location_id=location_r.json()['_id'], 
-			expected_reviews=1, 
-			expected_rating=5, 
-		)
-
-		# DELETE 1st review: success
-		url = self.build_url(path_parts=['api', 'locations', location_r.json()['_id'], 'reviews', review1_r.json()['_id']])
-		read_review_2 = requests.get(url)
-		self.assertEqual(read_review_2.status_code, 200)
-
-		review2_delete_r = requests.delete(url=url)
-		self.assertEqual(review2_delete_r.status_code, 204)
-
-		self.location_tests(
-			location_id=location_r.json()['_id'], 
-			expected_reviews=0, 
-			expected_rating=0, 
-		)
-
-		read_review_2 = requests.get(url)
-		self.assertEqual(read_review_2.status_code, 404)
-
-
-		# for whatever reason when all reviews are removed location
-		# ['reviews'] no longer exists for the location. But can add another
-		# reviews without issues. When another review is added then location
-		# ['reviews'] is present again.
-
-		# CREATE review #1 success:
-		location_id = location_r.json()['_id']
-
+		# # DELETE failure due to no review id. Without a review id the api
+		# # endpoint becomes /api/locations/<locationid>/reviews and delete is
+		# # an invalid method for this endpoint.
 		# url = self.build_url(path_parts=['api', 'locations', location_r.json()['_id'], 'reviews'])
-		review1_r = requests.post(
-			url=self.build_url(path_parts=['api', 'locations', location_id, 'reviews']),
-			json={
-				'author': 'Simmon Holmes',		
-				'rating': 5,
-				'reviewText': "No wifi. Has male and female a go-go dances. Will be back with the family!",
-			}
-		)
+		# review2_delete_r = requests.delete(url=url)
+		# self.assertEqual(review2_delete_r.status_code, 405)
+		
+		# # DELETE 2nd review: success
+		# url = self.build_url(path_parts=['api', 'locations', location_r.json()['_id'], 'reviews', review2_r.json()['_id']])
+		# read_review_1 = requests.get(url)
+		# self.assertEqual(read_review_1.status_code, 200)
 
-		self.assertEqual(review1_r.status_code, 201)
+		# review2_delete_r = requests.delete(url=url)
+		# self.assertEqual(review2_delete_r.status_code, 204)
+
+		# read_review_1 = requests.get(url)
+		# self.assertEqual(read_review_1.status_code, 404)
+
+		# self.location_tests(
+		# 	location_id=location_r.json()['_id'], 
+		# 	expected_reviews=1, 
+		# 	expected_rating=5, 
+		# )
+
+		# # DELETE 1st review: success
+		# url = self.build_url(path_parts=['api', 'locations', location_r.json()['_id'], 'reviews', review1_r.json()['_id']])
+		# read_review_2 = requests.get(url)
+		# self.assertEqual(read_review_2.status_code, 200)
+
+		# review2_delete_r = requests.delete(url=url)
+		# self.assertEqual(review2_delete_r.status_code, 204)
+
+		# self.location_tests(
+		# 	location_id=location_r.json()['_id'], 
+		# 	expected_reviews=0, 
+		# 	expected_rating=0, 
+		# )
+
+		# read_review_2 = requests.get(url)
+		# self.assertEqual(read_review_2.status_code, 404)
 
 
-		# Clean up; delete the test location:
-		url = self.build_url(path_parts=['api', 'locations', location_r.json()['_id']])
-		r = requests.delete(url=url)
-		self.assertEqual(r.status_code, 204)
+		# # for whatever reason when all reviews are removed location
+		# # ['reviews'] no longer exists for the location. But can add another
+		# # reviews without issues. When another review is added then location
+		# # ['reviews'] is present again.
+
+		# # CREATE review #1 success:
+		# location_id = location_r.json()['_id']
+
+		# # url = self.build_url(path_parts=['api', 'locations', location_r.json()['_id'], 'reviews'])
+		# review1_r = requests.post(
+		# 	url=self.build_url(path_parts=['api', 'locations', location_id, 'reviews']),
+		# 	json={
+		# 		'author': 'Simmon Holmes',		
+		# 		'rating': 5,
+		# 		'reviewText': "No wifi. Has male and female a go-go dances. Will be back with the family!",
+		# 	}
+		# )
+
+		# self.assertEqual(review1_r.status_code, 201)
+
+
+		# # Clean up; delete the test location:
+		# url = self.build_url(path_parts=['api', 'locations', location_r.json()['_id']])
+		# r = requests.delete(url=url)
+		# self.assertEqual(r.status_code, 204)
 
 
 	def build_test_locations(self):

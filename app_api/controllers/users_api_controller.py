@@ -2,6 +2,7 @@ import datetime
 import mongoengine as me
 import re 
 
+from my_loc8r.app_api.controllers.api_controllers_base import APIControllersBase
 from my_loc8r.app_api.models.user_model import Users
 
 import rlcompleter
@@ -9,7 +10,7 @@ import pdb
 pdb.Pdb.complete = rlcompleter.Completer(locals()).complete
 
 
-class UsersAPIController(object):
+class UsersAPIController(APIControllersBase):
 	'''
 	
 	Controller class for User API routes.
@@ -21,44 +22,17 @@ class UsersAPIController(object):
 
 		'''
 
-		self.status_code = None 
-		self.data = None
+		super().__init__()
 
 		self._required_registration_keys = ['name', 'email', 'password']
 		self._required_login_keys = ['email', 'password']
 
 
+
 # *******************************************************************************
 # START: Public methods:
 
-
-	@property
-	def status_code(self):
-		return self._status_code 
-
-	@status_code.setter
-	def status_code(self, value):
-		self._status_code = value
-
-
-	@property
-	def html(self):
-		return self._html 
-
-	@html.setter
-	def html(self, value):
-		self._html = value
-
-	# data is an alias for html. data makes more since to use in an api.
-	@property
-	def data(self):
-		return self.html 
-
-	@data.setter
-	def data(self, value):
-		self.html = value
-
-
+	# POST: /api/register
 	def register(self, request):
 		'''
 
@@ -97,7 +71,7 @@ class UsersAPIController(object):
 
 
 
-
+	# POST: /api/login
 	def login(self, request):
 		'''
 
@@ -136,7 +110,8 @@ class UsersAPIController(object):
 
 
 
-			
+	# End: Public methods:
+	# *******************************************************************************			
 
 
 	def is_user_ok(self, registration_data, required_keys):

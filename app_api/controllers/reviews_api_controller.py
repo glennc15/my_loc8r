@@ -492,12 +492,12 @@ class ReviewsAPIController(APIControllersBase):
 			raise ValueError("unknow error, location = {}".format(location))
 
 
-# End: Public methods:
-# *******************************************************************************
+	# End: Public methods:
+	# *******************************************************************************
 
 
-# *******************************************************************************
-# START: helper methods:
+	# *******************************************************************************
+	# START: helper methods:
 
 
 	def is_review_data_ok(self, review_data):

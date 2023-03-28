@@ -19,13 +19,23 @@ class OpeningTime(me.EmbeddedDocument):
 
 
 class Locations(me.Document):
-	name = me.StringField(required=True)
-	address = me.StringField()
+	name = me.StringField(required=True, min_length=1)
+	address = me.StringField(min_length=1)
 	rating = me.IntField(default=0, min_value=0, max_value=5)
 	facilities = me.StringField()
-	coords = me.PointField(auto_index=True)
+	coords = me.PointField(auto_index=True, )
 	openingTimes = me.ListField(me.EmbeddedDocumentField(OpeningTime))
 	reviews = me.ListField(me.EmbeddedDocumentField(Review))
 	
 	# opening_times = me.EmbeddedDocumentListField(me.EmbeddedDocument(OpeningTimeSchema))
 	# reviews = me.EmbeddedDocumentListField(me.EmbeddedDocument(ReviewSchema))
+
+
+	def validate_coords(self, coords):
+		'''
+
+		'''
+
+		
+
+		longitude = coords[0]

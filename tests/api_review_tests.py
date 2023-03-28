@@ -24,7 +24,7 @@ import os
 # from components.mongo_repository import MongoRepository
 # from components.mongo_records_reader import MongoRecordsReader 
 
-from api_endpoint_tests import APIEndPointTests, endpoint_test
+from api_endpoint_testing import APIEndPointTests, endpoint_test
 
 import rlcompleter
 import pdb 
@@ -1136,8 +1136,6 @@ class APITests(unittest.TestCase):
 		APITests.mongo_client[self.db_name].drop_collection('locations')
 		APITests.mongo_client[self.db_name].create_collection('locations')
 		APITests.mongo_client[self.db_name]['locations'].create_index([('coords', pymongo.GEOSPHERE)])
-
-
 
 
 	def decode_token(self, token):

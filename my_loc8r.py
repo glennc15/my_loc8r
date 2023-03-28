@@ -5,10 +5,11 @@ from flask_httpauth import HTTPBasicAuth
 
 
 
-import my_loc8r.app_server.controllers.locations_ctrl as loc_ctrl
+# import my_loc8r.app_server.controllers.locations_ctrl as loc_ctrl
 
 # import my_loc8r.app_api.controllers.locs_api_ctrl as locs_api_ctrl
 from my_loc8r.app_api.controllers.locations_api_controller import LocationsAPIController
+from my_loc8r.app_api.controllers.reviews_api_controller import ReviewsAPIController
 from my_loc8r.app_api.controllers.users_api_controller import UsersAPIController
 
 from my_loc8r.app_api.models.user_model import Users
@@ -44,7 +45,7 @@ auth = HTTPBasicAuth()
 
 
 
-# *************************************************************
+# -------------------------------------------------------------------------------
 # app_server routers:
 
 @app.route('/', methods=['GET'])
@@ -72,46 +73,21 @@ def add_loc_review(locationid):
 	elif request.method == 'POST':
 		return loc_ctrl.add_review(request=request, location_id=locationid)
 
-
-
 	# return "<p>Add a review for Location = {}!</p>".format(locationid)
-
 
 @app.route('/about')
 def about():
 	return '<p>About Page</p>'
 
 
-# *************************************************************
-
-
-# *************************************************************
-# api_server routers:
-
-
-@auth.error_handler
-def auth_error(status):
-    return g.error_msg, status
-
-
-@auth.verify_password
-def verify_password(username, password):
-
-	user, error_msg = Users.verify_jwt(jwt_token=username)
-
-	if isinstance(user, Users):
-		g.user = user
-		g.error_msg = None  
-		return True
-
-	else:
-		g.user = None
-		g.error_msg = error_msg  
-		return False
 
 
 
+
+
+# -------------------------------------------------------------------------------
 # Location routes:
+
 @app.route('/api/locations', methods=['GET', 'POST', 'PUT', 'DELETE'])
 def api_locations():
 	print("{}: api_locations()".format(request.method))
@@ -143,26 +119,27 @@ def api_location(locationid):
 
 
 
-
+# -------------------------------------------------------------------------------
 # Review routes:
+
 @app.route('/api/locations/<locationid>/reviews', methods=['POST'])
 @auth.login_required
 def api_review_create(locationid):
 	print("{}: api_review_create({})".format(request.method, locationid))
 
-	loc_api_controller = LocationsAPIController()
-	loc_api_controller.create_review(
+	review_api_controller = ReviewsAPIController()
+	review_api_controller.create_review(
 		location_id=locationid, 
 		review_data=request.get_json(), 
 		user=g.user
 	)
 
-	print("loc_api_controller.status_code = {}".format(loc_api_controller.status_code))
-	print("loc_api_controller.data = {}".format(loc_api_controller.data))
+	print("review_api_controller.status_code = {}".format(review_api_controller.status_code))
+	print("review_api_controller.data = {}".format(review_api_controller.data))
 
 	# pdb.set_trace()
 	
-	return (loc_api_controller.data, loc_api_controller.status_code)
+	return (review_api_controller.data, review_api_controller.status_code)
 
 
 
@@ -171,16 +148,16 @@ def api_review_get(locationid, reviewid):
 
 	print("{}: api_review_get({}, {})".format(request.method, locationid, reviewid))
 
-	loc_api_controller = LocationsAPIController()
-	loc_api_controller.read_review(
+	review_api_controller = ReviewsAPIController()
+	review_api_controller.read_review(
 		location_id=locationid, 
 		review_id=reviewid
 	)
 
-	print("loc_api_controller.status_code = {}".format(loc_api_controller.status_code))
-	print("loc_api_controller.data = {}".format(loc_api_controller.data))
+	print("review_api_controller.status_code = {}".format(review_api_controller.status_code))
+	print("review_api_controller.data = {}".format(review_api_controller.data))
 
-	return (loc_api_controller.data, loc_api_controller.status_code)
+	return (review_api_controller.data, review_api_controller.status_code)
 
 
 # authencation is requried for updateing or deleting a review:
@@ -190,10 +167,10 @@ def api_review_update(locationid, reviewid):
 
 	print("{}: api_review_update({}, {})".format(request.method, locationid, reviewid))
 	
-	loc_api_controller = LocationsAPIController()
+	review_api_controller = ReviewsAPIController()
 
 	if request.method == "PUT":
-		loc_api_controller.update_review(
+		review_api_controller.update_review(
 			location_id=locationid, 
 			review_id=reviewid, 
 			review_data=request.get_json(), 
@@ -201,25 +178,24 @@ def api_review_update(locationid, reviewid):
 		)
 
 	if request.method == 'DELETE':
-		loc_api_controller.delete_review(
+		review_api_controller.delete_review(
 			location_id=locationid, 
 			review_id=reviewid,
 			user=g.user
 		)
 
 
-	print("loc_api_controller.status_code = {}".format(loc_api_controller.status_code))
-	print("loc_api_controller.data = {}".format(loc_api_controller.data))
+	print("review_api_controller.status_code = {}".format(review_api_controller.status_code))
+	print("review_api_controller.data = {}".format(review_api_controller.data))
 
 
-	return (loc_api_controller.data, loc_api_controller.status_code)
-
-
-
+	return (review_api_controller.data, review_api_controller.status_code)
 
 
 
+# -------------------------------------------------------------------------------
 # Authentication routes:
+
 @app.route('/api/register', methods=['POST'])
 def api_register():
 	users_api_controller = UsersAPIController()
@@ -242,7 +218,29 @@ def api_login():
 	return (users_api_controller.data, users_api_controller.status_code)
 
 
-# *************************************************************
+
+# -------------------------------------------------------------------------------
+# Authencation Middleware:
+
+@auth.error_handler
+def auth_error(status):
+    return g.error_msg, status
+
+
+@auth.verify_password
+def verify_password(username, password):
+
+	user, error_msg = Users.verify_jwt(jwt_token=username)
+
+	if isinstance(user, Users):
+		g.user = user
+		g.error_msg = None  
+		return True
+
+	else:
+		g.user = None
+		g.error_msg = error_msg  
+		return False
 
 
 

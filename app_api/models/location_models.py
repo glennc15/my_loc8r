@@ -2,6 +2,9 @@ import mongoengine as me
 import datetime
 from bson import ObjectId
 
+import rlcompleter
+import pdb 
+pdb.Pdb.complete = rlcompleter.Completer(locals()).complete
 
 
 class Review(me.EmbeddedDocument):
@@ -17,7 +20,43 @@ class OpeningTime(me.EmbeddedDocument):
 	days = me.StringField(required=True)
 	opening = me.StringField()
 	closing = me.StringField()
-	closed = me.BooleanField(default=True)
+	closed = me.BooleanField(required=True)
+
+
+	@ staticmethod
+	def validate_doc(doc):
+		'''
+		
+
+
+		'''
+
+		# check .opening and .closing are valid strings when .closed = False
+		if doc.closed == False:
+
+			if (doc.opening is None):
+				raise me.errors.ValidationError("field ['opening'] is required when field ['closed'] = True")
+
+			elif (isinstance(doc.opening, str) and (len(doc.opening)==0)):
+				raise me.errors.ValidationError("field ['opening'] is cannot be empty when field ['closed'] = True")
+
+			elif (doc.closing is None):
+				raise me.errors.ValidationError("field ['closing'] is required when field ['closed'] = True")
+
+			elif (isinstance(doc.closing, str) and (len(doc.closing)==0)):
+				raise me.errors.ValidationError("field ['closing'] is cannot be empty when field ['closed'] = True")
+
+
+
+	def clean(self):
+		'''
+
+
+		'''
+
+		self.validate_doc(doc=self)
+
+
 
 
 class Locations(me.Document):
@@ -31,6 +70,10 @@ class Locations(me.Document):
 	
 	# opening_times = me.EmbeddedDocumentListField(me.EmbeddedDocument(OpeningTimeSchema))
 	# reviews = me.EmbeddedDocumentListField(me.EmbeddedDocument(ReviewSchema))
+
+
+
+
 
 
 	@staticmethod

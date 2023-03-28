@@ -59,6 +59,25 @@ class LocationsAPIController(APIControllersBase):
 # *******************************************************************************
 # START: helper methods:
 	
+	def common_validation_errors(self, exception):
+		'''
+
+
+		'''
+		if isinstance(exception, me.errors.ValidationError):
+			self.data = {'error': "{}".format(exception)}
+			self.status_code = 400
+
+		elif isinstance(exception, KeyError):
+			self.data = {'error': "{} filed is reqired".format(exception)}
+			self.status_code = 400
+
+
+		else:
+			raise exception 
+
+
+
 	# POST:/api/locations
 	def create_location(self, location_data):
 		'''
@@ -75,23 +94,26 @@ class LocationsAPIController(APIControllersBase):
 			location.validate()
 
 		except Exception as e:
-			if isinstance(e, me.errors.ValidationError):
-				self.data = {'error': "{}".format(e)}
-				self.status_code = 400
-
-			elif isinstance(e, KeyError):
-				self.data = {'error': "{} filed is reqired".format(e)}
-				self.status_code = 400
-
-
-			else:
-				raise e 
-
-
+			self.common_validation_errors(e)
 			return None 
 
 
 		# add opening time sub documents:
+		if location_data.get('openingTimes'):
+			opening_time_records = list()
+			for opening_time in location_data['openingTimes']:
+				this_opening_time = OpeningTime(**opening_time)
+
+				try:
+					this_opening_time.validate()
+
+				except Exception as e:
+					self.common_validation_errors(e)
+					return None 
+
+				opening_time_records.append(this_opening_time)
+
+			location.openingTimes = opening_time_records
 
 
 		try:

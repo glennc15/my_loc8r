@@ -379,6 +379,7 @@ class APILocationTests(unittest.TestCase):
 		self.assertEqual(location_r.json()['name'], 'Burger QueEn')
 		self.assertEqual(location_r.json()['address'], '783 High Street, Reading, RG6 1PS')
 		self.assertEqual(location_r.json()['facilities'], 'Food,Premium wifi')
+		self.assertEqual(location_r.json()['rating'], 0)
 		self.assertEqual(location_r.json()['lng'], -0.9690854)
 		self.assertEqual(location_r.json()['lat'], 51.455051)
 		self.assertEqual(len(location_r.json()['openingTimes']), 0)

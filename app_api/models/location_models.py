@@ -2,6 +2,8 @@ import mongoengine as me
 import datetime
 from bson import ObjectId
 
+
+
 class Review(me.EmbeddedDocument):
 	_id = me.ObjectIdField(required=True, default=ObjectId)
 	author = me.StringField(required=True, min_length=2)
@@ -23,7 +25,7 @@ class Locations(me.Document):
 	address = me.StringField(min_length=1)
 	rating = me.IntField(default=0, min_value=0, max_value=5)
 	facilities = me.StringField()
-	coords = me.PointField(auto_index=True, )
+	coords = me.PointField(auto_index=True)
 	openingTimes = me.ListField(me.EmbeddedDocumentField(OpeningTime))
 	reviews = me.ListField(me.EmbeddedDocumentField(Review))
 	
@@ -31,11 +33,24 @@ class Locations(me.Document):
 	# reviews = me.EmbeddedDocumentListField(me.EmbeddedDocument(ReviewSchema))
 
 
-	def validate_coords(self, coords):
-		'''
-
-		'''
-
+	@staticmethod
+	def validate_coods(coords):
 		
+		longitude, latitude = coords
+		
+		if not (-180.0<=longitude<=180.0):
+			raise me.errors.ValidationError("longitude is out of range, -180.0 <= longitude <= 180")
 
-		longitude = coords[0]
+		if not (-90.0<=latitude<=90.0):
+			raise me.errors.ValidationError("latitude is out of range, -90.0 <= latitude <= 90")
+
+
+
+
+	def clean(self):
+		'''
+
+
+		'''
+
+		self.validate_coods(self.coords)

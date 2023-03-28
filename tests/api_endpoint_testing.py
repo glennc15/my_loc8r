@@ -584,8 +584,7 @@ def endpoint_test(method, scheme, url, endpoint, data, auth, expected_status_cod
 
 	status_msg = ''
 	status_msg += "Running {}:{} - ".format(method, endpoint) 
-	status_msg += "{} - ".format(descriptive_error_msg)
-
+	
 	if auth is None:
 		status_msg += "without authorization - "
 
@@ -599,8 +598,8 @@ def endpoint_test(method, scheme, url, endpoint, data, auth, expected_status_cod
 
 			status_msg += "with authorization - "
 
-	status_msg += "expected status code: {}".format(expected_status_code)
-
+	status_msg += "expected status code: {} - ".format(expected_status_code)
+	status_msg += "{}".format(descriptive_error_msg)
 
 	print(status_msg)
 

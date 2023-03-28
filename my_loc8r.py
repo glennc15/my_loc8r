@@ -88,12 +88,20 @@ def about():
 # -------------------------------------------------------------------------------
 # Location routes:
 
-@app.route('/api/locations', methods=['GET', 'POST', 'PUT', 'DELETE'])
+@app.route('/api/locations', methods=['GET', 'POST'])
 def api_locations():
 	print("{}: api_locations()".format(request.method))
 
 	loc_api_controller = LocationsAPIController()
-	loc_api_controller.locations(request=request, location_id=None)
+
+
+	if request.method == 'POST':
+		loc_api_controller.create_location(location_data=request.get_json())
+
+
+	if request.method == 'GET':
+		loc_api_controller.get_geo_location()
+
 
 	print("loc_api_controller.status_code = {}".format(loc_api_controller.status_code))
 	print("loc_api_controller.data = {}".format(loc_api_controller.data))
@@ -105,11 +113,25 @@ def api_locations():
 	return (loc_api_controller.data, loc_api_controller.status_code)
 
 
-@app.route('/api/locations/<locationid>', methods=['GET', 'POST', 'PUT', 'DELETE'])
+@app.route('/api/locations/<locationid>', methods=['GET', 'PUT', 'DELETE'])
 def api_location(locationid):
 	print("{}: api_locations({})".format(request.method, locationid))
 
 	loc_api_controller = LocationsAPIController()
+
+	if request.method == 'GET':
+		loc_api_controller.read_location_by_id(location_id=locationid)
+
+
+	if request.method == 'PUT':
+		loc_api_controller.update_location(location_id=locationid, location_data=request.get_json())
+
+	
+	if request.method == 'DELETE':
+		loc_api_controller.delete_location(location_id=locationid)
+
+
+
 	loc_api_controller.locations(request=request, location_id=locationid)
 
 	# print("loc_api_controller.status_code = {}".format(loc_api_controller.status_code))

@@ -24,14 +24,14 @@ import os
 # from components.mongo_repository import MongoRepository
 # from components.mongo_records_reader import MongoRecordsReader 
 
-# from api_endpoint_testing import APIEndPointTests, endpoint_test
+from api_endpoint_testing import APIEndPointTests, endpoint_test
 
 import rlcompleter
 import pdb 
 pdb.Pdb.complete = rlcompleter.Completer(locals()).complete
 
 
-class APITests(unittest.TestCase):
+class APILocationTests(unittest.TestCase):
 
 	mongo_address = "mongodb://192.168.1.2:27017"
 	mongo_client = MongoClient(mongo_address)
@@ -54,7 +54,7 @@ class APITests(unittest.TestCase):
 
 		'''
 
-		APITests.mongo_client.close()
+		APILocationTests.mongo_client.close()
 
 
 
@@ -70,21 +70,22 @@ class APITests(unittest.TestCase):
 		# self.url = 'localhost:3000'
 
 
-
-	def test_location_crud_01(self):
+	# POST:/api/locations
+	def test_location_create_01(self):
 		'''
 
-		
 
 		'''
-		# CREATE a location:
 
-		# unsuccessful POST due to an invalid url:
-		url = self.build_url(path_parts=['api', 'locations', '6408d7ef69d46dd24edd9287'])
+		self.reset_locations_collection()
 
-		location_r = requests.post(
-			url=url,
-			json={
+		# CREATE unsuccessful: due to an invalid url:
+		endpoint_test(
+			method='POST', 
+			scheme=self.scheme, 
+			url=self.url, 
+			endpoint='/'.join(['api', 'locations', str(ObjectId())]), 
+			data={
 				'name': 'Burger QueEn',		
 				'address': "783 High Street, Reading, RG6 1PS",
 				'facilities': "Food,Premium wifi",
@@ -102,18 +103,20 @@ class APITests(unittest.TestCase):
 						'closed': True
 					}
 				]
-			}
+			}, 
+			auth=None, 
+			expected_status_code=405, 
+			descriptive_error_msg="invalid method for endpoint"
 		)
 
-		self.assertEqual(location_r.status_code, 405)
 
-
-		url = self.build_url(path_parts=['api', 'locations'])
-		
-		# unsuccessful POST due to missing name field (required):
-		r = requests.post(
-			url=url,
-			json={
+		# CREATE unsuccessful: due to missing name field (required):
+		endpoint_test(
+			method='POST', 
+			scheme=self.scheme, 
+			url=self.url, 
+			endpoint='/'.join(['api', 'locations']), 
+			data={
 				'address': "783 High Street, Reading, RG6 1PS",
 				'facilities': "Food,Premium wifi",
 				'lng': -0.9690854,
@@ -130,19 +133,21 @@ class APITests(unittest.TestCase):
 						'closed': True
 					}
 				]
-			}
+			}, 
+			auth=None, 
+			expected_status_code=400, 
+			descriptive_error_msg="name is required"
 		)
 
-		# print(r.json())
 
-		self.assertEqual(r.status_code, 400)
-
-
-		# unsuccessful POST due to missing invalid name field (required):
-		r = requests.post(
-			url=url,
-			json={
-				'name': '',
+		# CREATE unsuccessful: due to missing invalid name field (required):
+		endpoint_test(
+			method='POST', 
+			scheme=self.scheme, 
+			url=self.url, 
+			endpoint='/'.join(['api', 'locations']), 
+			data={
+				'name': '',		
 				'address': "783 High Street, Reading, RG6 1PS",
 				'facilities': "Food,Premium wifi",
 				'lng': -0.9690854,
@@ -159,20 +164,22 @@ class APITests(unittest.TestCase):
 						'closed': True
 					}
 				]
-			}
+			}, 
+			auth=None, 
+			expected_status_code=400, 
+			descriptive_error_msg="name is an empty string"
 		)
 
-		# print(r.json())
-
-		self.assertEqual(r.status_code, 400)
 
 
-
-		# unsuccessful POST due to missing longitude coordinate (required):
-		r = requests.post(
-			url=url,
-			json={
-				'name': 'Burger Queen',
+		# CREATE unsuccessful: due to missing longitude coordinate (required):
+		endpoint_test(
+			method='POST', 
+			scheme=self.scheme, 
+			url=self.url, 
+			endpoint='/'.join(['api', 'locations']), 
+			data={
+				'name': 'Burger QueEn',		
 				'address': "783 High Street, Reading, RG6 1PS",
 				'facilities': "Food,Premium wifi",
 				'lat': 51.455051,
@@ -188,16 +195,22 @@ class APITests(unittest.TestCase):
 						'closed': True
 					}
 				]
-			}
+			}, 
+			auth=None, 
+			expected_status_code=400, 
+			descriptive_error_msg="longitude is required"
 		)
 
-		self.assertEqual(r.status_code, 400)
 
-		# unsuccessful POST due to invalid longitude coordinate (required):
-		r = requests.post(
-			url=url,
-			json={
-				'name': 'Burger Queen',
+
+		# CREATE unsuccessful: due to invalid longitude coordinate:
+		endpoint_test(
+			method='POST', 
+			scheme=self.scheme, 
+			url=self.url, 
+			endpoint='/'.join(['api', 'locations']), 
+			data={
+				'name': 'Burger QueEn',		
 				'address': "783 High Street, Reading, RG6 1PS",
 				'facilities': "Food,Premium wifi",
 				'lng': -180.9690854,
@@ -214,18 +227,52 @@ class APITests(unittest.TestCase):
 						'closed': True
 					}
 				]
-			}
+			}, 
+			auth=None, 
+			expected_status_code=400, 
+			descriptive_error_msg="longitude is invalid"
 		)
 
-		# print(r.json())
 
-		self.assertEqual(r.status_code, 400)
+		# CREATE unsuccessful: due to invalid longitude coordinate:
+		endpoint_test(
+			method='POST', 
+			scheme=self.scheme, 
+			url=self.url, 
+			endpoint='/'.join(['api', 'locations']), 
+			data={
+				'name': 'Burger QueEn',		
+				'address': "783 High Street, Reading, RG6 1PS",
+				'facilities': "Food,Premium wifi",
+				'lng': 180.9690854,
+				'lat': 51.455051,
+				'openingTimes': [
+					{
+						'days': "Thursday - Saturday",
+						'opening': "1:00am",
+						'closing': "10:00am",
+						'closed': False
+					},
+					{
+						'days': "Monday - Wednesday",
+						'closed': True
+					}
+				]
+			}, 
+			auth=None, 
+			expected_status_code=400, 
+			descriptive_error_msg="longitude is invalid"
+		)
 
-		# unsuccessful POST due to missing latitude coordinates (required):
-		r = requests.post(
-			url=url,
-			json={
-				'name': 'Burger Queen',
+
+		# CREATE unsuccessful: due to missing latitude coordinates (required):
+		endpoint_test(
+			method='POST', 
+			scheme=self.scheme, 
+			url=self.url, 
+			endpoint='/'.join(['api', 'locations']), 
+			data={
+				'name': 'Burger QueEn',		
 				'address': "783 High Street, Reading, RG6 1PS",
 				'facilities': "Food,Premium wifi",
 				'lng': -0.9690854,
@@ -241,20 +288,25 @@ class APITests(unittest.TestCase):
 						'closed': True
 					}
 				]
-			}
+			}, 
+			auth=None, 
+			expected_status_code=400, 
+			descriptive_error_msg="lattitue is required"
 		)
 
-		self.assertEqual(r.status_code, 400)
 
-		# unsuccessful POST due to invalid latitude coordinate (required):
-		r = requests.post(
-			url=url,
-			json={
-				'name': 'Burger Queen',
+		# CREATE unsuccessful: due to invalid latitude coordinate:
+		endpoint_test(
+			method='POST', 
+			scheme=self.scheme, 
+			url=self.url, 
+			endpoint='/'.join(['api', 'locations']), 
+			data={
+				'name': 'Burger QueEn',		
 				'address': "783 High Street, Reading, RG6 1PS",
 				'facilities': "Food,Premium wifi",
 				'lng': -0.9690854,
-				'lat': 151.455051,
+				'lat': 90.455051,
 				'openingTimes': [
 					{
 						'days': "Thursday - Saturday",
@@ -267,15 +319,83 @@ class APITests(unittest.TestCase):
 						'closed': True
 					}
 				]
-			}
+			}, 
+			auth=None, 
+			expected_status_code=400, 
+			descriptive_error_msg="lattitue is invalid"
 		)
 
-		self.assertEqual(r.status_code, 400)
+		# CREATE unsuccessful: due to invalid latitude coordinate:
+		endpoint_test(
+			method='POST', 
+			scheme=self.scheme, 
+			url=self.url, 
+			endpoint='/'.join(['api', 'locations']), 
+			data={
+				'name': 'Burger QueEn',		
+				'address': "783 High Street, Reading, RG6 1PS",
+				'facilities': "Food,Premium wifi",
+				'lng': -0.9690854,
+				'lat': -90.455051,
+				'openingTimes': [
+					{
+						'days': "Thursday - Saturday",
+						'opening': "1:00am",
+						'closing': "10:00am",
+						'closed': False
+					},
+					{
+						'days': "Monday - Wednesday",
+						'closed': True
+					}
+				]
+			}, 
+			auth=None, 
+			expected_status_code=400, 
+			descriptive_error_msg="lattitue is invalid"
+		)
 
-		# unsuccessful POST due to invalid openingTimes record:
-		location_r = requests.post(
-			url=url,
-			json={
+
+
+		# a successful POST:
+		location_r = endpoint_test(
+			method='POST', 
+			scheme=self.scheme, 
+			url=self.url, 
+			endpoint='/'.join(['api', 'locations']), 
+			data={
+				'name': 'Burger QueEn',		
+				'address': "783 High Street, Reading, RG6 1PS",
+				'facilities': "Food,Premium wifi",
+				'lng': -0.9690854,
+				'lat': 51.455051,
+			}, 
+			auth=None, 
+			expected_status_code=201, 
+			descriptive_error_msg="create location success"
+		)
+
+		self.assertIsInstance(ObjectId(location_r.json()['_id']), ObjectId)
+		self.assertEqual(location_r.json()['name'], 'Burger QueEn')
+		self.assertEqual(location_r.json()['address'], '783 High Street, Reading, RG6 1PS')
+		self.assertEqual(location_r.json()['facilities'], 'Food,Premium wifi')
+		self.assertEqual(location_r.json()['lng'], -0.9690854)
+		self.assertEqual(location_r.json()['lat'], 51.455051)
+		self.assertEqual(len(location_r.json()['openingTimes']), 0)
+		self.assertEqual(len(location_r.json()['reviews']), 0)
+
+
+		self.assertTrue(False)
+
+
+
+		# CREATE unsuccessful: due to invalid openingTimes record:
+		endpoint_test(
+			method='POST', 
+			scheme=self.scheme, 
+			url=self.url, 
+			endpoint='/'.join(['api', 'locations']), 
+			data={
 				'name': 'Burger QueEn',		
 				'address': "783 High Street, Reading, RG6 1PS",
 				'facilities': "Food,Premium wifi",
@@ -288,19 +408,24 @@ class APITests(unittest.TestCase):
 						'closing': "10:00am",
 						'closed': False
 					},
-					
-					"Monday - Wednesday",
-	
+					{
+						'days': "Monday - Wednesday",
+					}
 				]
-			}
+			}, 
+			auth=None, 
+			expected_status_code=400, 
+			descriptive_error_msg="invalid opeing time record"
 		)
 
-		self.assertEqual(r.status_code, 400)
 
-		# unsuccessful POST due to missing openingTimes['days']:
-		location_r = requests.post(
-			url=url,
-			json={
+		# CREATE unsuccessful: due to missing openingTimes['days']:
+		endpoint_test(
+			method='POST', 
+			scheme=self.scheme, 
+			url=self.url, 
+			endpoint='/'.join(['api', 'locations']), 
+			data={
 				'name': 'Burger QueEn',		
 				'address': "783 High Street, Reading, RG6 1PS",
 				'facilities': "Food,Premium wifi",
@@ -317,15 +442,21 @@ class APITests(unittest.TestCase):
 						'closed': True
 					}
 				]
-			}
+			}, 
+			auth=None, 
+			expected_status_code=400, 
+			descriptive_error_msg="invalid opening time record"
 		)
 
-		self.assertEqual(r.status_code, 400)
 
-		# unsuccessful POST due to invalid openingTimes['days']:
-		location_r = requests.post(
-			url=url,
-			json={
+
+		# CREATE unsuccessful: due to invalid openingTimes['days']:
+		endpoint_test(
+			method='POST', 
+			scheme=self.scheme, 
+			url=self.url, 
+			endpoint='/'.join(['api', 'locations']), 
+			data={
 				'name': 'Burger QueEn',		
 				'address': "783 High Street, Reading, RG6 1PS",
 				'facilities': "Food,Premium wifi",
@@ -343,67 +474,20 @@ class APITests(unittest.TestCase):
 						'closed': True
 					}
 				]
-			}
+			}, 
+			auth=None, 
+			expected_status_code=400, 
+			descriptive_error_msg="invalid opening time record"
 		)
 
-		self.assertEqual(r.status_code, 400)
 
-		# unsuccessful POST due to missing openingTimes['closed']:
-		location_r = requests.post(
-			url=url,
-			json={
-				'name': 'Burger QueEn',		
-				'address': "783 High Street, Reading, RG6 1PS",
-				'facilities': "Food,Premium wifi",
-				'lng': -0.9690854,
-				'lat': 51.455051,
-				'openingTimes': [
-					{
-						'days': "Thursday - Saturday",
-						'opening': "1:00am",
-						'closing': "10:00am",
-						'closed': False
-					},
-					{
-						'days': "Monday - Wednesday",
-					}
-				]
-			}
-		)
-
-		self.assertEqual(r.status_code, 400)
-
-		# unsuccessful POST due to invalid openingTimes['closed']:
-		location_r = requests.post(
-			url=url,
-			json={
-				'name': 'Burger QueEn',		
-				'address': "783 High Street, Reading, RG6 1PS",
-				'facilities': "Food,Premium wifi",
-				'lng': -0.9690854,
-				'lat': 51.455051,
-				'openingTimes': [
-					{
-						'days': "Thursday - Saturday",
-						'opening': "1:00am",
-						'closing': "10:00am",
-						'closed': False
-					},
-					{
-						'days': "Monday - Wednesday",
-						'closed': 'True'
-					}
-				]
-			}
-		)
-
-		self.assertEqual(r.status_code, 400)
-
-
-		# a successful POST:
-		location_r = requests.post(
-			url=url,
-			json={
+		# CREATE unsuccessful: due to missing openingTimes['closed']:
+		endpoint_test(
+			method='POST', 
+			scheme=self.scheme, 
+			url=self.url, 
+			endpoint='/'.join(['api', 'locations']), 
+			data={
 				'name': 'Burger QueEn',		
 				'address': "783 High Street, Reading, RG6 1PS",
 				'facilities': "Food,Premium wifi",
@@ -421,11 +505,487 @@ class APITests(unittest.TestCase):
 						'closed': True
 					}
 				]
-			}
+			}, 
+			auth=None, 
+			expected_status_code=400, 
+			descriptive_error_msg="invalid opening time record"
 		)
 
-		self.assertEqual(location_r.status_code, 201)
+		# CREATE unsuccessful: due to invalid openingTimes['closed']:
+		endpoint_test(
+			method='POST', 
+			scheme=self.scheme, 
+			url=self.url, 
+			endpoint='/'.join(['api', 'locations']), 
+			data={
+				'name': 'Burger QueEn',		
+				'address': "783 High Street, Reading, RG6 1PS",
+				'facilities': "Food,Premium wifi",
+				'lng': -0.9690854,
+				'lat': 51.455051,
+				'openingTimes': [
+					{
+						'days': "Thursday - Saturday",
+						'opening': "1:00am",
+						'closing': "10:00am",
+						'closed': False
+					},
+					{
+						'days': "Monday - Wednesday",
+						'closed': 'True'
+					}
+				]
+			}, 
+			auth=None, 
+			expected_status_code=400, 
+			descriptive_error_msg="invalid method for endpoint"
+		)
+
+
+
+		# CREATE unsuccessful: due to invalid opeing field:
+		endpoint_test(
+			method='POST', 
+			scheme=self.scheme, 
+			url=self.url, 
+			endpoint='/'.join(['api', 'locations']), 
+			data={
+				'name': 'Burger QueEn',		
+				'address': "783 High Street, Reading, RG6 1PS",
+				'facilities': "Food,Premium wifi",
+				'lng': -0.9690854,
+				'lat': 51.455051,
+				'openingTimes': [
+					{
+						'days': "Thursday - Saturday",
+						'closing': "10:00am",
+						'closed': False
+					},
+					{
+						'days': "Monday - Wednesday",
+						'closed': True
+					}
+				]
+			}, 
+			auth=None, 
+			expected_status_code=400, 
+			descriptive_error_msg="invalid method for endpoint"
+		)
+
+
+
+		self.assertTrue(False)
+
+		# a successful POST:
+		location_r = endpoint_test(
+			method='POST', 
+			scheme=self.scheme, 
+			url=self.url, 
+			endpoint='/'.join(['api', 'locations']), 
+			data={
+				'name': 'Burger QueEn',		
+				'address': "783 High Street, Reading, RG6 1PS",
+				'facilities': "Food,Premium wifi",
+				'lng': -0.9690854,
+				'lat': 51.455051,
+				'openingTimes': [
+					{
+						'days': "Thursday - Saturday",
+						'opening': "1:00am",
+						'closing': "10:00am",
+						'closed': False
+					},
+					{
+						'days': "Monday - Wednesday",
+						'closed': True
+					}
+				]
+			}, 
+			auth=None, 
+			expected_status_code=201, 
+			descriptive_error_msg="invalid method for endpoint"
+		)
+
+		self.assertTrue(isinstance(ObjectId(location_r.json()['_id']), ObjectId))
 		self.assertEqual(location_r.json()['name'], 'Burger QueEn')
+		self.assertEqual(location_r.json()['address'], '783 High Street, Reading, RG6 1PS')
+		self.assertEqual(location_r.json()['facilities'], 'Food,Premium wifi')
+		self.assertEqual(location_r.json()['lat'], -0.9690854)
+		self.assertEqual(location_r.json()['lng'], 51.455051)
+
+		self.assertEqual(location_r.json()['openingTimes'][0]['days'], "Thursday - Saturday")
+		self.assertEqual(location_r.json()['openingTimes'][0]['opening'], "1:00am")
+		self.assertEqual(location_r.json()['openingTimes'][0]['closing'], "10:00am")
+		self.assertFalse(location_r.json()['openingTimes'][0]['closed'])
+
+		self.assertEqual(location_r.json()['openingTimes'][0]['days'], "Monday - Wednesday")
+		self.assertTrue(location_r.json()['openingTimes'][0]['closed'])
+
+
+
+
+
+
+
+
+
+
+
+	def test_location_crud_01(self):
+		'''
+
+		
+
+		'''
+		# # CREATE a location:
+
+		# # unsuccessful POST due to an invalid url:
+		# url = self.build_url(path_parts=['api', 'locations', '6408d7ef69d46dd24edd9287'])
+
+		# location_r = requests.post(
+		# 	url=url,
+		# 	json={
+		# 		'name': 'Burger QueEn',		
+		# 		'address': "783 High Street, Reading, RG6 1PS",
+		# 		'facilities': "Food,Premium wifi",
+		# 		'lng': -0.9690854,
+		# 		'lat': 51.455051,
+		# 		'openingTimes': [
+		# 			{
+		# 				'days': "Thursday - Saturday",
+		# 				'opening': "1:00am",
+		# 				'closing': "10:00am",
+		# 				'closed': False
+		# 			},
+		# 			{
+		# 				'days': "Monday - Wednesday",
+		# 				'closed': True
+		# 			}
+		# 		]
+		# 	}
+		# )
+
+		# self.assertEqual(location_r.status_code, 405)
+
+
+		# url = self.build_url(path_parts=['api', 'locations'])
+		
+		# # unsuccessful POST due to missing name field (required):
+		# r = requests.post(
+		# 	url=url,
+		# 	json={
+		# 		'address': "783 High Street, Reading, RG6 1PS",
+		# 		'facilities': "Food,Premium wifi",
+		# 		'lng': -0.9690854,
+		# 		'lat': 51.455051,
+		# 		'openingTimes': [
+		# 			{
+		# 				'days': "Thursday - Saturday",
+		# 				'opening': "1:00am",
+		# 				'closing': "10:00am",
+		# 				'closed': False
+		# 			},
+		# 			{
+		# 				'days': "Monday - Wednesday",
+		# 				'closed': True
+		# 			}
+		# 		]
+		# 	}
+		# )
+
+		# # print(r.json())
+
+		# self.assertEqual(r.status_code, 400)
+
+
+		# # unsuccessful POST due to missing invalid name field (required):
+		# r = requests.post(
+		# 	url=url,
+		# 	json={
+		# 		'name': '',
+		# 		'address': "783 High Street, Reading, RG6 1PS",
+		# 		'facilities': "Food,Premium wifi",
+		# 		'lng': -0.9690854,
+		# 		'lat': 51.455051,
+		# 		'openingTimes': [
+		# 			{
+		# 				'days': "Thursday - Saturday",
+		# 				'opening': "1:00am",
+		# 				'closing': "10:00am",
+		# 				'closed': False
+		# 			},
+		# 			{
+		# 				'days': "Monday - Wednesday",
+		# 				'closed': True
+		# 			}
+		# 		]
+		# 	}
+		# )
+
+		# # print(r.json())
+
+		# self.assertEqual(r.status_code, 400)
+
+
+
+		# # unsuccessful POST due to missing longitude coordinate (required):
+		# r = requests.post(
+		# 	url=url,
+		# 	json={
+		# 		'name': 'Burger Queen',
+		# 		'address': "783 High Street, Reading, RG6 1PS",
+		# 		'facilities': "Food,Premium wifi",
+		# 		'lat': 51.455051,
+		# 		'openingTimes': [
+		# 			{
+		# 				'days': "Thursday - Saturday",
+		# 				'opening': "1:00am",
+		# 				'closing': "10:00am",
+		# 				'closed': False
+		# 			},
+		# 			{
+		# 				'days': "Monday - Wednesday",
+		# 				'closed': True
+		# 			}
+		# 		]
+		# 	}
+		# )
+
+		# self.assertEqual(r.status_code, 400)
+
+		# # unsuccessful POST due to invalid longitude coordinate (required):
+		# r = requests.post(
+		# 	url=url,
+		# 	json={
+		# 		'name': 'Burger Queen',
+		# 		'address': "783 High Street, Reading, RG6 1PS",
+		# 		'facilities': "Food,Premium wifi",
+		# 		'lng': -180.9690854,
+		# 		'lat': 51.455051,
+		# 		'openingTimes': [
+		# 			{
+		# 				'days': "Thursday - Saturday",
+		# 				'opening': "1:00am",
+		# 				'closing': "10:00am",
+		# 				'closed': False
+		# 			},
+		# 			{
+		# 				'days': "Monday - Wednesday",
+		# 				'closed': True
+		# 			}
+		# 		]
+		# 	}
+		# )
+
+		# # print(r.json())
+
+		# self.assertEqual(r.status_code, 400)
+
+		# # unsuccessful POST due to missing latitude coordinates (required):
+		# r = requests.post(
+		# 	url=url,
+		# 	json={
+		# 		'name': 'Burger Queen',
+		# 		'address': "783 High Street, Reading, RG6 1PS",
+		# 		'facilities': "Food,Premium wifi",
+		# 		'lng': -0.9690854,
+		# 		'openingTimes': [
+		# 			{
+		# 				'days': "Thursday - Saturday",
+		# 				'opening': "1:00am",
+		# 				'closing': "10:00am",
+		# 				'closed': False
+		# 			},
+		# 			{
+		# 				'days': "Monday - Wednesday",
+		# 				'closed': True
+		# 			}
+		# 		]
+		# 	}
+		# )
+
+		# self.assertEqual(r.status_code, 400)
+
+		# # unsuccessful POST due to invalid latitude coordinate (required):
+		# r = requests.post(
+		# 	url=url,
+		# 	json={
+		# 		'name': 'Burger Queen',
+		# 		'address': "783 High Street, Reading, RG6 1PS",
+		# 		'facilities': "Food,Premium wifi",
+		# 		'lng': -0.9690854,
+		# 		'lat': 151.455051,
+		# 		'openingTimes': [
+		# 			{
+		# 				'days': "Thursday - Saturday",
+		# 				'opening': "1:00am",
+		# 				'closing': "10:00am",
+		# 				'closed': False
+		# 			},
+		# 			{
+		# 				'days': "Monday - Wednesday",
+		# 				'closed': True
+		# 			}
+		# 		]
+		# 	}
+		# )
+
+		# self.assertEqual(r.status_code, 400)
+
+		# # unsuccessful POST due to invalid openingTimes record:
+		# location_r = requests.post(
+		# 	url=url,
+		# 	json={
+		# 		'name': 'Burger QueEn',		
+		# 		'address': "783 High Street, Reading, RG6 1PS",
+		# 		'facilities': "Food,Premium wifi",
+		# 		'lng': -0.9690854,
+		# 		'lat': 51.455051,
+		# 		'openingTimes': [
+		# 			{
+		# 				'days': "Thursday - Saturday",
+		# 				'opening': "1:00am",
+		# 				'closing': "10:00am",
+		# 				'closed': False
+		# 			},
+					
+		# 			"Monday - Wednesday",
+	
+		# 		]
+		# 	}
+		# )
+
+		# self.assertEqual(r.status_code, 400)
+
+		# # unsuccessful POST due to missing openingTimes['days']:
+		# location_r = requests.post(
+		# 	url=url,
+		# 	json={
+		# 		'name': 'Burger QueEn',		
+		# 		'address': "783 High Street, Reading, RG6 1PS",
+		# 		'facilities': "Food,Premium wifi",
+		# 		'lng': -0.9690854,
+		# 		'lat': 51.455051,
+		# 		'openingTimes': [
+		# 			{
+		# 				'opening': "1:00am",
+		# 				'closing': "10:00am",
+		# 				'closed': False
+		# 			},
+		# 			{
+		# 				'days': "Monday - Wednesday",
+		# 				'closed': True
+		# 			}
+		# 		]
+		# 	}
+		# )
+
+		# self.assertEqual(r.status_code, 400)
+
+		# # unsuccessful POST due to invalid openingTimes['days']:
+		# location_r = requests.post(
+		# 	url=url,
+		# 	json={
+		# 		'name': 'Burger QueEn',		
+		# 		'address': "783 High Street, Reading, RG6 1PS",
+		# 		'facilities': "Food,Premium wifi",
+		# 		'lng': -0.9690854,
+		# 		'lat': 51.455051,
+		# 		'openingTimes': [
+		# 			{
+		# 				'days': 5,
+		# 				'opening': "1:00am",
+		# 				'closing': "10:00am",
+		# 				'closed': False
+		# 			},
+		# 			{
+		# 				'days': "Monday - Wednesday",
+		# 				'closed': True
+		# 			}
+		# 		]
+		# 	}
+		# )
+
+		# self.assertEqual(r.status_code, 400)
+
+		# # unsuccessful POST due to missing openingTimes['closed']:
+		# location_r = requests.post(
+		# 	url=url,
+		# 	json={
+		# 		'name': 'Burger QueEn',		
+		# 		'address': "783 High Street, Reading, RG6 1PS",
+		# 		'facilities': "Food,Premium wifi",
+		# 		'lng': -0.9690854,
+		# 		'lat': 51.455051,
+		# 		'openingTimes': [
+		# 			{
+		# 				'days': "Thursday - Saturday",
+		# 				'opening': "1:00am",
+		# 				'closing': "10:00am",
+		# 				'closed': False
+		# 			},
+		# 			{
+		# 				'days': "Monday - Wednesday",
+		# 			}
+		# 		]
+		# 	}
+		# )
+
+		# self.assertEqual(r.status_code, 400)
+
+		# # unsuccessful POST due to invalid openingTimes['closed']:
+		# location_r = requests.post(
+		# 	url=url,
+		# 	json={
+		# 		'name': 'Burger QueEn',		
+		# 		'address': "783 High Street, Reading, RG6 1PS",
+		# 		'facilities': "Food,Premium wifi",
+		# 		'lng': -0.9690854,
+		# 		'lat': 51.455051,
+		# 		'openingTimes': [
+		# 			{
+		# 				'days': "Thursday - Saturday",
+		# 				'opening': "1:00am",
+		# 				'closing': "10:00am",
+		# 				'closed': False
+		# 			},
+		# 			{
+		# 				'days': "Monday - Wednesday",
+		# 				'closed': 'True'
+		# 			}
+		# 		]
+		# 	}
+		# )
+
+		# self.assertEqual(r.status_code, 400)
+
+
+		# # a successful POST:
+		# location_r = requests.post(
+		# 	url=url,
+		# 	json={
+		# 		'name': 'Burger QueEn',		
+		# 		'address': "783 High Street, Reading, RG6 1PS",
+		# 		'facilities': "Food,Premium wifi",
+		# 		'lng': -0.9690854,
+		# 		'lat': 51.455051,
+		# 		'openingTimes': [
+		# 			{
+		# 				'days': "Thursday - Saturday",
+		# 				'opening': "1:00am",
+		# 				'closing': "10:00am",
+		# 				'closed': False
+		# 			},
+		# 			{
+		# 				'days': "Monday - Wednesday",
+		# 				'closed': True
+		# 			}
+		# 		]
+		# 	}
+		# )
+
+		# self.assertEqual(location_r.status_code, 201)
+		# self.assertEqual(location_r.json()['name'], 'Burger QueEn')
 
 
 		# READ a location:
@@ -1101,9 +1661,9 @@ class APITests(unittest.TestCase):
 		'''
 
 		# drop users collection and recreate it with a unique index for email:
-		APITests.mongo_client[self.db_name].drop_collection('users')
-		APITests.mongo_client[self.db_name].create_collection('users')
-		APITests.mongo_client[self.db_name]['users'].create_index('email', unique=True)
+		APILocationTests.mongo_client[self.db_name].drop_collection('users')
+		APILocationTests.mongo_client[self.db_name].create_collection('users')
+		APILocationTests.mongo_client[self.db_name]['users'].create_index('email', unique=True)
 
 		
 	def reset_locations_collection(self):
@@ -1112,9 +1672,9 @@ class APITests(unittest.TestCase):
 		'''
 
 		# drop users collection and recreate it with a unique index for email:
-		APITests.mongo_client[self.db_name].drop_collection('locations')
-		APITests.mongo_client[self.db_name].create_collection('locations')
-		APITests.mongo_client[self.db_name]['locations'].create_index([('coords', pymongo.GEOSPHERE)])
+		APILocationTests.mongo_client[self.db_name].drop_collection('locations')
+		APILocationTests.mongo_client[self.db_name].create_collection('locations')
+		APILocationTests.mongo_client[self.db_name]['locations'].create_index([('coords', pymongo.GEOSPHERE)])
 
 
 

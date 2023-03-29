@@ -100,7 +100,7 @@ def api_locations():
 
 
 	if request.method == 'GET':
-		loc_api_controller.read_locations_by_distance(parameters=request.args)
+		loc_api_controller.read_locations_by_distance(parameters=request.args.to_dict())
 
 
 	print("loc_api_controller.status_code = {}".format(loc_api_controller.status_code))
@@ -115,7 +115,7 @@ def api_locations():
 
 @app.route('/api/locations/<locationid>', methods=['GET', 'PUT', 'DELETE'])
 def api_location(locationid):
-	print("{}: api_locations({})".format(request.method, locationid))
+	print("{}: api_location({})".format(request.method, locationid))
 
 	loc_api_controller = LocationsAPIController()
 
@@ -126,7 +126,7 @@ def api_location(locationid):
 	if request.method == 'PUT':
 		loc_api_controller.update_location(location_id=locationid, location_data=request.get_json())
 
-	
+
 	if request.method == 'DELETE':
 		loc_api_controller.delete_location(location_id=locationid)
 
@@ -134,8 +134,8 @@ def api_location(locationid):
 
 	# loc_api_controller.locations(request=request, location_id=locationid)
 
-	# print("loc_api_controller.status_code = {}".format(loc_api_controller.status_code))
-	# print("loc_api_controller.data = {}".format(loc_api_controller.data))
+	print("loc_api_controller.status_code = {}".format(loc_api_controller.status_code))
+	print("loc_api_controller.data = {}".format(loc_api_controller.data))
 
 	return (loc_api_controller.data, loc_api_controller.status_code)
 

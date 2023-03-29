@@ -2,8 +2,13 @@ import mongoengine as me
 import jwt
 from dotenv import load_dotenv
 import os
+from bson import ObjectId
 
 from my_loc8r.app_api.models.location_models import Locations
+
+import rlcompleter
+import pdb 
+pdb.Pdb.complete = rlcompleter.Completer(locals()).complete
 
 
 class APIControllersBase(object):
@@ -59,6 +64,7 @@ class APIControllersBase(object):
 
 
 		'''
+
 		if isinstance(exception, me.errors.ValidationError):
 			self.data = {'error': "{}".format(exception)}
 			self.status_code = 400
@@ -71,9 +77,36 @@ class APIControllersBase(object):
 			self.data = {'error': "No record found. {}".format(exception)}
 			self.status_code = 404
 
+		elif isinstance(exception, me.errors.OperationError):
+			self.data = {'error': "{}".format(exception)}
+			self.status_code = 400
+
+		elif isinstance(exception, ValueError):
+			self.data = {'error': "{}".format(exception)}
+			self.status_code = 400
+
 
 		else:
 			raise exception 
+
+
+	def format_location(self, document):
+		'''
+
+
+		'''
+		# remove the object ids:
+		location_data =  self.convert_object_ids(document=document)
+
+		# seperate 'coords' into longatude and lattitude and then remove 'coords'
+		location_data['lng'] = location_data['coords']['coordinates'][0]
+		location_data['lat'] = location_data['coords']['coordinates'][1]
+
+		# remove coords from dictionary:
+		location_data = dict([(k, v) for k, v in location_data.items() if k not in ['coords']])
+
+
+		return location_data
 
 
 

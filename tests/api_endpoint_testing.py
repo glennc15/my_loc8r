@@ -205,6 +205,8 @@ class APIEndPointTests(object):
 					no_auth_test_status_code = self._status_codes['no_auth_parentid_none']
 
 
+
+
 				endpoint_test(
 					scheme=self._scheme,
 					url=self._url,
@@ -565,7 +567,7 @@ class APIEndPointTests(object):
 
 #  External methods:
 
-def endpoint_test(method, scheme, url, endpoint, data, auth, expected_status_code, descriptive_error_msg, expected_error_msg=None):
+def endpoint_test(method, scheme, url, endpoint, data, auth, expected_status_code, descriptive_error_msg, expected_error_msg=None, params=None):
 	'''
 
 	''' 
@@ -615,19 +617,22 @@ def endpoint_test(method, scheme, url, endpoint, data, auth, expected_status_cod
 
 	print(status_msg)
 
+
 	if method == 'POST':
 		
 		this_request = requests.post(
 			url=build_url(path=endpoint),
 			auth=auth,
+			params=params,
 			json=data 
 		)
 
 
 	if method == 'GET':
-		
+
 		this_request = requests.get(
 			url=build_url(path=endpoint),
+			params=params,
 			auth=auth,
 		)
 
@@ -636,6 +641,7 @@ def endpoint_test(method, scheme, url, endpoint, data, auth, expected_status_cod
 		
 		this_request = requests.put(
 			url=build_url(path=endpoint),
+			params=params,
 			auth=auth,
 			json=data 
 		)
@@ -645,6 +651,7 @@ def endpoint_test(method, scheme, url, endpoint, data, auth, expected_status_cod
 		
 		this_request = requests.delete(
 			url=build_url(path=endpoint),
+			params=params,
 			auth=auth,
 		)
 

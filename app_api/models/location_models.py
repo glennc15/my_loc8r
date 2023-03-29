@@ -78,7 +78,7 @@ class Locations(me.Document):
 
 	@staticmethod
 	def validate_coods(coords):
-		
+
 		longitude, latitude = coords
 		
 		if not (-180.0<=longitude<=180.0):

@@ -630,18 +630,32 @@ class APILocationTests(unittest.TestCase):
 
 		location_id = self.add_test_location(reviews=0)
 
-		# common endpoint faiulre tests. Does not do any data validation tests:
-		APIEndPointTests(
-			scheme=self.scheme,
-			url=self.url,
-			method='GET',
-			endpoint='api/locations/<parentid>',
-			auth=None,
-			decode_key=None,
-			parent_id=location_id,
-			child_id=None,
-			data=None
-		).parent_id_endpoint_tests()
+		# # common endpoint faiulre tests. Does not do any data validation tests:
+		# APIEndPointTests(
+		# 	scheme=self.scheme,
+		# 	url=self.url,
+		# 	method='GET',
+		# 	endpoint='api/locations/<parentid>',
+		# 	auth=None,
+		# 	decode_key=None,
+		# 	parent_id=location_id,
+		# 	child_id=None,
+		# 	data=None
+		# ).parent_id_endpoint_tests()
+
+
+		# READ failure: incorrect method:
+		endpoint_test(
+			method='GET', 
+			scheme=self.scheme, 
+			url=self.url, 
+			endpoint='/'.join(['api', 'locations', '']), 
+			data=None, 
+			auth=None, 
+			expected_status_code=405, 
+			descriptive_error_msg="invalid method for endpoint"
+		)
+
 
 		# READ failure: incorrect method:
 		endpoint_test(

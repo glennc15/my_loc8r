@@ -155,11 +155,14 @@ class LocationsAPIController(APIControllersBase):
 
 		'''
 
-
 		try:
+
 			location = Locations.objects(id=location_id).get()
 			
 		except Exception as e:
+			print(e)
+			pdb.set_trace()
+
 			self.common_validation_errors(e)
 			return None 
 

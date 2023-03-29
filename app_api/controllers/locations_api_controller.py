@@ -38,43 +38,8 @@ class LocationsAPIController(APIControllersBase):
 
 
 
-# *******************************************************************************
-# START: Public methods:
-
-
-
-
- 
-
-
-
-
-
-
-
-# End: Public methods:
-# *******************************************************************************
-
-
-# *******************************************************************************
-# START: helper methods:
-	
-	def common_validation_errors(self, exception):
-		'''
-
-
-		'''
-		if isinstance(exception, me.errors.ValidationError):
-			self.data = {'error': "{}".format(exception)}
-			self.status_code = 400
-
-		elif isinstance(exception, KeyError):
-			self.data = {'error': "{} filed is reqired".format(exception)}
-			self.status_code = 400
-
-
-		else:
-			raise exception 
+	# *******************************************************************************
+	# START: Public methods:
 
 
 
@@ -84,106 +49,65 @@ class LocationsAPIController(APIControllersBase):
 
 		'''
 
-		# Build a location model instance with only the location data, no
-		# opening times, and validate.
+		# Build a location model instance with only the location data
+		# (no opening times). Then add the longitude and lattitude data
 
 		location = Locations(**dict([(k, v) for k, v in location_data.items() if k in ['name', 'address', 'rating', 'facilities']]))
 
+		# if longiture or lattiude is missing it will raise a key error. Any
+		# key error will generates a 400 response
 		try:
 			location.coords = [location_data['lng'], location_data['lat']]
-			location.validate()
 
 		except Exception as e:
 			self.common_validation_errors(e)
 			return None 
 
 
-		# add opening time sub documents:
+		# build opening time sub documents:
 		if location_data.get('openingTimes'):
-			opening_time_records = list()
-			for opening_time in location_data['openingTimes']:
-				this_opening_time = OpeningTime(**opening_time)
 
-				try:
-					this_opening_time.validate()
+			# I know I should NOT write this in one line but I can't help myself! :)
+			location.openingTimes = [OpeningTime(**dict([(k, v) for k, v in opening_time.items() if k in ['days', 'opening', 'closing', 'closed']])) for opening_time in location_data['openingTimes']]
+			
+			# opening_time_records = list()
+			
+			# for opening_time in location_data['openingTimes']:
+			# 	this_opening_time = OpeningTime(**dict([(k, v) for k, v in opening_time.items() if k in ['days', 'opening', 'closing', 'closed']]))
 
-				except Exception as e:
-					self.common_validation_errors(e)
-					return None 
+			# 	try:
+			# 		# this_opening_time.validate()
+			# 		pass 
 
-				opening_time_records.append(this_opening_time)
+			# 	except Exception as e:
+			# 		self.common_validation_errors(e)
+			# 		return None 
 
-			location.openingTimes = opening_time_records
+			# 	opening_time_records.append(this_opening_time)
+
+			# location.openingTimes = opening_time_records
+
 
 
 		try:
 			location.save()
 
 		except Exception as e:
-			raise e
-
-		# location_data = self.convert_object_ids(document=location)
-		# location_data['lng'] = location_data['coords']['coordinates'][0]
-		# location_data['lat'] = location_data['coords']['coordinates'][1]
+			self.common_validation_errors(e)
+			return None 
 
 
 		self.data = self.format_location(document=location)
 		self.status_code = 201
 
-		# # pdb.set_trace()
-
-		
-		# if not self.is_location_data_ok(location_data=data):
-		# 	# there is a problem with the location data so exit:
-		# 	return None
-
-		# if not self.is_opening_data_ok(opening_data=data['openingTimes']):
-		# 	# there is a problem with the opening data so exit:
-		# 	return None
-
-
-		# location = Locations(
-		# 	name=data['name'],
-		# 	address=data['address'],
-		# 	facilities=data['facilities'],
-		# 	coords = [data['lng'], data['lat']]
-		# )
-
-		# opening_time_records = self.build_opening_times(opening_times_list=data['openingTimes'])
-		# location.openingTimes = opening_time_records
-
-		# try:
-		# 	location.save()
-
-		# 	# remove the ObjectId objects:
-		# 	location_data = self.convert_object_ids(document=location)
-
-		# 	self.data = location_data
-		# 	self.status_code = 201
-
-		# 	# successful POST so exit
-		# 	return None
-
-		# except Exception as e:
-		# 	# not sure how to test this
-
-		# 	print("500 Error!")
-		# 	print(e)
-
-		# 	self.data = {'message': 'database error!'}
-		# 	self.status_code = 500
-
-		# 	return None 
-
-
 
 	# GET:/api/locations
-	def read_locations_by_distance(self, request):
+	def read_locations_by_distance(self, parameters):
 		'''
 
 		'''
 		
-		longitude, latitude, max_dist = self.parse_location_parameters(parameters=request.args)
+		longitude, latitude, max_dist = self.parse_location_parameters(parameters=parameters)
 
 		# print('longitude = {}'.format(longitude))
 		# print('latitude = {}'.format(latitude))
@@ -224,66 +148,6 @@ class LocationsAPIController(APIControllersBase):
 			self.status_code = 200
 
 
-	def parse_location_parameters(self, parameters):
-		'''
-
-
-		'''
-
-
-
-		for coords_key in ['lng', 'lat']:
-			if coords_key not in parameters:
-				error_msg = "{} is a required parameter and is missing in the query".format(coords_key)
-
-				self.data = {"message": error_msg}
-				self.status_code = 404
-
-				return (None, None, None)
-
-		# print('parameters = '.format(parameters))
-		# pdb.set_trace()
-
-		# validate the latitude parameter:
-		try:
-			latitude = float(parameters['lat'])
-
-		except Exception as e:
-			error_msg = "the parameter['lat'] = {} is not a float.".format(parameters['lat'])
-			self.data = {"message": error_msg}
-			self.status_code = 404
-			
-			return (None, None, None)
-
-		if not self.is_latitude_ok(latitude=latitude):
-			latitude = None 
-
-
-		# validate the longitude parameter:
-		try:
-			longitude = float(parameters['lng'])
-
-		except Exception as e:
-			error_msg = "the parameter['lng'] = {} is not a float.".format(parameters['lng'])
-			self.data = {"message": error_msg}
-			self.status_code = 404
-			
-			return (None, None, None)
-
-		if not self.is_longitude_ok(longitude=longitude):
-			longitude = None
-
-
-		if parameters.get('maxDistance'):
-			max_dist = float(parameters['maxDistance'])
-
-		else:
-			max_dist = 1000000
-
-
-		return (longitude, latitude, max_dist)	
-
-
 
 	# GET:/api/locations/<locationid>
 	def read_location_by_id(self, location_id):
@@ -291,22 +155,18 @@ class LocationsAPIController(APIControllersBase):
 
 		'''
 
-		try:
 
+		try:
 			location = Locations.objects(id=location_id).get()
 			
-			location_data = self.format_location(document=location)
-
-			self.data = location_data
-			self.status_code = 200
-	
-
 		except Exception as e:
+			self.common_validation_errors(e)
+			return None 
 
-			error_msg = "No location record with id = {} found.".format(location_id)
-			self.data = {'message': error_msg}
-			self.status_code = 404
-			
+
+		self.data = self.format_location(document=location)
+		self.status_code = 200
+				
 
 
 
@@ -377,6 +237,73 @@ class LocationsAPIController(APIControllersBase):
 			self.status_code = 500
 
 		return None 
+
+
+
+	# End: Public methods:
+	# *******************************************************************************
+
+
+	def parse_location_parameters(self, parameters):
+		'''
+
+
+		'''
+
+
+
+		for coords_key in ['lng', 'lat']:
+			if coords_key not in parameters:
+				error_msg = "{} is a required parameter and is missing in the query".format(coords_key)
+
+				self.data = {"message": error_msg}
+				self.status_code = 404
+
+				return (None, None, None)
+
+		# print('parameters = '.format(parameters))
+		# pdb.set_trace()
+
+		# validate the latitude parameter:
+		try:
+			latitude = float(parameters['lat'])
+
+		except Exception as e:
+			error_msg = "the parameter['lat'] = {} is not a float.".format(parameters['lat'])
+			self.data = {"message": error_msg}
+			self.status_code = 404
+			
+			return (None, None, None)
+
+		if not self.is_latitude_ok(latitude=latitude):
+			latitude = None 
+
+
+		# validate the longitude parameter:
+		try:
+			longitude = float(parameters['lng'])
+
+		except Exception as e:
+			error_msg = "the parameter['lng'] = {} is not a float.".format(parameters['lng'])
+			self.data = {"message": error_msg}
+			self.status_code = 404
+			
+			return (None, None, None)
+
+		if not self.is_longitude_ok(longitude=longitude):
+			longitude = None
+
+
+		if parameters.get('maxDistance'):
+			max_dist = float(parameters['maxDistance'])
+
+		else:
+			max_dist = 1000000
+
+
+		return (longitude, latitude, max_dist)	
+
+
 
 
 	def is_location_data_ok(self, location_data):
@@ -733,6 +660,9 @@ class LocationsAPIController(APIControllersBase):
 
 
 		return location_data
+
+
+
 
 
 	# def get_location_rating(self, location_obj):

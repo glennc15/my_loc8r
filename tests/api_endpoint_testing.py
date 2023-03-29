@@ -50,30 +50,36 @@ class APIEndPointTests(object):
 		self._child_id = child_id
 		self._data = data
 
+
+		'''
+
+
+		'''
+
 		self._status_codes = {
 			"no_auth_parentid_none": 404,
-			"no_auth_parentid_invalid": 404,
+			"no_auth_parentid_invalid": 400,
 			"no_auth_parentid_not_found": 404,
 
-			"auth_parentid_none": 401,
-			"auth_parentid_invalid": 404,
+			"auth_parentid_none": 404,
+			"auth_parentid_invalid": 400,
 			"auth_parentid_not_found": 404,
 
-			"auth_required_parentid_none": 401,
-			"auth_required_parentid_invalid": 401,
-			"auth_required_parentid_not_found": 401,
+			"auth_required_parentid_none": 404,
+			"auth_required_parentid_invalid": 400,
+			"auth_required_parentid_not_found": 404,
 
-			"no_auth_childid_none": 405,
-			"no_auth_childid_invalid": 404 ,
+			"no_auth_childid_none": 404,
+			"no_auth_childid_invalid": 400 ,
 			"no_auth_childid_not_found": 404,
 
-			"auth_childid_none": 405,
-			"auth_childid_invalid": 404,
+			"auth_childid_none": 404,
+			"auth_childid_invalid": 400,
 			"auth_childid_not_found": 404,
 
-			"auth_required_childid_none": 401,
-			"auth_required_childid_invalid": 401,
-			"auth_required_childid_not_found": 401,
+			"auth_required_childid_none": 404,
+			"auth_required_childid_invalid": 400,
+			"auth_required_childid_not_found": 404,
 
 			"no_auth_post_invalid": 405,
 			"no_auth_get_invalid": 405,
@@ -186,6 +192,8 @@ class APIEndPointTests(object):
 
 
 			for parent_key, parent_id in parent_ids.items():
+
+				# print("parent_key = {}".format(parent_id))
 
 				if parent_key == 'parentid_invalid':
 					no_auth_test_status_code = self._status_codes['no_auth_parentid_invalid']
@@ -457,20 +465,22 @@ class APIEndPointTests(object):
 
 	def build_parent_id_endpoint(self, parent_id):
 		'''
+	
+		replaces '<parentid>' in the endpoint template with parent_id.
 
+		if '<childid>' is in the template then it's replace with the class
+		child_id parameter.
 
 		'''
 
-		# replace <parentid> in the path string with parent_id
+		path_parts = [x if x != '<parentid>' else parent_id for x in self._endpoint.split('/') ]
 
-		if parent_id is not None:
-			path_parts = [x if x != '<parentid>' else parent_id for x in self._endpoint.split('/') ]
-
-		else:
-			path_parts = [x for x in self._endpoint.split('/') if x != '<parentid>']
 
 		if self._child_id is not None:
 			path_parts = [x if x != '<childid>' else self._child_id for x in path_parts]
+
+		# convert None to empty strings:
+		path_parts = [x if x else '' for x in path_parts]
 
 
 		path = '/'.join(s.strip('/') for s in path_parts)
@@ -481,24 +491,22 @@ class APIEndPointTests(object):
 
 	def build_child_id_endpoint(self, child_id):
 		'''
+		replaces '<childid>' in the endpoint template with child_id.
 
+		Then replaces '<parentid>' in the endpoint template with the class
+		parent_id parameter.
 
 		'''
 
-		# replace <childid> in the path string with child_id
-
-		if child_id is not None:
-			path_parts = [x if x != '<childid>' else child_id for x in self._endpoint.split('/') ]
-
-		else:
-			path_parts = [x for x in self._endpoint.split('/') if x != '<childid>']
-
+		path_parts = [x if x != '<childid>' else child_id for x in self._endpoint.split('/') ]
+		
 		# add replace <parentid> with the correct parent_id:
 		path_parts = [x if x != '<parentid>' else self._parent_id for x in path_parts]
 
+		# convert None to empty strings:
+		path_parts = [x if x else '' for x in path_parts]
 
 		path = '/'.join(s.strip('/') for s in path_parts)
-
 
 		return path 
 
@@ -575,12 +583,16 @@ def endpoint_test(method, scheme, url, endpoint, data, auth, expected_status_cod
 
 		return this_url 
 
+	'''
+	
+	Display a summary of the test. 
+	Examples:
+	Running POST:/api/locations/123/reviews/456 - with authorization - no parentid - expected status code: 404
+	Running POST:/api/locations/123/reviews/456 - with authorization - invalid parentid - expected status code: 404
+	Running POST:/api/locations/123/reviews/456 - with authorization - non-existing parentid - expected status code: 404
+	
+	'''
 
-	# Display a summary of the test. 
-	# Examples:
-	# Running POST:/api/locations/123/reviews/456 - no parentid - with authorization - expected status code: 404
-	# Running POST:/api/locations/123/reviews/456 - invalid parentid - with authorization - expected status code: 404
-	# Running POST:/api/locations/123/reviews/456 - non-existing parentid - with authorization - expected status code: 404
 
 	status_msg = ''
 	status_msg += "Running {}:{} - ".format(method, endpoint) 

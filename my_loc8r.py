@@ -100,7 +100,7 @@ def api_locations():
 
 
 	if request.method == 'GET':
-		loc_api_controller.get_geo_location()
+		loc_api_controller.read_locations_by_distance(parameters=request.args)
 
 
 	print("loc_api_controller.status_code = {}".format(loc_api_controller.status_code))
@@ -132,7 +132,7 @@ def api_location(locationid):
 
 
 
-	loc_api_controller.locations(request=request, location_id=locationid)
+	# loc_api_controller.locations(request=request, location_id=locationid)
 
 	# print("loc_api_controller.status_code = {}".format(loc_api_controller.status_code))
 	# print("loc_api_controller.data = {}".format(loc_api_controller.data))

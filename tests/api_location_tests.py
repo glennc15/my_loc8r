@@ -64,7 +64,7 @@ class APILocationTests(unittest.TestCase):
 
 		'''
 		self.scheme = 'http'
-		self.url = '127.0.0.1:5000/'
+		self.url = '127.0.0.1:5000'
 		self.db_name = 'myLoc8r'
 
 		# self.url = 'localhost:3000'
@@ -622,10 +622,60 @@ class APILocationTests(unittest.TestCase):
 
 
 
+	def test_location_read_01(self):
+		'''
 
 
+		'''
 
+		location_id = self.add_test_location(reviews=0)
 
+		# common endpoint faiulre tests. Does not do any data validation tests:
+		APIEndPointTests(
+			scheme=self.scheme,
+			url=self.url,
+			method='GET',
+			endpoint='api/locations/<parentid>',
+			auth=None,
+			decode_key=None,
+			parent_id=location_id,
+			child_id=None,
+			data=None
+		).parent_id_endpoint_tests()
+
+		# READ failure: incorrect method:
+		endpoint_test(
+			method='POST', 
+			scheme=self.scheme, 
+			url=self.url, 
+			endpoint='/'.join(['api', 'locations', location_id]), 
+			data=None, 
+			auth=None, 
+			expected_status_code=405, 
+			descriptive_error_msg="invalid method for endpoint"
+		)
+
+		# READ success:
+		read1_r = endpoint_test(
+			method='GET', 
+			scheme=self.scheme, 
+			url=self.url, 
+			endpoint='/'.join(['api', 'locations', location_id]), 
+			data=None, 
+			auth=None, 
+			expected_status_code=200, 
+			descriptive_error_msg="read success"
+		)
+
+		self.assertEqual(read1_r.json()['_id'], location_id)
+		self.assertEqual(read1_r.json()['name'], 'Burger Queen')
+		self.assertEqual(read1_r.json()['address'], '783 High Street, Reading, RG6 1PS')
+		self.assertEqual(read1_r.json()['facilities'], 'Food,Premium wifi')
+		self.assertEqual(read1_r.json()['rating'], 0)
+		self.assertEqual(read1_r.json()['lng'], -0.9690854)
+		self.assertEqual(read1_r.json()['lat'], 51.455051)
+		self.assertEqual(len(read1_r.json()['openingTimes']), 2)
+		self.assertEqual(len(read1_r.json()['reviews']), 0)
 
 
 
@@ -986,26 +1036,26 @@ class APILocationTests(unittest.TestCase):
 		# self.assertEqual(location_r.json()['name'], 'Burger QueEn')
 
 
-		# READ a location:
-		url = self.build_url(path_parts=['api', 'locations', location_r.json()['_id']])
-		r = requests.get(url=url)
+		# # READ a location:
+		# url = self.build_url(path_parts=['api', 'locations', location_r.json()['_id']])
+		# r = requests.get(url=url)
 
-		self.assertEqual(r.status_code, 200)
-		self.assertEqual(r.json()['_id'], location_r.json()['_id'])
-
-
-		# READ error due to invalid id:
-		url = self.build_url(path_parts=['api', 'locations', location_r.json()['_id'][1:]])
-		r = requests.get(url=url)
-
-		self.assertEqual(r.status_code, 404)
+		# self.assertEqual(r.status_code, 200)
+		# self.assertEqual(r.json()['_id'], location_r.json()['_id'])
 
 
-		# READ error due to a non existing id:
-		url = self.build_url(path_parts=['api', 'locations', '6408d79c0ba5040bf57d2311'])
-		r = requests.get(url=url)
+		# # READ error due to invalid id:
+		# url = self.build_url(path_parts=['api', 'locations', location_r.json()['_id'][1:]])
+		# r = requests.get(url=url)
 
-		self.assertEqual(r.status_code, 404)
+		# self.assertEqual(r.status_code, 404)
+
+
+		# # READ error due to a non existing id:
+		# url = self.build_url(path_parts=['api', 'locations', '6408d79c0ba5040bf57d2311'])
+		# r = requests.get(url=url)
+
+		# self.assertEqual(r.status_code, 404)
 
 
 		# # read error due to no id:
@@ -1556,7 +1606,6 @@ class APILocationTests(unittest.TestCase):
 
 
 		location_id = location_r.json()['_id']
-
 
 		if reviews == 0:
 			return (location_id)

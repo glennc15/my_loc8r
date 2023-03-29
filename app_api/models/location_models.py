@@ -76,10 +76,21 @@ class Locations(me.Document):
 
 
 
-	@staticmethod
-	def validate_coods(coords):
+	# @staticmethod
+	def validate_coods(self, coords):
 
-		longitude, latitude = coords
+		if isinstance(coords, list):
+			longitude, latitude = coords
+
+		elif isinstance(coords, dict):
+			longitude, latitude = coords['coordinates']
+
+
+		# print("type(longitude) = {}".format(type(longitude)))
+		# print("type(latitude) = {}".format(type(latitude)))
+		# print("coords = {}".format(coords))
+
+		# pdb.set_trace()
 		
 		if not (-180.0<=longitude<=180.0):
 			raise me.errors.ValidationError("longitude is out of range, -180.0 <= longitude <= 180")
@@ -97,3 +108,7 @@ class Locations(me.Document):
 		'''
 
 		self.validate_coods(self.coords)
+
+
+
+

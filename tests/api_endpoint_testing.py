@@ -61,13 +61,21 @@ class APIEndPointTests(object):
 			"no_auth_parentid_invalid": 400,
 			"no_auth_parentid_not_found": 404,
 
-			"auth_parentid_none": 404,
+			"auth_parentid_none": 405,
+			# "auth_parentid_none": 404,
 			"auth_parentid_invalid": 400,
 			"auth_parentid_not_found": 404,
 
-			"auth_required_parentid_none": 404,
-			"auth_required_parentid_invalid": 400,
-			"auth_required_parentid_not_found": 404,
+			# "auth_required_parentid_none": 404,
+			# "auth_required_parentid_invalid": 400,
+			# "auth_required_parentid_not_found": 404,
+
+			"auth_required_parentid_none": 405,
+			# "auth_required_parentid_none": 401,
+			"auth_required_parentid_invalid": 401,
+			"auth_required_parentid_not_found": 401,
+
+
 
 			"no_auth_childid_none": 404,
 			"no_auth_childid_invalid": 400 ,
@@ -77,9 +85,13 @@ class APIEndPointTests(object):
 			"auth_childid_invalid": 400,
 			"auth_childid_not_found": 404,
 
-			"auth_required_childid_none": 404,
-			"auth_required_childid_invalid": 400,
-			"auth_required_childid_not_found": 404,
+			# "auth_required_childid_none": 404,
+			# "auth_required_childid_invalid": 400,
+			# "auth_required_childid_not_found": 404,
+
+			"auth_required_childid_none": 405,
+			"auth_required_childid_invalid": 401,
+			"auth_required_childid_not_found": 401,
 
 			"no_auth_post_invalid": 405,
 			"no_auth_get_invalid": 405,
@@ -183,7 +195,7 @@ class APIEndPointTests(object):
 					method=self._method,					
 					endpoint=self.build_parent_id_endpoint(parent_id=parent_id), 
 					data=self._data, 
-					auth=(None, None),
+					auth=(str(None), str(None)),
 					expected_status_code=auth_required_test_status_code,
 					descriptive_error_msg=descriptive_error_msgs[parent_key]
 				)
@@ -283,7 +295,7 @@ class APIEndPointTests(object):
 					method=self._method,					
 					endpoint=self.build_child_id_endpoint(child_id=child_id), 
 					data=self._data, 
-					auth=(None, None),
+					auth=(str(None), str(None)),
 					expected_status_code=auth_required_test_status_code,
 					descriptive_error_msg=descriptive_error_msgs[child_key]
 				)

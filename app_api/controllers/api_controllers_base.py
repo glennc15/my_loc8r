@@ -3,6 +3,7 @@ import jwt
 from dotenv import load_dotenv
 import os
 from bson import ObjectId
+import bson
 
 from my_loc8r.app_api.models.location_models import Locations
 
@@ -85,6 +86,10 @@ class APIControllersBase(object):
 			self.data = {'error': "{}".format(exception)}
 			self.status_code = 400
 
+		elif isinstance(exception, bson.errors.InvalidId):
+			self.data = {'error': "{}".format(exception)}
+			self.status_code = 400
+
 
 		else:
 			raise exception 
@@ -128,29 +133,31 @@ class APIControllersBase(object):
 		else:
 			record = document.to_mongo().to_dict()
 
-		# # convert the ObjectId in the location object:
-		record['_id'] = str(record['_id'])
-
 
 		# Convert Location ObjectIds:
-		for l_key, l_value in record.items():
-			if isinstance(l_value, ObjectId):
-				record[l_key] = str(l_value)
+		for key1, value1 in record.items():
+			if isinstance(value1, ObjectId):
+				record[key1] = str(value1)
+
+
 
 
 		# convert the ObjectId for each opeing time sub document
-		for opening_time in record['openingTimes']:
-			for o_key, o_value in opening_time.items():
-				if isinstance(o_value, ObjectId):
-					opening_time[o_key] = str(o_value) 
+		if record.get('openingTimes'):
+			for opening_time in record['openingTimes']:
+				for o_key, o_value in opening_time.items():
+					if isinstance(o_value, ObjectId):
+						opening_time[o_key] = str(o_value) 
 
 
 		# convert the ObjectId for each review sub document
 		# pdb.set_trace()
-		for review in record['reviews']:
-			for r_key, r_value in review.items():
-				if isinstance(r_value, ObjectId):
-					review[r_key] = str(r_value)
+
+		if record.get('reviews'):
+			for review in record['reviews']:
+				for r_key, r_value in review.items():
+					if isinstance(r_value, ObjectId):
+						review[r_key] = str(r_value)
 
 
 

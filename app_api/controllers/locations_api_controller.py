@@ -226,27 +226,7 @@ class LocationsAPIController(APIControllersBase):
 
 
 
-	# def format_location(self, document):
-	# 	'''
-
-
-	# 	'''
-	# 	# remove the object ids:
-	# 	location_data =  self.convert_object_ids(document=document)
-
-	# 	# seperate 'coords' into longatude and lattitude and then remove 'coords'
-	# 	location_data['lng'] = location_data['coords']['coordinates'][0]
-	# 	location_data['lat'] = location_data['coords']['coordinates'][1]
-
-	# 	# remove coords from dictionary:
-	# 	location_data = dict([(k, v) for k, v in location_data.items() if k not in ['coords']])
-
-
-	# 	return location_data
 
 
 
 
-
-# End: helper methods:
-# *******************************************************************************

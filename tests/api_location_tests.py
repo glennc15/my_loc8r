@@ -19,16 +19,16 @@ import jwt
 from dotenv import load_dotenv
 import os
 
-# from my_loc8r.app_api.models.user_model import Users
-# # from ..components.mongo_repository import MongoRepository
-# from components.mongo_repository import MongoRepository
-# from components.mongo_records_reader import MongoRecordsReader 
+from location_test_helpers import LocationTestHelpers
 
 from api_endpoint_testing import APIEndPointTests, endpoint_test
 
 import rlcompleter
 import pdb 
 pdb.Pdb.complete = rlcompleter.Completer(locals()).complete
+
+
+
 
 
 class APILocationTests(unittest.TestCase):
@@ -42,7 +42,7 @@ class APILocationTests(unittest.TestCase):
 		'''
 
 		'''
-
+		
 		load_dotenv()
 		cls._encode_key = os.environ.get('JWT_SECRETE')
 
@@ -67,6 +67,13 @@ class APILocationTests(unittest.TestCase):
 		self.url = '127.0.0.1:5000'
 		self.db_name = 'myLoc8r'
 
+		self.helpers = LocationTestHelpers(
+			mongo_client=APILocationTests.mongo_client,
+			scheme='http',
+			url='127.0.0.1:5000',
+			db_name='myLoc8r',
+		)
+
 		# self.url = 'localhost:3000'
 
 
@@ -77,7 +84,7 @@ class APILocationTests(unittest.TestCase):
 
 		'''
 
-		self.reset_locations_collection()
+		self.helpers.reset_locations_collection()
 
 		# CREATE unsuccessful: due to an invalid url:
 		endpoint_test(
@@ -628,7 +635,7 @@ class APILocationTests(unittest.TestCase):
 
 		'''
 
-		location_id = self.add_test_location(reviews=0)
+		location_id = self.helpers.add_test_location(reviews=0)
 
 		# common endpoint faiulre tests. Does not do any data validation tests:
 		APIEndPointTests(
@@ -668,7 +675,7 @@ class APILocationTests(unittest.TestCase):
 			descriptive_error_msg="read success"
 		)
 
-		self.verify_test_location(location_id=location_id)
+		self.helpers.verify_test_location(location_id=location_id)
 
 
 
@@ -678,7 +685,7 @@ class APILocationTests(unittest.TestCase):
 
 		'''
 
-		location_id = self.add_test_location(reviews=0)
+		location_id = self.helpers.add_test_location(reviews=0)
 		
 		# common endpoint faiulre tests. Does not do any data validation tests:
 		APIEndPointTests(
@@ -720,7 +727,7 @@ class APILocationTests(unittest.TestCase):
 			descriptive_error_msg="invalid method for endpoint"
 		)
 
-		self.verify_test_location(location_id=location_id)
+		self.helpers.verify_test_location(location_id=location_id)
 
 
 		# UPDATE unsuccessful: due to missing invalid name field (required):
@@ -742,7 +749,7 @@ class APILocationTests(unittest.TestCase):
 			descriptive_error_msg="name is an empty string"
 		)
 
-		self.verify_test_location(location_id=location_id)
+		self.helpers.verify_test_location(location_id=location_id)
 
 
 		# UPDATE unsuccessful: due to missing invalid address field (required):
@@ -764,7 +771,7 @@ class APILocationTests(unittest.TestCase):
 			descriptive_error_msg="address is an empty string"
 		)
 
-		self.verify_test_location(location_id=location_id)
+		self.helpers.verify_test_location(location_id=location_id)
 
 
 		# UPDATE unsuccessful: due to missing invalid rating field:
@@ -786,7 +793,7 @@ class APILocationTests(unittest.TestCase):
 			descriptive_error_msg="rating is invalid"
 		)
 
-		self.verify_test_location(location_id=location_id)
+		self.helpers.verify_test_location(location_id=location_id)
 
 
 		# UPDATE unsuccessful: due to missing invalid rating field:
@@ -808,7 +815,7 @@ class APILocationTests(unittest.TestCase):
 			descriptive_error_msg="rating is invalid"
 		)
 
-		self.verify_test_location(location_id=location_id)
+		self.helpers.verify_test_location(location_id=location_id)
 
 
 		# UPDATE unsuccessful: due to invalid longitude coordinate:
@@ -830,7 +837,7 @@ class APILocationTests(unittest.TestCase):
 			descriptive_error_msg="longitude is invalid"
 		)
 
-		self.verify_test_location(location_id=location_id)
+		self.helpers.verify_test_location(location_id=location_id)
 
 
 		# UPDATE unsuccessful: due to invalid longitude coordinate:
@@ -852,7 +859,7 @@ class APILocationTests(unittest.TestCase):
 			descriptive_error_msg="longitude is invalid"
 		)
 
-		self.verify_test_location(location_id=location_id)
+		self.helpers.verify_test_location(location_id=location_id)
 
 
 		# UPDATE unsuccessful: due to invalid latitude coordinate:
@@ -874,7 +881,7 @@ class APILocationTests(unittest.TestCase):
 			descriptive_error_msg="lattitue is invalid"
 		)
 
-		self.verify_test_location(location_id=location_id)
+		self.helpers.verify_test_location(location_id=location_id)
 
 
 		# UPDATE unsuccessful: due to invalid latitude coordinate:
@@ -896,7 +903,7 @@ class APILocationTests(unittest.TestCase):
 			descriptive_error_msg="lattitue is invalid"
 		)
 
-		self.verify_test_location(location_id=location_id)
+		self.helpers.verify_test_location(location_id=location_id)
 
 
 		# UPDATE successful:
@@ -937,7 +944,7 @@ class APILocationTests(unittest.TestCase):
 
 		'''
 
-		location_id = self.add_test_location(reviews=0)
+		location_id = self.helpers.add_test_location(reviews=0)
 
 		# common endpoint faiulre tests. Does not do any data validation tests:
 		APIEndPointTests(
@@ -952,7 +959,7 @@ class APILocationTests(unittest.TestCase):
 			data=None
 		).parent_id_endpoint_tests()
 
-		self.verify_test_location(location_id=location_id)
+		self.helpers.verify_test_location(location_id=location_id)
 
 		# DELETE failure: incorrect method:
 		endpoint_test(
@@ -967,7 +974,7 @@ class APILocationTests(unittest.TestCase):
 		)
 
 
-		self.verify_test_location(location_id=location_id)
+		self.helpers.verify_test_location(location_id=location_id)
 
 
 		# DELETE success:
@@ -1003,7 +1010,7 @@ class APILocationTests(unittest.TestCase):
 
 
 		# Set up: build some test locations:
-		test_locations = self.build_test_locations()
+		test_locations = self.helpers.build_test_locations()
 
 
 		# READ: failure with no latitue parameter
@@ -1188,387 +1195,7 @@ class APILocationTests(unittest.TestCase):
 
 
 
-	# ************************************************************************************************************
-	# START: Helper methods
 
-
-	def verify_test_location(self, location_id):
-
-		read_r = requests.get(
-			url=self.build_url(path_parts=['api', 'locations', location_id])
-		)
-
-		self.assertEqual(read_r.status_code, 200)
-
-		self.assertEqual(read_r.json()['_id'], location_id)
-		self.assertEqual(read_r.json()['name'], 'Burger Queen')
-		self.assertEqual(read_r.json()['address'], '783 High Street, Reading, RG6 1PS')
-		self.assertEqual(read_r.json()['facilities'], 'Food,Premium wifi')
-		self.assertEqual(read_r.json()['rating'], 0)
-		self.assertEqual(read_r.json()['lng'], -0.9690854)
-		self.assertEqual(read_r.json()['lat'], 51.455051)
-		self.assertEqual(len(read_r.json()['openingTimes']), 2)
-		self.assertEqual(len(read_r.json()['reviews']), 0)
-
-
-
-
-	def build_test_locations(self):
-		'''
-
-		'''
-	
-		self.reset_locations_collection()
-		
-		data = [
-			{
-				'name': 'Burger Queen',
-				'address': "783 High Street, Reading, RG6 1PS",
-				'facilities': "Food,Premium wifi",
-				'lng': -0.9690854,
-				'lat': 51.455051,
-				'openingTimes': [
-					{
-						'days': "Thursday - Saturday",
-						'opening': "1:00am",
-						'closing': "10:00am",
-						'closed': False
-					},
-					{
-						'days': "Monday - Wednesday",
-						'closed': True
-					}
-				]
-			},
-			{
-				'name': 'Starcups',
-				'address': "125 High Street, Reading, RG6 1PS",
-				'facilities': "Hot drinks,Food,Premium wifi",
-				'lng': -0.9690884,
-				'lat': 51.455061,
-				'openingTimes': [
-					{
-						'days': "Monday - Friday",
-						'opening': "7:00am",
-						'closing': "5:00pm",
-						'closed': False
-					},
-					{
-						'days': "Saturday",
-						'opening': "8:00am",
-						'closing': "5:00pm",
-						'closed': False
-					},
-					{
-						'days': "Sunday",
-						'closed': True
-					},
-				]
-			},
-			{        
-				'name': 'Cafe Hero',
-				'address': "555 High Street, Reading, RG6 1PS",
-				'facilities': "Hot drinks,Premium wifi",
-				'lng': -0.9690964,
-				'lat': 51.455051,
-				'openingTimes': [
-					{
-						'days': "Monday - Friday",
-						'opening': "7:00am",
-						'closing': "10:00pm",
-						'closed': False
-					},
-					{
-						'days': "Saturday",
-						'closed': True
-					},
-					{
-						'days': "Sunday",
-						'closed': True
-					},
-				],
-			}
-		]
-
-
-		# add the location data with POST requests to the api:
-		url = self.build_url(path_parts=['api', 'locations'])
-
-		response_json = list()
-
-		for record in data:
-			r = requests.post(url=url, json=record)
-
-			if r.status_code != 201:
-				print("Error writing data")
-				raise ValueError("There was a problem with the POST request for {}".format(record['name']))
-
-			response_json.append(r.json())
-
-
-		return response_json
-
-
-
-	def remove_all_records(self):
-		'''
-
-
-		'''
-
-		url = self.build_url(path_parts=['api', 'locations'])
-
-		try:
-			all_loc_r = requests.get(
-				url=url,
-				params={
-					'lng': 1,
-					'lat': 1,
-					'maxDistance': 100000000
-				}
-			)
-
-
-			# test_records = all_loc_r.json()
-
-			# print(test_records)
-
-			# pdb.set_trace()
-			
-			for test_record in all_loc_r.json():
-				url = self.build_url(path_parts=['api', 'locations', test_record['_id']])
-				r = requests.delete(url=url)
-				try:
-					self.assertEqual(r.status_code, 204)
-
-				except Exception as e:
-					print("url = {}".format(url))
-					print("test_record['_id'] = {}".format(test_record['_id']))
-					raise e
-
-		except Exception as e:
-			pass 
-
-
-	def drop_db(self):
-		'''
-
-		'''
-
-		APITests.mongo_client.drop_database(self.db_name)
-
-
-
-	def build_url(self, path_parts):
-		'''
-
-
-		'''
-
-		# complete url
-		path = '/'.join(s.strip('/') for s in path_parts)
-		url = urlunsplit((self.scheme, self.url, path, None, None))
-
-
-		return url 
-
-	def location_tests(self, location_id, expected_reviews, expected_rating):
-		'''
-
-		'''
-
-		# print("location_id = {}".format(location_id))
-
-		# print("location_id = {}".format(location_id))
-		# pdb.set_trace()
-
-		db_location = APITests.mongo_client[self.db_name]['locations'].find_one({'_id': ObjectId(location_id)})
-
-		self.assertEqual(db_location['rating'], expected_rating)
-		
-		# for whatever reason when all reviews are removed the location
-		# ['reviews'] no longer exists in the database. But can add another
-		# reviews without issues. When another review is added then location
-		# ['reviews'] is present again.
-
-		if db_location.get('reviews'):
-			self.assertEqual(len(db_location['reviews']), expected_reviews)
-
-		else:
-			self.assertEqual(0, expected_reviews)
-
-
-
-	def add_test_location(self, reviews):
-		'''
-		
-		Adds a test location and up to 2 reviews each with a unique user:
-
-		'''
-
-		self.reset_users_collection()
-		self.reset_locations_collection()
-
-		# create a test location:
-		url = self.build_url(path_parts=['api', 'locations'])
-		location_r = requests.post(
-			url=url,
-			json={
-				'name': 'Burger Queen',		
-				'address': "783 High Street, Reading, RG6 1PS",
-				'facilities': "Food,Premium wifi",
-				'lng': -0.9690854,
-				'lat': 51.455051,
-				'openingTimes': [
-					{
-						'days': "Thursday - Saturday",
-						'opening': "1:00am",
-						'closing': "10:00am",
-						'closed': False
-					},
-					{
-						'days': "Monday - Wednesday",
-						'closed': True
-					}
-				]
-			}
-		)
-
-		self.assertEqual(location_r.status_code, 201)
-		self.assertEqual(len(location_r.json()['reviews']), 0)
-
-
-		location_id = location_r.json()['_id']
-
-		if reviews == 0:
-			return (location_id)
-
-		elif (reviews==1) or (reviews==2):
-
-			# Review 1 / User 1
-			register1_r = requests.post(
-				url=self.build_url(path_parts=['api', 'register']),
-				json={
-					'name': "Madison Voorhees",
-					'email': 'mvoorhees@hotmail.com',
-					'password': 'mABC123'
-				}
-			)
-
-			self.assertEqual(register1_r.status_code, 201)		
-			self.assertTrue('token' in register1_r.json().keys())
-
-			user1_token = register1_r.json()['token']
-
-
-			review1_r = requests.post(
-				url=self.build_url(path_parts=['api', 'locations', location_id, 'reviews']),
-				auth=(user1_token, str(None)),
-				json={
-					'rating': 5,		
-					'reviewText': "No wifi. Has male and female a go-go dances. Will be back with the family!",
-				}
-			)
-
-			review1_id = review1_r.json()['_id']
-
-			self.assertEqual(review1_r.status_code, 201)
-			self.assertEqual(review1_r.json()['author'], 'Madison Voorhees')
-			self.assertEqual(review1_r.json()['rating'], 5)
-			self.assertEqual(review1_r.json()['review_text'], 'No wifi. Has male and female a go-go dances. Will be back with the family!')
-
-			self.location_tests(
-				location_id=location_id, 
-				expected_reviews=1, 
-				expected_rating=5, 
-			)
-
-			if reviews == 1:
-				return (location_id, review1_id, user1_token)
-
-
-			# Review 2/ User 2:
-			register2_r = requests.post(
-				url=self.build_url(path_parts=['api', 'register']),
-				json={
-					'name': "Simon Hardy",
-					'email': 'mhardy@hotmail.com',
-					'password': 'sABC123'
-				}
-			)
-
-			self.assertEqual(register2_r.status_code, 201)		
-			self.assertTrue('token' in register1_r.json().keys())
-
-			user2_token = register2_r.json()['token']
-
-
-			review2_r = requests.post(
-				url=self.build_url(path_parts=['api', 'locations', location_id, 'reviews']),
-				auth=(user2_token, str(None)),
-				json={	
-					'rating': 2,
-					'reviewText': "Didn't get any work done, great place!",
-				}
-			)
-
-			review2_id = review2_r.json()['_id']
-			
-			self.assertEqual(review2_r.status_code, 201)
-			self.assertEqual(review2_r.json()['author'], 'Simon Hardy')
-			self.assertEqual(review2_r.json()['rating'], 2)
-			self.assertEqual(review2_r.json()['review_text'], "Didn't get any work done, great place!")
-
-
-			self.location_tests(
-				location_id=location_id, 
-				expected_reviews=2, 
-				expected_rating=3, 
-			)
-
-			return (location_id, review1_id, user1_token, review2_id, user2_token)
-
-
-		else:
-
-			raise ValueError("reviews = {} is not valid. 0 <= reviews <= 2".format(reviews))
-
-
-
-	def reset_users_collection(self):
-		'''
-
-		'''
-
-		# drop users collection and recreate it with a unique index for email:
-		APILocationTests.mongo_client[self.db_name].drop_collection('users')
-		APILocationTests.mongo_client[self.db_name].create_collection('users')
-		APILocationTests.mongo_client[self.db_name]['users'].create_index('email', unique=True)
-
-		
-	def reset_locations_collection(self):
-		'''
-
-		'''
-
-		# drop users collection and recreate it with a unique index for email:
-		APILocationTests.mongo_client[self.db_name].drop_collection('locations')
-		APILocationTests.mongo_client[self.db_name].create_collection('locations')
-		APILocationTests.mongo_client[self.db_name]['locations'].create_index([('coords', pymongo.GEOSPHERE)])
-
-
-
-
-	def decode_token(self, token):
-		'''
-
-		'''
-		load_dotenv()
-
-		return jwt.decode(token, self._encode_key, algorithms=["HS256"])
-
-	# End: Helper methods
-	# ************************************************************************************************************
 
 
 if __name__ == '__main__':

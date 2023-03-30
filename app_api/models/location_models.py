@@ -93,10 +93,10 @@ class Locations(me.Document):
 		# pdb.set_trace()
 		
 		if not (-180.0<=longitude<=180.0):
-			raise me.errors.ValidationError("longitude is out of range, -180.0 <= longitude <= 180")
+			raise me.errors.ValidationError("longitude = {} is out of range, -180.0 <= longitude <= 180".format(longitude))
 
 		if not (-90.0<=latitude<=90.0):
-			raise me.errors.ValidationError("latitude is out of range, -90.0 <= latitude <= 90")
+			raise me.errors.ValidationError("latitude = {} is out of range, -90.0 <= latitude <= 90".format(latitude))
 
 
 

@@ -214,9 +214,8 @@ def api_review_update(locationid, reviewid):
 	return (review_api_controller.data, review_api_controller.status_code)
 
 
-
 # -------------------------------------------------------------------------------
-# Authentication routes:
+# Authentication/User routes:
 
 @app.route('/api/register', methods=['POST'])
 def api_register():
@@ -233,6 +232,23 @@ def api_register():
 def api_login():
 	users_api_controller = UsersAPIController()
 	users_api_controller.login(request=request)
+
+	print("users_api_controller.status_code = {}".format(users_api_controller.status_code))
+	print("users_api_controller.data = {}".format(users_api_controller.data))
+	
+	return (users_api_controller.data, users_api_controller.status_code)
+
+
+
+@app.route('/api/user/<userid>', methods=['PUT'])
+def api_user():
+
+	users_api_controller = UsersAPIController()
+	users_api_controller.user_update(
+		user_id=userid, 
+		user_data=request.get_json()
+	)
+	
 
 	print("users_api_controller.status_code = {}".format(users_api_controller.status_code))
 	print("users_api_controller.data = {}".format(users_api_controller.data))

@@ -65,7 +65,7 @@ class APIReviewTests(unittest.TestCase):
 
 		'''
 		self.scheme = 'http'
-		self.url = '127.0.0.1:5000/'
+		self.url = '127.0.0.1:5000'
 		self.db_name = 'myLoc8r'
 
 		self.helpers = LocationTestHelpers(

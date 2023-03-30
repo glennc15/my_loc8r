@@ -166,6 +166,11 @@ class LocationsAPIController(APIControllersBase):
 			self.common_validation_errors(e)
 			return None 
 
+		# 30March2023: Add new .views field to be incremented each time a
+		# location is views.
+
+		location.views += 1
+		location.save()
 
 		self.data = self.format_location(document=location)
 		self.status_code = 200

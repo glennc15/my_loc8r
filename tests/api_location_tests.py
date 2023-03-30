@@ -675,7 +675,11 @@ class APILocationTests(unittest.TestCase):
 			descriptive_error_msg="read success"
 		)
 
-		self.helpers.verify_test_location(location_id=location_id)
+		self.helpers.verify_test_location(
+			location_id=location_id, 
+			location_data=read1_r.json(), 
+			views=1
+		)
 
 
 

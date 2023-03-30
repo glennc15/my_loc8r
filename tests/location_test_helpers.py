@@ -41,23 +41,48 @@ class LocationTestHelpers(object):
 	# START: Helper methods
 
 
-	def verify_test_location(self, location_id):
+	def verify_test_location(self, location_id, location_data=None, views=None):
 
-		read_r = requests.get(
-			url=self.build_url(path_parts=['api', 'locations', location_id])
-		)
 
-		unittest.TestCase().assertEqual(read_r.status_code, 200)
+		if location_data is None:
+			read_r = requests.get(
+				url=self.build_url(path_parts=['api', 'locations', location_id])
+			)
 
-		unittest.TestCase().assertEqual(read_r.json()['_id'], location_id)
-		unittest.TestCase().assertEqual(read_r.json()['name'], 'Burger Queen')
-		unittest.TestCase().assertEqual(read_r.json()['address'], '783 High Street, Reading, RG6 1PS')
-		unittest.TestCase().assertEqual(read_r.json()['facilities'], 'Food,Premium wifi')
-		unittest.TestCase().assertEqual(read_r.json()['rating'], 0)
-		unittest.TestCase().assertEqual(read_r.json()['lng'], -0.9690854)
-		unittest.TestCase().assertEqual(read_r.json()['lat'], 51.455051)
-		unittest.TestCase().assertEqual(len(read_r.json()['openingTimes']), 2)
-		unittest.TestCase().assertEqual(len(read_r.json()['reviews']), 0)
+			unittest.TestCase().assertEqual(read_r.status_code, 200)
+
+			location_data = read_r.json()
+
+
+		unittest.TestCase().assertEqual(location_data['_id'], location_id)
+		unittest.TestCase().assertEqual(location_data['name'], 'Burger Queen')
+		unittest.TestCase().assertEqual(location_data['address'], '783 High Street, Reading, RG6 1PS')
+		unittest.TestCase().assertEqual(location_data['facilities'], 'Food,Premium wifi')
+		unittest.TestCase().assertEqual(location_data['rating'], 0)
+		unittest.TestCase().assertEqual(location_data['lng'], -0.9690854)
+		unittest.TestCase().assertEqual(location_data['lat'], 51.455051)
+		unittest.TestCase().assertEqual(len(location_data['openingTimes']), 2)
+		unittest.TestCase().assertEqual(len(location_data['reviews']), 0)
+
+		if views:
+			unittest.TestCase().assertEqual(location_data['views'], views)
+
+
+		# read_r = requests.get(
+		# 	url=self.build_url(path_parts=['api', 'locations', location_id])
+		# )
+
+		# unittest.TestCase().assertEqual(read_r.status_code, 200)
+
+		# unittest.TestCase().assertEqual(read_r.json()['_id'], location_id)
+		# unittest.TestCase().assertEqual(read_r.json()['name'], 'Burger Queen')
+		# unittest.TestCase().assertEqual(read_r.json()['address'], '783 High Street, Reading, RG6 1PS')
+		# unittest.TestCase().assertEqual(read_r.json()['facilities'], 'Food,Premium wifi')
+		# unittest.TestCase().assertEqual(read_r.json()['rating'], 0)
+		# unittest.TestCase().assertEqual(read_r.json()['lng'], -0.9690854)
+		# unittest.TestCase().assertEqual(read_r.json()['lat'], 51.455051)
+		# unittest.TestCase().assertEqual(len(read_r.json()['openingTimes']), 2)
+		# unittest.TestCase().assertEqual(len(read_r.json()['reviews']), 0)
 
 
 

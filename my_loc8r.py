@@ -240,20 +240,21 @@ def api_login():
 
 
 
-@app.route('/api/user/<userid>', methods=['PUT'])
-def api_user():
+# @app.route('/api/users', methods=['PUT'])
+# @auth.login_required
+# def api_user():
 
-	users_api_controller = UsersAPIController()
-	users_api_controller.user_update(
-		user_id=userid, 
-		user_data=request.get_json()
-	)
-	
+# 	users_api_controller = UsersAPIController()
+# 	users_api_controller.user_update(
+# 		user=g.user, 
+# 		user_data=request.get_json()
+# 	)
 
-	print("users_api_controller.status_code = {}".format(users_api_controller.status_code))
-	print("users_api_controller.data = {}".format(users_api_controller.data))
+
+# 	print("users_api_controller.status_code = {}".format(users_api_controller.status_code))
+# 	print("users_api_controller.data = {}".format(users_api_controller.data))
 	
-	return (users_api_controller.data, users_api_controller.status_code)
+# 	return (users_api_controller.data, users_api_controller.status_code)
 
 
 

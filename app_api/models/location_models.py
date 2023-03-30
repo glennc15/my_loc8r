@@ -15,6 +15,7 @@ class Review(me.EmbeddedDocument):
 	review_text = me.StringField(required=True, min_length=2)
 	created_on = me.DateTimeField(default=datetime.datetime.utcnow)
 
+
 class OpeningTime(me.EmbeddedDocument):
 	_id = me.ObjectIdField(required=True, default=ObjectId)
 	days = me.StringField(required=True)
@@ -67,6 +68,7 @@ class Locations(me.Document):
 	coords = me.PointField(auto_index=True)
 	openingTimes = me.ListField(me.EmbeddedDocumentField(OpeningTime))
 	reviews = me.ListField(me.EmbeddedDocumentField(Review))
+	views = me.IntField(default=0)
 	
 	# opening_times = me.EmbeddedDocumentListField(me.EmbeddedDocument(OpeningTimeSchema))
 	# reviews = me.EmbeddedDocumentListField(me.EmbeddedDocument(ReviewSchema))

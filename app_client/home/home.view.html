@@ -1,0 +1,47 @@
+<navigation></navigation>
+
+<div class="container">
+	<page-header content='vm.pageHeader'></page-header>	
+
+	<div class="row">
+
+		<div class="col-xs-12 col-sm-8">
+
+			<label for="filter">Filter results</label>
+			<input id="filter" type="text", name="filter", ng-model="textFilter">
+			
+			<div class="error">{{ vm.message }}</div>
+			
+			<!-- <p>textFilter = {{ textFilter | isRating }}</p>
+
+			<div ng-if="textFilter | isRating"></div>
+
+			<div ng-if="!(textFilter | isRating)">textFilter is NOT a rating</div>
+ -->
+
+
+			<div class="row list-group">
+
+				<!-- filter by rating -->
+				<div class="col-xs-12 list-group-item" ng-if="textFilter|isRating" ng-repeat="location in vm.data.locations | filter : {rating: textFilter}">
+					<div location-data location="location"></div>
+				</div>
+
+				<!-- general filter -->
+				<div class="col-xs-12 list-group-item" ng-if="!(textFilter|isRating)" ng-repeat="location in vm.data.locations | filter : textFilter">
+					<div location-data location="location"></div>
+				</div>
+				
+
+			</div>
+		
+		</div>
+		
+		<div class="col-xs-12 col-sm-4">
+			<p class="lead">{{ vm.sidebar.content }}</p>
+		</div>
+	</div>
+
+	<footer-generic></footer-generic>
+
+</div>

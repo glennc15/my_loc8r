@@ -1,4 +1,4 @@
-from flask import Flask, request, g 
+from flask import Flask, request, g, send_from_directory 
 from flask_mongoengine import MongoEngine
 # from flask import render_template
 from flask_httpauth import HTTPBasicAuth
@@ -27,7 +27,12 @@ pdb.Pdb.complete = rlcompleter.Completer(locals()).complete
 
 
 
-app = Flask(__name__, template_folder='app_server/templates')
+app = Flask(__name__, 
+	template_folder='app_server/templates',
+	static_folder='app_client',
+	static_url_path=''  
+)
+
 app.config['MONGODB_SETTINGS'] = [
 	{
 		'db': 'myLoc8r',
@@ -45,43 +50,56 @@ auth = HTTPBasicAuth()
 
 
 
+
+# -------------------------------------------------------------------------------
+# app_client (SPA) routers:
+
+@app.route('/', defaults={'urlpath': ''})
+@app.route('/<path:urlpath>')
+def catch_all(urlpath):
+	print("path: {}".format(urlpath))
+
+	return app.send_static_file("index.html")
+
+@app.errorhandler(404)
+def not_found(e):
+	return app.send_static_file("index.html")
+
+
+
 # -------------------------------------------------------------------------------
 # app_server routers:
 
-@app.route('/', methods=['GET'])
-def locations():
+# @app.route('/', methods=['GET'])
+# def locations():
 
-	if request.method == 'GET':
-		return loc_ctrl.locations_by_distance(request=request)
-
-
-
-@app.route('/location/<locationid>', methods=['GET'])
-def location_details(locationid):
-
-	if request.method == 'GET':
-		return loc_ctrl.location(request=request, location_id=locationid)
-
-
-@app.route('/location/<locationid>/review/new', methods=['GET', 'POST'])
-def add_loc_review(locationid):
-
-	if request.method == 'GET':
-		return loc_ctrl.add_review_page(request=request, location_id=locationid)
-
-
-	elif request.method == 'POST':
-		return loc_ctrl.add_review(request=request, location_id=locationid)
-
-	# return "<p>Add a review for Location = {}!</p>".format(locationid)
-
-@app.route('/about')
-def about():
-	return '<p>About Page</p>'
+# 	if request.method == 'GET':
+# 		return loc_ctrl.locations_by_distance(request=request)
 
 
 
+# @app.route('/location/<locationid>', methods=['GET'])
+# def location_details(locationid):
 
+# 	if request.method == 'GET':
+# 		return loc_ctrl.location(request=request, location_id=locationid)
+
+
+# @app.route('/location/<locationid>/review/new', methods=['GET', 'POST'])
+# def add_loc_review(locationid):
+
+# 	if request.method == 'GET':
+# 		return loc_ctrl.add_review_page(request=request, location_id=locationid)
+
+
+# 	elif request.method == 'POST':
+# 		return loc_ctrl.add_review(request=request, location_id=locationid)
+
+# 	# return "<p>Add a review for Location = {}!</p>".format(locationid)
+
+# @app.route('/about')
+# def about():
+# 	return '<p>About Page</p>'
 
 
 
@@ -103,8 +121,8 @@ def api_locations():
 		loc_api_controller.read_locations_by_distance(parameters=request.args.to_dict())
 
 
-	print("loc_api_controller.status_code = {}".format(loc_api_controller.status_code))
-	print("loc_api_controller.data = {}".format(loc_api_controller.data))
+	# print("loc_api_controller.status_code = {}".format(loc_api_controller.status_code))
+	# print("loc_api_controller.data = {}".format(loc_api_controller.data))
 
 
 	# pdb.set_trace()
@@ -134,8 +152,8 @@ def api_location(locationid):
 
 	# loc_api_controller.locations(request=request, location_id=locationid)
 
-	print("loc_api_controller.status_code = {}".format(loc_api_controller.status_code))
-	print("loc_api_controller.data = {}".format(loc_api_controller.data))
+	# print("loc_api_controller.status_code = {}".format(loc_api_controller.status_code))
+	# print("loc_api_controller.data = {}".format(loc_api_controller.data))
 
 	return (loc_api_controller.data, loc_api_controller.status_code)
 
@@ -144,6 +162,7 @@ def api_location(locationid):
 # -------------------------------------------------------------------------------
 # Review routes:
 
+# authencation is requried for creating a review:
 @app.route('/api/locations/<locationid>/reviews', methods=['POST'])
 @auth.login_required
 def api_review_create(locationid):
@@ -156,8 +175,8 @@ def api_review_create(locationid):
 		user=g.user
 	)
 
-	print("review_api_controller.status_code = {}".format(review_api_controller.status_code))
-	print("review_api_controller.data = {}".format(review_api_controller.data))
+	# print("review_api_controller.status_code = {}".format(review_api_controller.status_code))
+	# print("review_api_controller.data = {}".format(review_api_controller.data))
 
 	# pdb.set_trace()
 	
@@ -176,8 +195,8 @@ def api_review_get(locationid, reviewid):
 		review_id=reviewid
 	)
 
-	print("review_api_controller.status_code = {}".format(review_api_controller.status_code))
-	print("review_api_controller.data = {}".format(review_api_controller.data))
+	# print("review_api_controller.status_code = {}".format(review_api_controller.status_code))
+	# print("review_api_controller.data = {}".format(review_api_controller.data))
 
 	return (review_api_controller.data, review_api_controller.status_code)
 
@@ -207,8 +226,8 @@ def api_review_update(locationid, reviewid):
 		)
 
 
-	print("review_api_controller.status_code = {}".format(review_api_controller.status_code))
-	print("review_api_controller.data = {}".format(review_api_controller.data))
+	# print("review_api_controller.status_code = {}".format(review_api_controller.status_code))
+	# print("review_api_controller.data = {}".format(review_api_controller.data))
 
 
 	return (review_api_controller.data, review_api_controller.status_code)
@@ -222,8 +241,8 @@ def api_register():
 	users_api_controller = UsersAPIController()
 	users_api_controller.register(request=request)
 
-	print("users_api_controller.status_code = {}".format(users_api_controller.status_code))
-	print("users_api_controller.data = {}".format(users_api_controller.data))
+	# print("users_api_controller.status_code = {}".format(users_api_controller.status_code))
+	# print("users_api_controller.data = {}".format(users_api_controller.data))
 
 	return (users_api_controller.data, users_api_controller.status_code)
 
@@ -233,8 +252,8 @@ def api_login():
 	users_api_controller = UsersAPIController()
 	users_api_controller.login(request=request)
 
-	print("users_api_controller.status_code = {}".format(users_api_controller.status_code))
-	print("users_api_controller.data = {}".format(users_api_controller.data))
+	# print("users_api_controller.status_code = {}".format(users_api_controller.status_code))
+	# print("users_api_controller.data = {}".format(users_api_controller.data))
 	
 	return (users_api_controller.data, users_api_controller.status_code)
 

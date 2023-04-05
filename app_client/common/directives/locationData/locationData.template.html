@@ -1,13 +1,31 @@
-<h4>
-	<a href="/#/location/{{ location._id }}">{{ location.name }}</a>
-	<small class="rating-stars" rating-stars rating="location.rating"></small>
-	<span class="badge pull-right badge-default">{{ location.distance | formatDistance }}</span>
-</h4>
+<h6>
+	<a href="/#/location/{{location._id}}" class="text-muted fs-5 text-decoration-none">{{location.name}}</a>
+	<span class="badge rounded-pill float-end dist-badge">{{ location.distance | formatDistance }}</span>
+</h6>
 
-<!-- <p>{{ location }}</p> -->
 
-<p class="address">{{ location.address }}</p>
+<!-- teal/green: #46899b royal blue: #101e5a  light royal blue: #5d80b6-->
+<h8>
+
+	<span rating-stars rating="location.rating"></span>
+	
+	<span class="location-review-text text-muted">&nbsp;{{location.num_reviews}} Reviews * 
+		<span ng-show="location.is_open" class="open_status text-muted">Open Now</span>
+		<span ng-hide="location.is_open" class="open_status text-danger">Closed now</span>
+
+	</span> 
+
+</h8>
+
 
 <p>
-	<span class="label label-warning label-facility" ng-repeat="facility in location.facilities track by $index">{{ facility }}</span>
+	<span class="badge facility-badge" ng-repeat-start="facility in location.facilities track by $index">{{facility}}</span>
+	<span ng-repeat-end>&nbsp;</span>
 </p>
+
+
+<hr/>
+
+<h10 class='text-secondary'>{{location.review_summary}}</h10>
+
+

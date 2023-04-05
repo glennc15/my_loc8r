@@ -131,3 +131,10 @@ dmypy.json
 # My ignores
 .DS_Store
 tests/web_scraper
+
+# node
+node_modules
+package-lock.json
+
+# parcel
+.parcel-cache/

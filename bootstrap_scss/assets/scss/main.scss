@@ -1,0 +1,27 @@
+@import "./abstracts/variables";
+
+// Custom.scss
+// Option A: Include all of Bootstrap
+
+// Include any default variable overrides here (though functions won't be available)
+
+
+// Create your own map
+$custom-colors: (
+  "custom-color": #900
+);
+
+
+
+@import "~bootstrap/scss/functions";
+@import "~bootstrap/scss/variables";
+@import "~bootstrap/scss/mixins";
+
+
+// Merge the maps
+$theme-colors: map-merge($theme-colors, $custom-colors);
+
+
+@import "~bootstrap/scss/bootstrap";
+
+// Then add additional custom code here

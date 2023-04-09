@@ -2,22 +2,18 @@
   "name": "my_loc8r",
   "version": "1.0.0",
   "description": "",
-  "source": "./bootstrap_scss/index.html",
+  "source": "./app_client/index.html",
   "directories": {
     "test": "tests"
   },
   "scripts": {
     "dev": "parcel",
-    "build": "build --no-optimize"
+    "build": "parcel build"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "@parcel/transformer-sass": "^2.8.3",
     "parcel": "^2.8.3"
-  },
-  "dependencies": {
-    "bootstrap": "^5.2.3"
   }
 }

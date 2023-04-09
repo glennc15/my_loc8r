@@ -20,9 +20,9 @@ var filterLocations = function(locations, facility) {
 
 var facilitiesFilter = function() {
 	return function(locations, facilities){
-		console.log('facilitiesFilter yall!');
-		console.log("facilities = " + JSON.stringify(facilities));
-		console.log("locations = " + locations);
+		// console.log('facilitiesFilter yall!');
+		// console.log("facilities = " + JSON.stringify(facilities));
+		// console.log("locations = " + locations);
 
 		if (Array.isArray(locations) && Array.isArray(facilities)) {
 			if (facilities.length > 0){

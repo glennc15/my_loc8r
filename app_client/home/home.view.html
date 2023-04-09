@@ -1,22 +1,32 @@
 <navigation></navigation>
 
+
+<!-- <p>{{ vm.data.locations }}</p> -->
+
+<!-- <div id='map' style="width: 800px, height: 800px"></div> -->
+
+
 <!-- Background applied on column -->
 <div class="container margin-top locations-list">
 	
-	<div class="row my-page-header">
+<!-- 	<div class="row my-page-header">
 		<h4 class="text-muted">{{vm.sidebar.content}}</h4>
-	</div>
+	</div> -->
 
 
-	<label for="filter">Filter results</label>
-	<input id="filter" type="text", name="filter", ng-model="textFilter">
+	<!-- <label for="filter">Filter results</label> -->
+	<!-- <input id="filter" type="text", name="filter", ng-model="textFilter"> -->
 
 
 	<!-- Background applied on child div -->
 	<div class="row">
 		
 		<!-- locaiton filters: -->
-		<div class="col-md-4 m-2 filters">
+		<div class="col-md-4 m-2 rounded filters">
+
+			<!-- map with location markers-->
+			<div class="m-1" id='map-locations'></div>
+
 
 			<!-- checkbox for each filter -->
 			<div class="form-check" ng-repeat="filter in vm.facilityFiltersData">
@@ -28,9 +38,10 @@
 
 		<!-- locations: -->
 		<div class="col-md-7 m-2 locations">
+		
 			<!-- header for locations: -->
 			<div class="m-2">
-				<p class="text-muted fs-5">Found {{vm.total_locations}} locations for you to explore</p>
+				<p class="locations-heading fs-5">Found {{vm.total_locations}} locations for you to explore</p>
 			</div>
 
 			<!-- summary for each location: -->
@@ -40,8 +51,12 @@
 				</div>
 			</div>
 
-
 		</div>
+
 	</div>
+
+
+
+
 </div>
 

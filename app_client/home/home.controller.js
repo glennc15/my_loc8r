@@ -17,8 +17,63 @@ function homeCtrl ($scope, $filter, myLoc8rData, geolocation, mapHelpers, testDa
 		content: "Looking for wifi and a seat? myLoc8r helps you find places to work when out and about. Perhaps with coffee, cake or a pint? Let myLoc8r help you find the place you're looking for."
 	};
 
-	vm.message = "Checking your location";
+	vm.message = "Searching for locations near you";
 
+	var updateMapMarkers = function(){
+		addMapLocations();
+	};
+
+
+	var getCurrentLocations = function() {
+
+		var locations = new Array;
+
+		// build map points for each filtered location:
+		$filter('facilitiesFilter')(vm.data.locations, vm.facilitiesFilters).forEach(function(location){
+			locations.push({
+				'type': 'Feature',
+				'properties': {
+					'description':('<strong>' + location.name + '</strong><p>' + location.address + '</p>')
+				},
+				'geometry': {
+					'type': 'Point',
+					'coordinates': [location.lng, location.lat]
+				}
+			});
+
+		});
+
+		return locations;
+
+
+	}
+
+	var addMapLocations = function(){
+
+		vm.map.removeLayer('locations');
+		vm.map.removeSource('locations');
+
+		vm.map.addSource('locations', {
+			'type': 'geojson',
+			'data': {
+				'type': 'FeatureCollection',
+				'features': getCurrentLocations()
+			}
+		});
+
+		vm.map.addLayer({
+			'id': 'locations',
+			'type': 'circle',
+			'source': 'locations',
+			'paint': {
+				'circle-color': '#4264fb',
+				'circle-radius': 6,
+				'circle-stroke-width': 2,
+				'circle-stroke-color': '#ffffff'
+			}
+		});
+
+	};
 
 	var addMap = function (locations, longitude, latitude){
 
@@ -33,35 +88,77 @@ function homeCtrl ($scope, $filter, myLoc8rData, geolocation, mapHelpers, testDa
 			// zoom: 1 // starting zoom
 		});
 
+		// sets the map view area:
+		map.fitBounds(mapHelpers.getBounds(longitude, latitude, 2.6));
 
-		locations.forEach(function(location, index){
-			const el = document.createElement('div');
-			el.className = 'marker';
+		// add a current location marker:
+		const currentLocationMarker = new mapboxgl.Marker({color: 'red', scale: .5})
+			.setLngLat([longitude, latitude])
+			.addTo(map);
 
-			// console.log(index + ": " + location.lng + ", " + location.lat);
 
-			new mapboxgl
-				.Marker(el)
-				.setLngLat([location.lng, location.lat])
-				.setPopup(
-					new mapboxgl.Popup({ offset: 0}) // add popups
-						.setHTML(`<h8>${location.name}</h8><p><small>${location.address}</small></p>`)				
+		// add locations to the map:
+		map.on('load', function() {
+			map.addSource('locations', {
+				'type': 'geojson',
+				'data': {
+					'type': 'FeatureCollection',
+					'features': getCurrentLocations()
+				}
+			});
 
-				)
-				.addTo(map);
+			map.addLayer({
+				'id': 'locations',
+				'type': 'circle',
+				'source': 'locations',
+				'paint': {
+					'circle-color': '#4264fb',
+					'circle-radius': 6,
+					'circle-stroke-width': 2,
+					'circle-stroke-color': '#ffffff'
+				}
+			});
+
+			// Create a popup, but don't add it to the map yet.
+			const popup = new mapboxgl.Popup({
+				closeButton: false,
+				closeOnClick: false
+			});
+
+
+			map.on('mouseenter', 'locations', (e) => {
+				// Change the cursor style as a UI indicator.
+				map.getCanvas().style.cursor = 'pointer';
+				 
+				// Copy coordinates array.
+				const coordinates = e.features[0].geometry.coordinates.slice();
+				const description = e.features[0].properties.description;
+				 
+				// Ensure that if the map is zoomed out such that multiple
+				// copies of the feature are visible, the popup appears
+				// over the copy being pointed to.
+				while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
+					coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
+				}
+				 
+				// Populate the popup and set its coordinates
+				// based on the feature found.
+				popup.setLngLat(coordinates).setHTML(description).addTo(map);
+			});
+				 
+			map.on('mouseleave', 'locations', () => {
+				map.getCanvas().style.cursor = '';
+				popup.remove();
+			});
+
+
+
+
 
 		});
 
-
-		// console.log("start longitude = " + longitude);
-		// console.log("start latitude = " + latitude);
-
-
-		// var map_bounds = mapHelpers.getBounds(longitude, latitude, 5);
-		// console.log('map_bounds = ' + map_bounds);
-
-		map.fitBounds(mapHelpers.getBounds(longitude, latitude, 2.6));
-
+		vm.map = map;
+		
 	};
 
 
@@ -110,11 +207,10 @@ function homeCtrl ($scope, $filter, myLoc8rData, geolocation, mapHelpers, testDa
 
 			// console.log("location.is_open = " + location.is_open);
 
-
-
 		});
 
-		// create a set of all facilities to use a filters:
+		// create a set of all facilities to use a filters. Converting to a
+		// set removes all duplicate facilties:
 		facilities = new Set(facilities);
 		facilities = Array.from(facilities);
 		facilities.sort(function(a, b) {
@@ -146,7 +242,11 @@ function homeCtrl ($scope, $filter, myLoc8rData, geolocation, mapHelpers, testDa
 
 		vm.data = {locations: data};
 
-		vm.total_locations = data.length;
+		// vm.total_locations = data.length;
+
+
+
+		
 
 	};
 
@@ -167,10 +267,36 @@ function homeCtrl ($scope, $filter, myLoc8rData, geolocation, mapHelpers, testDa
 
 			});
 		}
+
+		updateMapMarkers();
+
+
+
 	};
+
+
+	vm.clearFilters = function() {
+		// console.log("vm.clearFilters");
+
+		// set all the filters to unchecked (false)
+		vm.facilityFiltersData.forEach(function(filter){
+			filter.model = false;
+		});
+		
+		vm.facilitiesFilters = new Array;
+
+		updateMapMarkers();
+
+	}
+
+
+
 
 	vm.getData = function(position) {
 		vm.message = "Searching for nearby places";
+
+		vm.showLocations = false;
+		vm.showSpinner = true;
 
 		var lat = position.coords.latitude;
 		var lng = position.coords.longitude;
@@ -182,11 +308,16 @@ function homeCtrl ($scope, $filter, myLoc8rData, geolocation, mapHelpers, testDa
 				processData(data);
 				addMap(vm.data.locations, lng, lat);
 
-				// console.log(JSON.stringify(vm.data.locations));
+				if (vm.data.locations.length > 0){
+					vm.showSpinner = false;
+					vm.showLocations = true;
+				}
 
 			})
 			.error(function(e){
 				vm.message = "Sorry, something's gone wrong";
+				vm.showSpinner = false;
+
 				console.log(e);
 				
 			});
@@ -208,6 +339,7 @@ function homeCtrl ($scope, $filter, myLoc8rData, geolocation, mapHelpers, testDa
 	vm.showError = function(error) {
 		$scope.$apply(function() {
 			vm.message = error.message;
+			vm.showSpinner = false;
 		});
 	};
 
@@ -215,6 +347,8 @@ function homeCtrl ($scope, $filter, myLoc8rData, geolocation, mapHelpers, testDa
 	vm.noGeo = function() {
 		$scope.$apply(function() {
 			vm.message = "Geolocation not supported by this browser";
+			vm.showSpinner = false;
+
 		});
 	};
 

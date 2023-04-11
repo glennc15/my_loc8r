@@ -5,6 +5,13 @@
 
 <!-- <div id='map' style="width: 800px, height: 800px"></div> -->
 
+<div>{{ vm.message }}</div>
+
+<!-- spinner -->
+<div class="spinner-border text-light justify-content-center my-spinner" role="status" ng-show='vm.showSpinner'>
+  <span class="visually-hidden">Loading...</span>
+</div>
+
 
 <!-- Background applied on column -->
 <div class="container margin-top locations-list">
@@ -17,17 +24,30 @@
 	<!-- <label for="filter">Filter results</label> -->
 	<!-- <input id="filter" type="text", name="filter", ng-model="textFilter"> -->
 
+	<!-- Location heading -->
+	<div class="row" ng-show="vm.showLocations">
+		<div class="col-md-12 locations-heading m-2">
+			<p class="fs-4">
+				Found {{(vm.data.locations|facilitiesFilter:vm.facilitiesFilters).length}} locations for you to explore
+				<a class="text-warning fw-bold text-decoration-none fs-6" ng-click="vm.clearFilters()" ng-show="(vm.data.locations|facilitiesFilter:vm.facilitiesFilters).length < vm.total_locations">Clear All Filters</a>
+			</p>
+		</div>
+	</div>
 
-	<!-- Background applied on child div -->
+
+
+	<!-- map with location markers-->
 	<div class="row">
-		
+		<div class="col-md-12">
+			<div class="m-1" id='map-locations'></div>	
+		</div>
+	</div>
+
+	<div class="row" ng-show="vm.showLocations">
+
 		<!-- locaiton filters: -->
-		<div class="col-md-4 m-2 rounded filters">
-
-			<!-- map with location markers-->
-			<div class="m-1" id='map-locations'></div>
-
-
+		<div class="col-md-6 col-xs-12 m-2 p-3 rounded filters">
+			<p class="text-muted">Filter locations by facilities:</p>
 			<!-- checkbox for each filter -->
 			<div class="form-check" ng-repeat="filter in vm.facilityFiltersData">
 				<input class="form-check-input border-dark-subtle" type="checkbox" value="false" ng-model="filter.model" id="filter.id" ng-change="vm.filterChange(filter.model, filter.value)">
@@ -37,12 +57,7 @@
 		</div>
 
 		<!-- locations: -->
-		<div class="col-md-7 m-2 locations">
-		
-			<!-- header for locations: -->
-			<div class="m-2">
-				<p class="locations-heading fs-5">Found {{vm.total_locations}} locations for you to explore</p>
-			</div>
+		<div class="col-md-5 col-xs-12 m-2 locations">
 
 			<!-- summary for each location: -->
 			<div class="list-group">

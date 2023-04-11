@@ -58,11 +58,12 @@
 
 		<!-- locations: -->
 		<div class="col-md-5 col-xs-12 m-2 locations">
-
 			<!-- summary for each location: -->
 			<div class="list-group">
 				<div class="list-group-item m-1 location" ng-repeat="location in vm.data.locations | facilitiesFilter : vm.facilitiesFilters">
-					<div location-data location="location"></div>
+					<!-- <div location-data location="location"></div> -->
+
+					<location-data location="location" current-lat="vm.lat" current-lng="vm.lng"></location-data>
 				</div>
 			</div>
 

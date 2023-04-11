@@ -298,8 +298,13 @@ function homeCtrl ($scope, $filter, myLoc8rData, geolocation, mapHelpers, testDa
 		vm.showLocations = false;
 		vm.showSpinner = true;
 
+
 		var lat = position.coords.latitude;
 		var lng = position.coords.longitude;
+
+
+		vm.lat = lat;
+		vm.lng = lng;
 
 		// get locations from the API and prepare the data for the view
 		myLoc8rData.locationByCoords(lat, lng)

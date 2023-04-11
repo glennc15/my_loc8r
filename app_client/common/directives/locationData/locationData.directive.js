@@ -5,7 +5,9 @@ var locationData = function() {
 	return {
 		restrict: "EA",
 		scope: {
-			location: "=location"
+			location: "=location",
+			currentLat: '=',
+			currentLng: '=',
 		},
 		templateUrl: '/common/directives/locationData/locationData.template.html'
 	};

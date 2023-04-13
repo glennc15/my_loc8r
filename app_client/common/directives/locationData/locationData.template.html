@@ -1,5 +1,5 @@
 <h6>
-	<a href="/#/location/{{location._id}}?lng={{currentLng}}&lat={{currentLat}}&dist={{location.dist_calc}}" class="text-muted fs-5 text-decoration-none">{{location.name}}</a>
+	<a ng-href="/#/location/{{location._id}}?lng={{currentLng}}&lat={{currentLat}}&dist={{location.dist_calc}}" class="text-muted fs-5 text-decoration-none">{{location.name}}</a>
 	<span class="badge rounded-pill float-end dist-badge">{{ location.distance | formatDistance }}</span>
 </h6>
 

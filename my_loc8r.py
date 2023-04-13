@@ -16,6 +16,7 @@ from my_loc8r.app_api.models.user_model import Users
 
 # import my_loc8r.app_api.controllers.reviews_api_ctrl as reviews_api_ctrl 
 
+from urllib.parse import urlparse
 
 import rlcompleter
 import pdb 
@@ -57,13 +58,23 @@ auth = HTTPBasicAuth()
 @app.route('/', defaults={'urlpath': ''})
 @app.route('/<path:urlpath>')
 def catch_all(urlpath):
+	pdb.set_trace()
+	
 	print("path: {}".format(urlpath))
-
 	return app.send_static_file("index.html")
 
 @app.errorhandler(404)
 def not_found(e):
-	return app.send_static_file("index.html")
+	# if url is for an api enpoint then return a 404. All other 404s return
+	# the SPA index page:
+	path = urlparse(request.url).path
+
+	if '/api/' == path[0:5]:
+		# api endpoint so send a 404:
+		return ({'error': "{} not found".format(path)}, 404)
+
+	else:
+		return app.send_static_file("index.html")
 
 
 

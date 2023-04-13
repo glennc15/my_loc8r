@@ -120,6 +120,10 @@ class APIReviewTests(unittest.TestCase):
 				'author': 'Simon Holmes',		
 				'rating': 5,
 				'reviewText': "No wifi. Has male and female a go-go dances. Will be back with the family!",
+			},
+			status_codes={
+				"no_auth_get_invalid": 404,
+				"auth_get_invalid": 404,
 			}
 		).run_tests()
 
@@ -304,6 +308,10 @@ class APIReviewTests(unittest.TestCase):
 				'author': 'Simon Holmes',		
 				'rating': 5,
 				'reviewText': "No wifi. Has male and female a go-go dances. Will be back with the family!",
+			},
+			status_codes={
+				"no_auth_get_invalid": 404,
+				"auth_get_invalid": 404,
 			}
 		).run_tests()
 
@@ -554,10 +562,10 @@ class APIReviewTests(unittest.TestCase):
 				'reviewText': "No wifi. Has male and female a go-go dances. Will be back with the family!",
 			},
 			status_codes={
-				"auth_parentid_none": 404,
-				"auth_required_parentid_none": 404,
-				# "auth_childid_none": 405,
-				"auth_required_childid_none": 404,
+				# "auth_parentid_none": 404,
+				# "auth_required_parentid_none": 404,
+				"auth_childid_none": 405,
+				# "auth_required_childid_none": 404,
 
 			}
 		).parent_id_endpoint_tests().child_id_endpoint_tests().authorization_tests()
@@ -741,10 +749,10 @@ class APIReviewTests(unittest.TestCase):
 			child_id=review1_id,
 			data=None,
 			status_codes={
-				"auth_parentid_none": 404,
-				"auth_required_parentid_none": 404,
-				# "auth_childid_none": 405,
-				"auth_required_childid_none": 404,
+				# "auth_parentid_none": 404,
+				# "auth_required_parentid_none": 404,
+				"auth_childid_none": 405,
+				# "auth_required_childid_none": 404,
 
 			}
 		).parent_id_endpoint_tests().child_id_endpoint_tests().authorization_tests()

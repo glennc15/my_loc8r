@@ -708,7 +708,8 @@ class APILocationTests(unittest.TestCase):
 				'rating': 5,
 				'lng': -0.9690854,
 				'lat': 51.455051,
-			} 
+			},
+			status_codes={"no_auth_parentid_none": 405} 
 		).parent_id_endpoint_tests()
 
 
@@ -960,7 +961,8 @@ class APILocationTests(unittest.TestCase):
 			decode_key=None,
 			parent_id=location_id,
 			child_id=None,
-			data=None
+			data=None,
+			status_codes={"no_auth_parentid_none": 405} 
 		).parent_id_endpoint_tests()
 
 		self.helpers.verify_test_location(location_id=location_id)

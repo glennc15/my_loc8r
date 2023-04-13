@@ -217,7 +217,7 @@ class APIEndPointTests(object):
 					no_auth_test_status_code = self._status_codes['no_auth_parentid_none']
 
 
-
+				# print("self.build_parent_id_endpoint(parent_id=parent_id) = {}".format(self.build_parent_id_endpoint(parent_id=parent_id)))
 
 				endpoint_test(
 					scheme=self._scheme,

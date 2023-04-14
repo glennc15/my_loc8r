@@ -687,7 +687,210 @@ class APIUserTests(unittest.TestCase):
 		self.assertTrue('token' in login2_r.json().keys())
 
 
+	def test_profile_01(self):
+
+		self.helpers.reset_users_collection()
+
+
+		# Add User: success:
+		register1_r = endpoint_test(
+			method='POST', 
+			scheme=self.scheme, 
+			url=self.url, 
+			endpoint='/'.join(['api', 'register']), 
+			data={
+				'name': "Madison Voorhees",
+				'email': 'mvoorhees15@hotmail.com',
+				'password': 'mABC123'			
+			}, 
+			auth=None, 
+			expected_status_code=201, 
+			descriptive_error_msg="registration success"
+		)
+		
+		self.assertTrue('token' in register1_r.json().keys())
+
+
+		token = register1_r.json()['token']
+
+		# profile pic data:
+		file1 = open('/Users/glenn/Documents/GettingMEAN/my_loc8r/tests/profile_pic/bug1.png', 'rb')
+		profile1 = {'file': file1}
+
+
+		# invalid methods:
+
+		# Add Profile pic: failure due to invalid method:
+		profile1_r = endpoint_test(
+			method='GET', 
+			scheme=self.scheme, 
+			url=self.url, 
+			endpoint='/'.join(['api', 'userprofile']), 
+			data=None,
+			auth=(token, str(None)), 
+			expected_status_code=404, 
+			descriptive_error_msg="invalid method: GET"
+		)
+
+		# Add Profile pic: failure due to invalid method:
+		profile1_r = endpoint_test(
+			method='PUT', 
+			scheme=self.scheme, 
+			url=self.url, 
+			endpoint='/'.join(['api', 'userprofile']), 
+			data=None,
+			auth=(token, str(None)), 
+			expected_status_code=405, 
+			descriptive_error_msg="invalid method: PUT"
+		)
+
+		# Add Profile pic: failure due to invalid method:
+		profile1_r = endpoint_test(
+			method='DELETE', 
+			scheme=self.scheme, 
+			url=self.url, 
+			endpoint='/'.join(['api', 'userprofile']), 
+			data=None,
+			auth=(token, str(None)), 
+			expected_status_code=405, 
+			descriptive_error_msg="invalid method: DELETE"
+		)
+
+
+		# Add Profile pic: failure due to no authorization:
+		profile1_r = endpoint_test(
+			method='POST', 
+			scheme=self.scheme, 
+			url=self.url, 
+			endpoint='/'.join(['api', 'userprofile']), 
+			data=None,
+			auth=None, 
+			files=profile1,
+			expected_status_code=401, 
+			descriptive_error_msg="failuer: no authorization"
+		)
+
+
+		# Add Profile pic: failure due to no file1:
+		profile1_r = endpoint_test(
+			method='POST', 
+			scheme=self.scheme, 
+			url=self.url, 
+			endpoint='/'.join(['api', 'userprofile']), 
+			data=None,
+			auth=(token, str(None)), 
+			files={},
+			expected_status_code=400, 
+			descriptive_error_msg="failuer: no file1"
+		)
+
+
+		# Add Profile pic: failure due to no file2:
+		profile1_r = endpoint_test(
+			method='POST', 
+			scheme=self.scheme, 
+			url=self.url, 
+			endpoint='/'.join(['api', 'userprofile']), 
+			data=None,
+			auth=(token, str(None)), 
+			files={'file': ''},
+			expected_status_code=400, 
+			descriptive_error_msg="failuer: no file2"
+		)
+
+
+		# Add Profile pic: failure due invalid file type:
+		file2 = open('/Users/glenn/Documents/GettingMEAN/my_loc8r/tests/profile_pic/little-ant-having-arms-up.zip', 'rb')
+		profile1_r = endpoint_test(
+			method='POST', 
+			scheme=self.scheme, 
+			url=self.url, 
+			endpoint='/'.join(['api', 'userprofile']), 
+			data=None,
+			auth=(token, str(None)), 
+			files={'file': file2},
+			expected_status_code=400, 
+			descriptive_error_msg="failuer: invalid file type"
+		)
+
+
+
+		# Add Profile pic: success:
+		profile1_r = endpoint_test(
+			method='POST', 
+			scheme=self.scheme, 
+			url=self.url, 
+			endpoint='/'.join(['api', 'userprofile']), 
+			data=None,
+			auth=(token, str(None)), 
+			files=profile1,
+			expected_status_code=200, 
+			descriptive_error_msg="success, add first profile pic"
+		)
+
+		self.helpers.test_profile_pic_added(token=token)
+
+		# Add 2nd Profile pic: doesn an update, filename stays the same:
+		file3 = open('/Users/glenn/Documents/GettingMEAN/my_loc8r/tests/profile_pic/bug2.png', 'rb')
+
+		profile1_r = endpoint_test(
+			method='POST', 
+			scheme=self.scheme, 
+			url=self.url, 
+			endpoint='/'.join(['api', 'userprofile']), 
+			data=None,
+			auth=(token, str(None)), 
+			files={'file': file3},
+			expected_status_code=200, 
+			descriptive_error_msg="success, add second profile pic"
+		)
+
+		self.helpers.test_profile_pic_added(token=token)	
+
+
+
+		# clean up:
+		self.helpers.test_remove_pic(token=token)	
+
+		
+		file1.close()
+		file2.close()
+		file3.close()
+
 
 if __name__ == '__main__':
 	unittest.main()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

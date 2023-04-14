@@ -20,6 +20,11 @@ from dotenv import load_dotenv
 import os
 
 
+import rlcompleter
+import pdb 
+pdb.Pdb.complete = rlcompleter.Completer(locals()).complete
+
+
 class LocationTestHelpers(object):
 	'''
 
@@ -442,5 +447,87 @@ class LocationTestHelpers(object):
 		return jwt.decode(token, self._encode_key, algorithms=["HS256"])
 
 
+
+
+	def test_profile_pic_added(self, token):
+		'''
+
+		'''
+
+		token_data = self.decode_token(token=token)
+
+		filenames = [x.split('.')[0] for x in os.listdir('/Users/glenn/Documents/GettingMEAN/my_loc8r/profiles')]
+
+		unittest.TestCase().assertIn(token_data['_id'], filenames)
+
+
+	def test_remove_pic(self, token):
+
+		token_data = self.decode_token(token=token)
+
+		# very unsophisticated delete:
+		try:
+			os.remove("/Users/glenn/Documents/GettingMEAN/my_loc8r/profiles/{}.png".format(token_data['_id']))
+
+		except Exception as e:
+			pass 
+
+
+		try:
+			os.remove("/Users/glenn/Documents/GettingMEAN/my_loc8r/profiles/{}.jpg".format(token_data['_id']))
+
+		except Exception as e:
+			pass 
+
+
+		try:
+			os.remove("/Users/glenn/Documents/GettingMEAN/my_loc8r/profiles/{}.jpeg".format(token_data['_id']))
+
+		except Exception as e:
+			pass 
+
+
+
+
+
+
+
 	# End: Helper methods
 	# ************************************************************************************************************
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -579,7 +579,7 @@ class APIEndPointTests(object):
 
 #  External methods:
 
-def endpoint_test(method, scheme, url, endpoint, data, auth, expected_status_code, descriptive_error_msg, expected_error_msg=None, params=None):
+def endpoint_test(method, scheme, url, endpoint, data, auth, expected_status_code, descriptive_error_msg, expected_error_msg=None, params=None, files=None):
 	'''
 
 	''' 
@@ -636,7 +636,8 @@ def endpoint_test(method, scheme, url, endpoint, data, auth, expected_status_cod
 			url=build_url(path=endpoint),
 			auth=auth,
 			params=params,
-			json=data 
+			json=data,
+			files=files 
 		)
 
 

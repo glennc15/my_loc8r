@@ -279,13 +279,18 @@ def api_add_profile():
 		return ({'error': "no file received"}, 400)
 
 
-	if file and allowed_file(file.filename):
-		filename = secure_filename(file.filename)
-		filename = "{}.{}".format(g.user.id, filename.rsplit('.', 1)[1].lower())
+	if file:
+		if allowed_file(file.filename):
+			filename = secure_filename(file.filename)
+			filename = "{}.{}".format(g.user.id, filename.rsplit('.', 1)[1].lower())
 
-		file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+			file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
 
-		return ({'message': "profite pic successfully added"}, 200)
+			return ({'message': "profite pic successfully added"}, 200)
+
+		else:
+			return ({'error': "{} is not a valid file type".format(file.filename)}, 400)
+
 
 
 @app.route('/api/login', methods=['POST'])

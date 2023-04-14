@@ -2,7 +2,8 @@ from flask import Flask, request, g, send_from_directory
 from flask_mongoengine import MongoEngine
 # from flask import render_template
 from flask_httpauth import HTTPBasicAuth
-
+from werkzeug.utils import secure_filename
+import os 
 
 
 # import my_loc8r.app_server.controllers.locations_ctrl as loc_ctrl
@@ -27,6 +28,10 @@ pdb.Pdb.complete = rlcompleter.Completer(locals()).complete
 # env = Environment(loader=FileSystemLoader(template_dir))
 
 
+UPLOAD_FOLDER = '/Users/glenn/Documents/GettingMEAN/my_loc8r/profiles'
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
+
+
 
 app = Flask(__name__, 
 	template_folder='app_server/templates',
@@ -42,6 +47,8 @@ app.config['MONGODB_SETTINGS'] = [
 		'alias': "default"
 	}
 ]
+
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 db = MongoEngine()
 db.init_app(app)
@@ -258,8 +265,33 @@ def api_register():
 	return (users_api_controller.data, users_api_controller.status_code)
 
 
+@app.route('/api/userprofile', methods=['POST'])
+@auth.login_required
+def api_add_profile():
+	print("{}: api_add_profile()".format(request.method))
+
+	if 'file' not in request.files:
+		return ({'error': "no file received"}, 400)
+
+	file = request.files['file']
+
+	if file.filename == '':
+		return ({'error': "no file received"}, 400)
+
+
+	if file and allowed_file(file.filename):
+		filename = secure_filename(file.filename)
+		filename = "{}.{}".format(g.user.id, filename.rsplit('.', 1)[1].lower())
+
+		file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+
+		return ({'message': "profite pic successfully added"}, 200)
+
+
 @app.route('/api/login', methods=['POST'])
 def api_login():
+
+
 	users_api_controller = UsersAPIController()
 	users_api_controller.login(request=request)
 
@@ -311,6 +343,8 @@ def verify_password(username, password):
 		g.error_msg = error_msg  
 		return False
 
-
-
+# -------------------------------------------------------------------------------
+# Helpers:
+def allowed_file(filename):
+	return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 

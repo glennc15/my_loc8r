@@ -138,3 +138,6 @@ package-lock.json
 
 # parcel
 .parcel-cache/
+
+# profile pics
+profiles

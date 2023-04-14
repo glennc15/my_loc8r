@@ -682,6 +682,69 @@ class APILocationTests(unittest.TestCase):
 		)
 
 
+	def test_location_read_02(self):
+		'''
+		
+		14April23: Adding location.reviews.author_reviews = total number of
+		reviews the author has submitted.
+
+		'''
+		
+		# set up: add two locaitons with 2 reviews (2 users), and add a 2nd
+		# location with 1 review by user2:
+
+		location_id, review1_id, user1_token, review2_id, user2_token = self.helpers.add_test_location(reviews=2)
+
+		# add a second location and a review by user2:
+		location2_r = requests.post(
+			url=self.helpers.build_url(path_parts=['api', 'locations']),
+			json={
+				'name': 'Burger Queen',		
+				'address': "783 High Street, Reading, RG6 1PS",
+				'facilities': "Food,Premium wifi",
+				'lng': -0.9690854,
+				'lat': 51.455051,
+				'openingTimes': [
+					{
+						'days': "Thursday - Saturday",
+						'opening': "1:00am",
+						'closing': "10:00am",
+						'closed': False
+					},
+					{
+						'days': "Monday - Wednesday",
+						'closed': True
+					}
+				]
+			}
+		)
+
+		self.assertEqual(location2_r.status_code, 201)
+	
+		review2_r = requests.post(
+			url=self.helpers.build_url(path_parts=['api', 'locations', location2_r.json()['_id'], 'reviews']),
+			auth=(user2_token, str(None)),
+			json={	
+				'rating': 2,
+				'reviewText': "Didn't get any work done, great place!",
+			}
+		)
+		
+		self.assertEqual(review2_r.status_code, 201)
+
+		# check each author has the correct number of reviews:
+
+		location_r = requests.get(url=self.helpers.build_url(path_parts=['api', 'locations', location_id]))
+
+		review1 = location_r.json()['reviews'][0]
+		review2 = location_r.json()['reviews'][1]
+
+		self.assertEqual(review1['author_reviews'], 1)
+		self.assertEqual(review1['author_reviews'], 2)
+
+
+
+
 
 	def test_location_update_01(self):
 		'''

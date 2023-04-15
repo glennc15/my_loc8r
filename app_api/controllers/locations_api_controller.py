@@ -153,29 +153,125 @@ class LocationsAPIController(APIControllersBase):
 	# GET:/api/locations/<locationid>
 	def read_location_by_id(self, location_id):
 		'''
+		
+		15April23: adding reviews.author_reviews which is the total number of
+		reviews by the author. Achieveing this with an aggregation pipeline.
 
 		'''
 
+
+		# the aggregation pipeline will return and empty list if the location
+		# does not have any reviews.  So caryying out he query in 2 steps:
+
+		# 1) make a regular match query. This does 2 things: tiggers a 404 if
+		# location_id is not in the database. And also makes it easier to
+		# update .views counter. 
+
+		# 2) call the location with the aggregation pipeline. If the pipeline is successful
+		# then it will return the location with the proper .views counter and
+		# the new reviews.author_reviews. If the pipeline returns an empty
+		# list then the issue is the location does not have any reviews so
+		# return the locaiton from the first query.
+
+		# first query of the location:
 		try:
-
 			location = Locations.objects(id=location_id).get()
-			
+
 		except Exception as e:
-
-
 			self.common_validation_errors(e)
 			return None 
 
-		# 30March2023: Add new .views field to be incremented each time a
-		# location is views.
-
 		location.views += 1
-		location.save()
+		location.save() 
 
-		self.data = self.format_location(document=location)
-		self.status_code = 200
-				
 
+		# second query of the location using an aggregation pipeline:
+		pipeline = [
+			# find the location by id:
+			{
+				'$match': {
+					'_id': ObjectId(location_id)
+				}
+			},
+			# create a separate record for each review. This allows adding
+			# author data for each review author:
+			{
+				'$unwind': '$reviews'
+			},
+			# add user data for each review author:
+			{
+				'$lookup': {
+					'from': 'users',
+					'localField': 'reviews.author_id',
+					'foreignField': '_id',
+					'as': 'author_data'
+				}
+			},
+			# now can calculate .author_reviews with is length of
+			# users.reviews_created. Have to do this in 2 steps:
+			
+			# author data is a 1 element array of an array. This first step
+			# converters to a single array
+			{
+				'$set': {
+					'author_data': {'$first': '$author_data'}
+				}
+			},
+			# calculate reviews.author_reviews:
+			{
+				'$set': {
+					'reviews.author_reviews': {'$size': '$author_data.reviews_created'}
+				}
+			},
+			# combine all the records back into 1 document:
+			{
+				'$group': {
+					'_id': {
+						'_id': '$_id',
+						'name': '$name',
+						'address': '$address',
+						'rating': '$rating',
+						'facilities': '$facilities',
+						'coords': '$coords',
+						'openingTimes': '$openingTimes',
+						'views': '$views',
+
+					},
+					'reviews': {'$push': '$reviews'}
+				}
+			},
+			# final cleanup:
+			{
+				'$project': {
+					'_id': '$_id._id',
+					'name': '$_id.name',
+					'address': '$_id.address',
+					'rating': '$_id.rating',
+					'facilities': '$_id.facilities',
+					'coords': '$_id.coords',
+					'openingTimes': '$_id.openingTimes',
+					'views': '$_id.views',
+					'reviews': 1,
+				}
+			}
+
+		]
+
+		locations = list(Locations.objects().aggregate(pipeline))
+
+		# This is a location with reviews and the new reviews.author_reviews:
+		if len(locations) == 1:
+			self.data = self.format_location(document=locations[0])
+			self.status_code = 200
+
+		# The location doesn't have any reviews so use the first query result:
+		elif len(locations) == 0:
+			self.data = self.format_location(document=location)
+			self.status_code = 200
+
+		# hope we never get here:
+		else:
+			raise ValueError("read_location_by_id(location_id={})".format(location_id))
 
 
 	# PUT:/api/locations/<locationid>

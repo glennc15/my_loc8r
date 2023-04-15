@@ -16,6 +16,7 @@ class Users(me.Document):
 	# name = me.StringField()
 	email = me.EmailField(unique=True)
 	password_hash = me.StringField()
+	reviews_created = me.ListField(default=list())
 	created_on = me.DateTimeField(default=datetime.datetime.utcnow)
    
 

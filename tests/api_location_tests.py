@@ -736,11 +736,13 @@ class APILocationTests(unittest.TestCase):
 
 		location_r = requests.get(url=self.helpers.build_url(path_parts=['api', 'locations', location_id]))
 
-		review1 = location_r.json()['reviews'][0]
-		review2 = location_r.json()['reviews'][1]
+		review1 = [x for x in location_r.json()['reviews'] if x['_id'] == review1_id][0]
+		review2 = [x for x in location_r.json()['reviews'] if x['_id'] == review2_id][0]
 
 		self.assertEqual(review1['author_reviews'], 1)
-		self.assertEqual(review1['author_reviews'], 2)
+		self.assertEqual(review2['author_reviews'], 2)
+		self.assertEqual(location_r.json()['views'], 1)
+
 
 
 

@@ -8,6 +8,8 @@ import mongoengine as me
 
 from my_loc8r.app_api.controllers.api_controllers_base import APIControllersBase
 from my_loc8r.app_api.models.location_models import Locations, OpeningTime, Review
+from my_loc8r.app_api.models.user_model import Users
+
 
 import rlcompleter
 import pdb 
@@ -93,6 +95,8 @@ class ReviewsAPIController(APIControllersBase):
 			return None 
 
 
+		# add the review id to Users.reviews:
+		user = Users.objects(id=user.id).update_one(push__reviews_created=review['_id'])
 
 		# self.data = review_dict
 		self.data = self.convert_object_ids(document=review)

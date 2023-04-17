@@ -75,17 +75,15 @@ function homeCtrl ($scope, $filter, myLoc8rData, geolocation, mapHelpers, testDa
 
 	};
 
-	var addMap = function (locations, longitude, latitude){
+	var addMap = function (locations, longitude, latitude, map_api_key){
 
-		mapboxgl.accessToken = 'pk.eyJ1IjoiZ2xlbm5jMTUiLCJhIjoiY2xnNWJtajhxMDF3MjNrcGN0eWo2YzV5MyJ9.HQvXRdwCwWGYGa36rxEqgQ';
-
+		// mapboxgl.accessToken = 'pk.eyJ1IjoiZ2xlbm5jMTUiLCJhIjoiY2xnNWJtajhxMDF3MjNrcGN0eWo2YzV5MyJ9.HQvXRdwCwWGYGa36rxEqgQ';
+		mapboxgl.accessToken = map_api_key;
 
 		const map = new mapboxgl.Map({
 			container: 'map-locations', // container ID
-			// Choose from Mapbox's core styles, or make your own style with Mapbox Studio
 			style: 'mapbox://styles/mapbox/streets-v12', // style URL
 			center: [longitude, latitude], // starting center in [lng, lat]
-			// zoom: 1 // starting zoom
 		});
 
 		// sets the map view area:
@@ -309,9 +307,9 @@ function homeCtrl ($scope, $filter, myLoc8rData, geolocation, mapHelpers, testDa
 		// get locations from the API and prepare the data for the view
 		myLoc8rData.locationByCoords(lat, lng)
 			.success(function(data){
-				// processData(testData.locations());
-				processData(data);
-				addMap(vm.data.locations, lng, lat);
+				
+				processData(data.data);
+				addMap(vm.data.locations, lng, lat, data.map_key);
 
 				if (vm.data.locations.length > 0){
 					vm.showSpinner = false;

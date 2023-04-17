@@ -65,7 +65,6 @@ auth = HTTPBasicAuth()
 @app.route('/', defaults={'urlpath': ''})
 @app.route('/<path:urlpath>')
 def catch_all(urlpath):
-	pdb.set_trace()
 	
 	print("path: {}".format(urlpath))
 	return app.send_static_file("index.html")
@@ -137,6 +136,13 @@ def api_locations():
 
 	if request.method == 'GET':
 		loc_api_controller.read_locations_by_distance(parameters=request.args.to_dict())
+
+
+		# add map api key:
+		loc_api_controller.data = {
+			'data': loc_api_controller.data,
+			'map_key': os.environ.get('MAP_KEY')
+		}
 
 
 	# print("loc_api_controller.status_code = {}".format(loc_api_controller.status_code))

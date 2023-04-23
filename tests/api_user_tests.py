@@ -858,6 +858,83 @@ class APIUserTests(unittest.TestCase):
 		file3.close()
 
 
+	def test_profile_pic_01(self):
+		'''
+		
+		tests for GET:/api/profile/<userid>.
+
+		this endpoint is used to get a profile pic of the user.  If no pic is
+		found for the user than a default silhouette is sent.
+
+		'''
+
+		# Set up 2 users. User 1 supplies a profile pic and user 2 does not:
+
+		self.helpers.reset_users_collection()
+
+		# Add User 1: success:
+		register1_r = endpoint_test(
+			method='POST', 
+			scheme=self.scheme, 
+			url=self.url, 
+			endpoint='/'.join(['api', 'register']), 
+			data={
+				'name': "Madison Voorhees",
+				'email': 'mvoorhees15@hotmail.com',
+				'password': 'mABC123'			
+			}, 
+			auth=None, 
+			expected_status_code=201, 
+			descriptive_error_msg="registration success"
+		)
+		
+		self.assertTrue('token' in register1_r.json().keys())
+
+
+		token = register1_r.json()['token']
+
+		# profile pic data:
+		file1 = open('/Users/glenn/Documents/GettingMEAN/my_loc8r/tests/profile_pic/bug1.png', 'rb')
+		profile1 = {'file': file1}
+
+		# Add user 1 profile pic: success:
+		profile1_r = endpoint_test(
+			method='POST', 
+			scheme=self.scheme, 
+			url=self.url, 
+			endpoint='/'.join(['api', 'userprofile']), 
+			data=None,
+			auth=(token, str(None)), 
+			files=profile1,
+			expected_status_code=200, 
+			descriptive_error_msg="success, add first profile pic"
+		)
+
+		self.helpers.test_profile_pic_added(token=token)
+
+		file1.close()
+
+		user1_data = self.helpers.decode_token(token=token)
+
+		# print(user1_data)
+
+		# get user 1's profile pic: success:
+		profile1_r = endpoint_test(
+			method='GET', 
+			scheme=self.scheme, 
+			url=self.url, 
+			endpoint='/'.join(['api', 'profile', user1_data['_id']]), 
+			data=None,
+			auth=None, 
+			files=None,
+			expected_status_code=200, 
+			descriptive_error_msg="success, receive user pic"
+		)
+
+
+
+
+
 if __name__ == '__main__':
 	unittest.main()
 

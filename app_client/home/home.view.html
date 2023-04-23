@@ -1,78 +1,112 @@
-<navigation></navigation>
 
-
-<!-- <p>{{ vm.data.locations }}</p> -->
-
-<!-- <div id='map' style="width: 800px, height: 800px"></div> -->
-
-<div>{{ vm.message }}</div>
-
-<!-- spinner -->
-<div class="spinner-border text-light justify-content-center my-spinner" role="status" ng-show='vm.showSpinner'>
-  <span class="visually-hidden">Loading...</span>
-</div>
-
-
-<!-- Background applied on column -->
-<div class="container margin-top locations-list">
 	
-<!-- 	<div class="row my-page-header">
-		<h4 class="text-muted">{{vm.sidebar.content}}</h4>
-	</div> -->
-
-
-	<!-- <label for="filter">Filter results</label> -->
-	<!-- <input id="filter" type="text", name="filter", ng-model="textFilter"> -->
-
-	<!-- Location heading -->
-	<div class="row" ng-show="vm.showLocations">
-		<div class="col-md-12 locations-heading m-2">
-			<p class="fs-4">
-				Found {{(vm.data.locations|facilitiesFilter:vm.facilitiesFilters).length}} locations for you to explore
-				<a class="text-warning fw-bold text-decoration-none fs-6" ng-click="vm.clearFilters()" ng-show="(vm.data.locations|facilitiesFilter:vm.facilitiesFilters).length < vm.total_locations">Clear All Filters</a>
-			</p>
+<!-- Responsive navbar-->
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+	<div class="container">
+		<a class="navbar-brand" href="#!">Start Bootstrap</a>
+		<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation"><span class="navbar-toggler-icon"></span></button>
+		<div class="collapse navbar-collapse" id="navbarSupportedContent">
+			<ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+				<li class="nav-item"><a class="nav-link" href="#">Home</a></li>
+				<li class="nav-item"><a class="nav-link" href="#!">About</a></li>
+				<li class="nav-item"><a class="nav-link" href="#!">Contact</a></li>
+				<li class="nav-item"><a class="nav-link active" aria-current="page" href="#">Blog</a></li>
+			</ul>
 		</div>
 	</div>
+</nav>
 
 
-
-	<!-- map with location markers-->
-	<div class="row">
-		<div class="col-md-12">
-			<div class="m-1" id='map-locations'></div>	
+<!-- </header> -->
+<header class="py-4 bg-light border-bottom mb-4" ng-show="vm.showWelcome">
+	<div class="container">
+		<div class="text-center my-2">
+			<h1 class="fw-bolder">Welcome to myLoc8r!</h1>
+			<img class="img-fluid" src="lib/assets/2626287.jpg">
+			<p class="lead mb-0">{{vm.pageHeader.content}}</p>
 		</div>
-	</div>
-
-	<div class="row" ng-show="vm.showLocations">
-
-		<!-- locaiton filters: -->
-		<div class="col-md-6 col-xs-12 m-2 p-3 rounded filters">
-			<p class="text-muted">Filter locations by facilities:</p>
-			<!-- checkbox for each filter -->
-			<div class="form-check" ng-repeat="filter in vm.facilityFiltersData">
-				<input class="form-check-input border-dark-subtle" type="checkbox" value="false" ng-model="filter.model" id="filter.id" ng-change="vm.filterChange(filter.model, filter.value)">
-				<label class="form-check-label text-muted" for="filter.id">{{filter.value}}</label>
-			</div>
-
-		</div>
-
-		<!-- locations: -->
-		<div class="col-md-5 col-xs-12 m-2 locations">
-			<!-- summary for each location: -->
-			<div class="list-group">
-				<div class="list-group-item m-1 location" ng-repeat="location in vm.data.locations | facilitiesFilter : vm.facilitiesFilters">
-					<!-- <div location-data location="location"></div> -->
-
-					<location-data location="location" current-lat="vm.lat" current-lng="vm.lng"></location-data>
-				</div>
-			</div>
-
+		
+		<div class="text-center mt-4">
+			<button class="btn btn-lg btn-primary" ng-click="vm.getLocations()">Click here to find places near you!</button>	
 		</div>
 
 	</div>
+</header>
 
 
-
-
+<!-- container for spinner while loading locations -->
+<div class="container" ng-show="vm.showSpinner">
+	<div class="text-center">
+		<div class="spinner-border text-success" role="status">
+			<span class="visually-hidden">Loading...</span>
+		</div>
+		<h4 class="fw-semibold">We are seaching for places near you</h4>
+	</div>
 </div>
+
+
+
+
+
+<!-- Locations: -->
+<div class="container" ng-show="vm.showLocations">
+	<div class="row">
+		
+		<!-- Locations header -->
+		<div class="text-center">
+			<h2 class="fw-bold my-3">
+				Found {{(vm.data.locations|facilitiesFilter:vm.facilitiesFilters).length}} locations for you to explore!
+			</h2>
+		</div>
+
+
+		<!-- Blog entries-->
+		<div class="col-lg-8">
+			<!-- Featured blog post-->
+			<div class="card mb-4">
+				<div  id="map-locations"></div>
+
+
+				<div class="card-body">
+					<div class="list-group-item m-1 location" ng-repeat="location in vm.data.locations | facilitiesFilter : vm.facilitiesFilters">
+					<!-- <div location-data location="location"></div> -->
+						<location-data location="location" current-lat="vm.lat" current-lng="vm.lng"></location-data>
+					</div>
+				</div>
+
+
+			</div>
+		
+
+		
+		</div>
+
+		<!-- Side widgets-->
+		<div class="col-lg-4">
+			
+			<!-- Search widget-->
+			<div class="card mb-4">
+				<!-- <div class="card-header">Search</div> -->
+				<div class="card-header">Filter locations by facilities</div>
+
+				<!-- input filters: -->
+				<div class="card-body">
+					
+					<div class="form-check" ng-repeat="filter in vm.facilityFiltersData">
+						<input class="form-check-input border-dark-subtle" type="checkbox" value="false" ng-model="filter.model" id="filter.id" ng-change="vm.filterChange(filter.model, filter.value)">
+						<label class="form-check-label fw-normal" for="filter.id">{{filter.value}}</label>
+					</div>
+
+					<button type="button" class="btn btn-warning" ng-click="vm.clearFilters()" ng-show="(vm.data.locations|facilitiesFilter:vm.facilitiesFilters).length < vm.total_locations">Clear All Filters</button>
+
+				</div>
+
+			</div>
+			
+
+		</div>
+	</div>
+</div>
+
+
 

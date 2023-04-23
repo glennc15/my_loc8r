@@ -1,31 +1,28 @@
 <h6>
 	<a ng-href="/#/location/{{location._id}}?lng={{currentLng}}&lat={{currentLat}}&dist={{location.dist_calc}}" class="text-muted fs-5 text-decoration-none">{{location.name}}</a>
-	<span class="badge rounded-pill float-end dist-badge">{{ location.distance | formatDistance }}</span>
+	<span class="badge text-bg-primary rounded-pill float-end" ng-show="location.is_open">{{ location.distance | formatDistance }}</span>
+	<span class="badge text-bg-secondary rounded-pill float-end" ng-hide="location.is_open">{{ location.distance | formatDistance }}</span>
+
 </h6>
 
 
-<!-- teal/green: #46899b royal blue: #101e5a  light royal blue: #5d80b6-->
 <h8>
 
 	<span rating-stars rating="location.rating"></span>
 	
 	<span class="location-review-text text-muted">&nbsp;{{location.num_reviews}} Reviews &#183 
-		<span ng-show="location.is_open" class="open_status text-muted">Open Now</span>
+		<span ng-show="location.is_open" class="open_status text-success">Open Now</span>
 		<span ng-hide="location.is_open" class="open_status text-danger">Closed now</span>
-
 	</span> 
 
 </h8>
 
 
 <p>
-	<span class="badge facility-badge" ng-repeat-start="facility in location.facilities track by $index">{{facility}}</span>
+	<span class="badge text-bg-primary" ng-repeat-start="facility in location.facilities track by $index">{{facility}}</span>
 	<span ng-repeat-end>&nbsp;</span>
 </p>
 
+<h10 class='fw-light'>{{location.review_summary}}</h10>
 
 <hr/>
-
-<h10 class='text-secondary'>{{location.review_summary}}</h10>
-
-

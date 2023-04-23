@@ -8,9 +8,16 @@ function homeCtrl ($scope, $filter, myLoc8rData, geolocation, mapHelpers, testDa
 	
 	var vm = this;
 
+	vm.showWelcome = true;
+	vm.showSpinner = false;
+	vm.showLocations = false;
+
+
 	vm.pageHeader = {
 		title: 'myLoc8r',
-		strapline: "Find places to work with wifi near you!"
+		strapline: "Find places to work with wifi near you!",
+		content: "Looking for wifi and a seat? We help you find places to work when out and about. Perhaps with coffee, cake or a pint? Let myLoc8r help you find the place you're looking for."
+
 	};
 
 	vm.sidebar = {
@@ -97,6 +104,7 @@ function homeCtrl ($scope, $filter, myLoc8rData, geolocation, mapHelpers, testDa
 
 		// add locations to the map:
 		map.on('load', function() {
+
 			map.addSource('locations', {
 				'type': 'geojson',
 				'data': {
@@ -149,9 +157,9 @@ function homeCtrl ($scope, $filter, myLoc8rData, geolocation, mapHelpers, testDa
 				popup.remove();
 			});
 
-
-
-
+			map.on('render', function() {
+				map.resize();
+			});
 
 		});
 
@@ -240,7 +248,7 @@ function homeCtrl ($scope, $filter, myLoc8rData, geolocation, mapHelpers, testDa
 
 		vm.data = {locations: data};
 
-		// vm.total_locations = data.length;
+		vm.total_locations = data.length;
 
 
 
@@ -307,11 +315,12 @@ function homeCtrl ($scope, $filter, myLoc8rData, geolocation, mapHelpers, testDa
 		// get locations from the API and prepare the data for the view
 		myLoc8rData.locationByCoords(lat, lng)
 			.success(function(data){
-				
+
 				processData(data.data);
 				addMap(vm.data.locations, lng, lat, data.map_key);
 
 				if (vm.data.locations.length > 0){
+					vm.showWelcome = false;
 					vm.showSpinner = false;
 					vm.showLocations = true;
 				}
@@ -355,7 +364,14 @@ function homeCtrl ($scope, $filter, myLoc8rData, geolocation, mapHelpers, testDa
 		});
 	};
 
-	geolocation.getPosition(vm.getData, vm.showError, vm.noGeo);
+
+	vm.getLocations = function() {
+		vm.showSpinner = true;
+		geolocation.getPosition(vm.getData, vm.showError, vm.noGeo);
+
+	};
+
+
 
 
 };

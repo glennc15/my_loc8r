@@ -931,7 +931,18 @@ class APIUserTests(unittest.TestCase):
 			descriptive_error_msg="success, receive user pic"
 		)
 
-
+		# get user 1's profile pic: success:
+		profile1_r = endpoint_test(
+			method='GET', 
+			scheme=self.scheme, 
+			url=self.url, 
+			endpoint='/'.join(['api', 'profile', user1_data['_id'][0:5]]), 
+			data=None,
+			auth=None, 
+			files=None,
+			expected_status_code=200, 
+			descriptive_error_msg="success, receive default pic with invalid userid"
+		)
 
 
 

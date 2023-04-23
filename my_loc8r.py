@@ -313,6 +313,33 @@ def api_login():
 
 
 
+@app.route('/api/profile/<userid>', methods=['GET'])
+def get_profile_pic(userid):
+	print("{}:get_profile_pic({})".format(request.method, userid))
+	
+	if request.method == 'GET':
+		filename_matched = False
+		for this_file in os.listdir(app.config['UPLOAD_FOLDER']):
+			try:
+				filename, extension = this_file.rsplit('.', 1)
+
+				if filename == userid:
+					filename_matched = True 
+					break 
+
+			except Exception as e:
+				pass 
+
+		if filename_matched:
+			print(this_file)
+
+		else:
+			this_file = 'default.png'
+
+
+		return send_from_directory(app.config['UPLOAD_FOLDER'], this_file)
+
+
 # @app.route('/api/users', methods=['PUT'])
 # @auth.login_required
 # def api_user():

@@ -1,12 +1,4 @@
-
 <navigation></navigation>
-
-
-
-
-
-
-
 
 <div class="container">
 	<page-header content='vm.pageHeader'></page-header>
@@ -19,6 +11,8 @@
 					column 1: rating, address, opening hours, facilities
 					column 2: location map
 				 -->
+
+
 
 			<div class="row">
 				 <!-- column 1: rating, address, opening hours, facilities -->
@@ -48,21 +42,24 @@
 							</div>
 
 							<div class="panel-body">
+								<!-- <span class="label label-warning label-facility" ng-repeat='facility in vm.data.location.facilities'>{{facility}}<span class="glyphicon glyphicon-ok"></span></span> -->
 								<span class="badge text-bg-primary" ng-repeat-start="facility in vm.data.location.facilities track by $index">{{facility}}</span>
 								<span ng-repeat-end>&nbsp;</span>
+
 							</div>
 						</div>
 
 				 </div>
 
 
+				 <!-- 18223251143 -->
+
 				<!-- column 2: location map -->
 				<div class="col-xs-12 col-md-6">
-					<div id="map-locations"></div> 	
+					<div  id="map-locations"></div> 	
 				</div>
 
 			</div>
-
 
 			<!-- row 2: contains 1 columns for reviews -->
 			<div class="row mt-3">
@@ -74,13 +71,14 @@
 
 							<!-- <button ng-show="vm.isLoggedIn" class="btn btn-info float-end" data-mdb-toggle="modal" data-mdb-target="#addReview">Add review</button> -->
 
-							<!-- <button type="button" class="btn btn-info float-end" data-bs-toggle="modal" data-bs-target="#addReview">Launch static backdrop modal</button> -->
+
+							<button type="button" class="btn btn-info float-end" data-bs-toggle="modal" data-bs-target="#addReview">Launch static backdrop modal</button>
 
 							<!-- <a ng-show="vm.isLoggedIn" ng-click="vm.popupReviewForm()" class="btn btn-info float-end">Add review</a> -->
 
 
 							
-							<!-- <a ng-hide="vm.isLoggedIn" href="/#/login?page={{vm.currentPath}}" class="btn btn-info float-end">Login to add review</a> -->
+							<a ng-hide="vm.isLoggedIn" href="/#/login?page={{vm.currentPath}}" class="btn btn-info float-end">Login to add review</a>
 
 							<h2 class="panel-title">Customer Reviews</h2>
 						</div>
@@ -90,7 +88,8 @@
 							<div class="card mb-3">
 								<div class="card-body">
 									<div class="row">
-																			
+										
+									
 										<!-- author summary: pic, name, reviews -->
 										<div class="col-md-3">
 											<div class="text-center">
@@ -106,6 +105,8 @@
 												&nbsp Reviewed {{review.moment}}
 											</p>
 											<p ng-bind-html="review.review_text | addHtmlLineBreaks"></p>
+
+
 										</div>
 
 									</div>
@@ -135,14 +136,30 @@
 	</div>
 
 	
-	<footer-generic></footer-generic>
+	<!-- <footer-generic></footer-generic> -->
 
 </div>
 
 
 <!-- Review Form Modal: -->
 <!-- Modal -->
-
+<div class="modal fade" id="addReview" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title" id="staticBackdropLabel">Modal title</h5>
+				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+			</div>
+			<div class="modal-body">
+				...
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+				<button type="button" class="btn btn-primary">Understood</button>
+			</div>
+		</div>
+	</div>
+</div>
 
 <!-- <div class="modal-dialog modal-xl">
 	<div class="modal-content">

@@ -13,8 +13,12 @@ var navigationCtrl = function($location, authentication) {
 	vm.currentUser = authentication.currentUser();
 
 	vm.logout = function() {
+
 		authentication.logout();
 		$location.path('/');
+
+		vm.isLoggedIn = authentication.isLoggedIn();
+
 	};
 };
 

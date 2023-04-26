@@ -1,11 +1,10 @@
 (function() {
 
 
-function homeCtrl ($scope, $filter, myLoc8rData, geolocation, mapHelpers, testData) {
+// function homeCtrl ($scope, $filter, myLoc8rData, geolocation, mapHelpers, testData) {
+function homeCtrl ($scope, $filter, myLoc8rData, geolocation, mapHelpers) {
 
-	// import 'mapbox-gl/dist/mapbox-gl.css'; 
 
-	
 	var vm = this;
 
 	vm.showWelcome = true;
@@ -84,7 +83,6 @@ function homeCtrl ($scope, $filter, myLoc8rData, geolocation, mapHelpers, testDa
 
 	var addMap = function (locations, longitude, latitude, map_api_key){
 
-		// mapboxgl.accessToken = 'pk.eyJ1IjoiZ2xlbm5jMTUiLCJhIjoiY2xnNWJtajhxMDF3MjNrcGN0eWo2YzV5MyJ9.HQvXRdwCwWGYGa36rxEqgQ';
 		mapboxgl.accessToken = map_api_key;
 
 		const map = new mapboxgl.Map({

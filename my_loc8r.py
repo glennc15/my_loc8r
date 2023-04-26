@@ -164,6 +164,12 @@ def api_location(locationid):
 	if request.method == 'GET':
 		loc_api_controller.read_location_by_id(location_id=locationid)
 
+		# add map api key:
+		loc_api_controller.data = {
+			'data': loc_api_controller.data,
+			'map_key': os.environ.get('MAP_KEY')
+		}
+
 
 	if request.method == 'PUT':
 		loc_api_controller.update_location(location_id=locationid, location_data=request.get_json())

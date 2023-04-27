@@ -675,9 +675,10 @@ class APILocationTests(unittest.TestCase):
 			descriptive_error_msg="read success"
 		)
 
+
 		self.helpers.verify_test_location(
 			location_id=location_id, 
-			location_data=read1_r.json(), 
+			location_data=read1_r.json()['data'], 
 			views=1
 		)
 
@@ -736,12 +737,12 @@ class APILocationTests(unittest.TestCase):
 
 		location_r = requests.get(url=self.helpers.build_url(path_parts=['api', 'locations', location_id]))
 
-		review1 = [x for x in location_r.json()['reviews'] if x['_id'] == review1_id][0]
-		review2 = [x for x in location_r.json()['reviews'] if x['_id'] == review2_id][0]
+		review1 = [x for x in location_r.json()['data']['reviews'] if x['_id'] == review1_id][0]
+		review2 = [x for x in location_r.json()['data']['reviews'] if x['_id'] == review2_id][0]
 
 		self.assertEqual(review1['author_reviews'], 1)
 		self.assertEqual(review2['author_reviews'], 2)
-		self.assertEqual(location_r.json()['views'], 1)
+		self.assertEqual(location_r.json()['data']['views'], 1)
 
 
 
@@ -1221,7 +1222,7 @@ class APILocationTests(unittest.TestCase):
 			descriptive_error_msg="read success with no max distance"
 		)
 
-		self.assertEqual(len(read1_r.json()), 3)
+		self.assertEqual(len(read1_r.json()['data']), 3)
 
 
 		# READ: success:
@@ -1241,7 +1242,7 @@ class APILocationTests(unittest.TestCase):
 			descriptive_error_msg="read success"
 		)
 
-		self.assertEqual(len(read1_r.json()), 2)
+		self.assertEqual(len(read1_r.json()['data']), 2)
 
 
 
@@ -1262,7 +1263,7 @@ class APILocationTests(unittest.TestCase):
 			descriptive_error_msg="read success"
 		)
 
-		self.assertEqual(len(read1_r.json()), 0)
+		self.assertEqual(len(read1_r.json()['data']), 0)
 
 
 

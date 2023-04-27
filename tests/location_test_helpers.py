@@ -56,7 +56,7 @@ class LocationTestHelpers(object):
 
 			unittest.TestCase().assertEqual(read_r.status_code, 200)
 
-			location_data = read_r.json()
+			location_data = read_r.json()['data']
 
 
 		unittest.TestCase().assertEqual(location_data['_id'], location_id)

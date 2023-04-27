@@ -57,11 +57,11 @@ db.init_app(app)
 
 
 # authorizations: using basic and token authorization:
-# basic_auth = HTTPBasicAuth()
-# token_auth = HTTPTokenAuth(scheme='Bearer')
-# auth = MultiAuth(basic_auth, token_auth)
+basic_auth = HTTPBasicAuth()
+token_auth = HTTPTokenAuth(scheme='Bearer')
+auth = MultiAuth(basic_auth, token_auth)
 
-auth = HTTPBasicAuth()
+# auth = HTTPBasicAuth()
 
 
 # -------------------------------------------------------------------------------
@@ -373,14 +373,14 @@ def get_profile_pic(userid):
 # -------------------------------------------------------------------------------
 # Authencation Middleware:
 
-@auth.error_handler
-# @basic_auth.error_handler
+# @auth.error_handler
+@basic_auth.error_handler
 def auth_error(status):
     return g.error_msg, status
 
 
-@auth.verify_password
-# @basic_auth.verify_password
+# @auth.verify_password
+@basic_auth.verify_password
 def verify_password(username, password):
 
 	print("request.headers={}".format(request.headers))
@@ -401,11 +401,11 @@ def verify_password(username, password):
 		g.error_msg = error_msg  
 		return False
 
-# @token_auth.verify_token
-# def verify_token(token):
-	# print("verify_token(token={})".format(token))
+@token_auth.verify_token
+def verify_token(token):
+	print("verify_token(token={})".format(token))
 
-	# return verify_password(username=token, password=None)
+	return verify_password(username=token, password=None)
 
 
 # -------------------------------------------------------------------------------

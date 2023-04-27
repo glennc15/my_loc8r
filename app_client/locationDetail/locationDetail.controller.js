@@ -9,7 +9,11 @@ var locationDetailCtrl = function($routeParams, myLoc8rData, $location, authenti
 
 	vm.isLoggedIn = authentication.isLoggedIn();
 
-	vm.currentPath = $location.path();
+	vm.currentPath = "/" + $routeParams.locationid + "?lng=" + $routeParams.lng + "&lat=" + $routeParams.lat + "&dist=" + $routeParams.dist;
+
+	// $routeParams.lng, $routeParams.lat, $routeParams.dist
+
+	// vm.locationPath = 
 
 	vm.pageHeader = {
 		title: "Location detail page"
@@ -152,27 +156,27 @@ var locationDetailCtrl = function($routeParams, myLoc8rData, $location, authenti
 		});
 
 
-		vm.popupReviewForm = function() {
-			console.log("trying to open the review form!")
-			var modalInstance = $modal.open({
-				templateUrl: '/reviewModal/reviewModal.view.html',
-				controller: 'reviewModalCtrl as vm',
-				resolve: {
-					locationData: function() {
-						return {
-							locationid: vm.locationid,
-							locationName: vm.data.location.name
-						};
-					}
-				}
-			});
+		// vm.popupReviewForm = function() {
+		// 	console.log("trying to open the review form!")
+		// 	var modalInstance = $modal.open({
+		// 		templateUrl: '/reviewModal/reviewModal.view.html',
+		// 		controller: 'reviewModalCtrl as vm',
+		// 		resolve: {
+		// 			locationData: function() {
+		// 				return {
+		// 					locationid: vm.locationid,
+		// 					locationName: vm.data.location.name
+		// 				};
+		// 			}
+		// 		}
+		// 	});
 
 
-			modalInstance.result.then(function(data){
-				vm.data.location.reviews.push(data);
+		// 	modalInstance.result.then(function(data){
+		// 		vm.data.location.reviews.push(data);
 				
-			});
-		};
+		// 	});
+		// };
 
 
 

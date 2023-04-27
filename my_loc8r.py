@@ -1,7 +1,9 @@
 from flask import Flask, request, g, send_from_directory 
 from flask_mongoengine import MongoEngine
 # from flask import render_template
-from flask_httpauth import HTTPBasicAuth
+# from flask_httpauth import HTTPBasicAuth, HTTPTokenAuth, HTTPMultiAuth
+from flask_httpauth import HTTPBasicAuth, HTTPTokenAuth, MultiAuth
+
 from werkzeug.utils import secure_filename
 import os 
 
@@ -54,9 +56,12 @@ db = MongoEngine()
 db.init_app(app)
 
 
+# authorizations: using basic and token authorization:
+# basic_auth = HTTPBasicAuth()
+# token_auth = HTTPTokenAuth(scheme='Bearer')
+# auth = MultiAuth(basic_auth, token_auth)
+
 auth = HTTPBasicAuth()
-
-
 
 
 # -------------------------------------------------------------------------------
@@ -195,6 +200,8 @@ def api_location(locationid):
 # authencation is requried for creating a review:
 @app.route('/api/locations/<locationid>/reviews', methods=['POST'])
 @auth.login_required
+# @basic_auth.login_required
+# @token_auth.login_required
 def api_review_create(locationid):
 	print("{}: api_review_create({})".format(request.method, locationid))
 
@@ -280,8 +287,6 @@ def api_register():
 @app.route('/api/userprofile', methods=['POST'])
 @auth.login_required
 def api_add_profile():
-	print("{}: api_add_profile()".format(request.method))
-
 	if 'file' not in request.files:
 		return ({'error': "no file received"}, 400)
 
@@ -308,6 +313,7 @@ def api_add_profile():
 @app.route('/api/login', methods=['POST'])
 def api_login():
 
+	print("api_login() request.headers={}".format(request.headers))
 
 	users_api_controller = UsersAPIController()
 	users_api_controller.login(request=request)
@@ -368,12 +374,20 @@ def get_profile_pic(userid):
 # Authencation Middleware:
 
 @auth.error_handler
+# @basic_auth.error_handler
 def auth_error(status):
     return g.error_msg, status
 
 
 @auth.verify_password
+# @basic_auth.verify_password
 def verify_password(username, password):
+
+	print("request.headers={}".format(request.headers))
+
+	print("username: {}".format(username))
+	print("password: {}".format(password))
+
 
 	user, error_msg = Users.verify_jwt(jwt_token=username)
 
@@ -386,6 +400,13 @@ def verify_password(username, password):
 		g.user = None
 		g.error_msg = error_msg  
 		return False
+
+# @token_auth.verify_token
+# def verify_token(token):
+	# print("verify_token(token={})".format(token))
+
+	# return verify_password(username=token, password=None)
+
 
 # -------------------------------------------------------------------------------
 # Helpers:

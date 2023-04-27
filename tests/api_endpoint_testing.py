@@ -579,7 +579,7 @@ class APIEndPointTests(object):
 
 #  External methods:
 
-def endpoint_test(method, scheme, url, endpoint, data, auth, expected_status_code, descriptive_error_msg, expected_error_msg=None, params=None, files=None):
+def endpoint_test(method, scheme, url, endpoint, data, auth, expected_status_code, descriptive_error_msg, expected_error_msg=None, params=None, files=None, headers=None):
 	'''
 
 	''' 
@@ -631,14 +631,28 @@ def endpoint_test(method, scheme, url, endpoint, data, auth, expected_status_cod
 
 
 	if method == 'POST':
+
+		if isinstance(headers, dict):
+			# makes a request using a header. This is the most generic form and was
+			# implemented for Bearer authorization:
+			this_request = requests.post(
+				url=build_url(path=endpoint),
+				headers=headers,
+				params=params,
+				json=data,
+				files=files 
+			)
+
+
+		else:
 		
-		this_request = requests.post(
-			url=build_url(path=endpoint),
-			auth=auth,
-			params=params,
-			json=data,
-			files=files 
-		)
+			this_request = requests.post(
+				url=build_url(path=endpoint),
+				auth=auth,
+				params=params,
+				json=data,
+				files=files 
+			)
 
 
 	if method == 'GET':

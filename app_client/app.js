@@ -21,6 +21,11 @@ function config ($routeProvider, $locationProvider) {
 			controller: 'locationDetailCtrl',
 			controllerAs: 'vm'
 		})
+		.when('/addreview/:locationid', {
+			templateUrl: '/addReview/addReview.view.html',
+			controller: 'addReviewCtrl',
+			controllerAs: 'vm'
+		})
 		.when('/register', {
 			templateUrl: '/auth/register/register.view.html',
 			controller: 'registerCtrl',

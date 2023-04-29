@@ -2,8 +2,8 @@
 
 	
 <!-- container for spinner while loading locations -->
-<div class="container" ng-show="true">
-	<div class="text-center">
+<div class="container" ng-show="vm.showSpinner">
+	<div class="text-center my-5 ">
 		<div class="spinner-border text-success" role="status">
 			<span class="visually-hidden">Loading...</span>
 		</div>
@@ -16,7 +16,7 @@
 
 
 <!-- Locations: -->
-<div class="container" ng-show="false">
+<div class="container" ng-show="vm.showLocations">
 	<div class="row">
 		
 		<!-- Locations header -->

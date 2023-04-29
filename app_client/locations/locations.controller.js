@@ -1,29 +1,30 @@
 (function() {
 
 
-// function locationsCtrl ($scope, $filter, myLoc8rData, geolocation, mapHelpers, testData) {
 function locationsCtrl ($scope, $filter, myLoc8rData, geolocation, mapHelpers) {
-
-
 	var vm = this;
 
-	vm.showWelcome = true;
-	vm.showSpinner = false;
+	// when the page first loads the spinner is displayed and the Locations
+	// are hidden till they are properly loaded from the API.
+	vm.showSpinner = true;
 	vm.showLocations = false;
 
 
-	vm.pageHeader = {
-		title: 'myLoc8r',
-		strapline: "Find places to work with wifi near you!",
-		content: "Looking for wifi and a seat? We help you find places to work when out and about. Perhaps with coffee, cake or a pint? Let myLoc8r help you find the place you're looking for."
+	// vm.pageHeader = {
+		// title: 'myLoc8r',
+		// strapline: "Find places to work with wifi near you!",
+		// content: "Looking for wifi and a seat? We help you find places to work when out and about. Perhaps with coffee, cake or a pint? Let myLoc8r help you find the place you're looking for."
 
-	};
+	// };
 
-	vm.sidebar = {
-		content: "Looking for wifi and a seat? myLoc8r helps you find places to work when out and about. Perhaps with coffee, cake or a pint? Let myLoc8r help you find the place you're looking for."
-	};
+	// vm.sidebar = {
+		// content: "Looking for wifi and a seat? myLoc8r helps you find places to work when out and about. Perhaps with coffee, cake or a pint? Let myLoc8r help you find the place you're looking for."
+	// };
 
-	vm.message = "Searching for locations near you";
+	// vm.message = "Searching for locations near you";
+
+
+
 
 	var updateMapMarkers = function(){
 		addMapLocations();
@@ -166,18 +167,15 @@ function locationsCtrl ($scope, $filter, myLoc8rData, geolocation, mapHelpers) {
 	};
 
 
-
+	// helper function: gets the location data from the API and readies it for
+	// the view.
 	var processData = function(data, longitude, lattitude) {
 
-		// console.log("data = " + JSON.stringify(data));
-		// console.log('data.length = ' + data.length);
-		// console.log(typeof data);
 
+		// No locations found near this location:
 		vm.message = data.length > 0 ? '' : "No locations found near you";
 
-		
 
-		var facilities = [];
 
 		// facilities come from the api as a string with each facility
 		// seperated by a ',', the view expects facilities to be an
@@ -185,9 +183,9 @@ function locationsCtrl ($scope, $filter, myLoc8rData, geolocation, mapHelpers) {
 
 		// And the view expects a .distance value but the api send
 		// a .dist_calc. So instead of updating the view I'm adding .distance.
-		data.forEach(function(location){
 
-			// console.log("location.facilities = " + JSON.stringify(location.facilities));
+		var facilities = [];
+		data.forEach(function(location){
 
 			location.facilities.split(',').forEach(function(facility){
 				facilities.push(facility);
@@ -203,18 +201,16 @@ function locationsCtrl ($scope, $filter, myLoc8rData, geolocation, mapHelpers) {
 
 			}).at(-1);
 
-
 			location.review_summary = '"' + top_review.review_text.split(' ').slice(0, 7).join(' ') + '..."';
 
 			// determine if the location is open or closed:
 			location.is_open = $filter('isOpenNow')(location.openingTimes);
 
-			// console.log("location.is_open = " + location.is_open);
 
 		});
 
-		// create a set of all facilities to use a filters. Converting to a
-		// set removes all duplicate facilties:
+		// Setting up the location filters. Create a set of all facilities to
+		// use a filters. Converting to a set removes all duplicate facilties:
 		facilities = new Set(facilities);
 		facilities = Array.from(facilities);
 		facilities.sort(function(a, b) {
@@ -227,6 +223,7 @@ function locationsCtrl ($scope, $filter, myLoc8rData, geolocation, mapHelpers) {
 		});
 
 
+		// Filter initializations:
 		facility_filters = new Array;
 
 		facilities.forEach(function(facility){
@@ -237,23 +234,25 @@ function locationsCtrl ($scope, $filter, myLoc8rData, geolocation, mapHelpers) {
 			});
 		});
 
-		// console.log("facility_filters: " + JSON.stringify(facility_filters));
-
 		vm.facilityFiltersData = facility_filters;
 
-		// vm.facilitiesFilters = '';
+		// .facilitesFilters is used by Angularjs to filter locations by
+		//  facility tags entered into this array. The array is initialized
+		//  to empty so all locations are displayed:
 		vm.facilitiesFilters = new Array;
 
+		// set the locations data for use but the view:
 		vm.data = {locations: data};
-
 		vm.total_locations = data.length;
 
 
-
-		
-
 	};
 
+	// helper function; called when a filter is checked/unchecked. When a
+	// filter is checked the filter tag gets added to .facilitiesFilers
+	// array. Then this array is used by angularjs to only show locations
+	// that contain that filter tag. When a filter is unchecked then that
+	// facility tag is removed from .facilitiesFilers
 	vm.filterChange = function(checkBox, this_filter) {
 		if (checkBox) {
 			// adding a facility filter
@@ -272,13 +271,13 @@ function locationsCtrl ($scope, $filter, myLoc8rData, geolocation, mapHelpers) {
 			});
 		}
 
+		// update the map to show filtered locations:
 		updateMapMarkers();
-
-
 
 	};
 
-
+	// helper function; clears all filters so all locations are once again
+	// visible.
 	vm.clearFilters = function() {
 		// console.log("vm.clearFilters");
 
@@ -289,23 +288,23 @@ function locationsCtrl ($scope, $filter, myLoc8rData, geolocation, mapHelpers) {
 		
 		vm.facilitiesFilters = new Array;
 
+		// update the map to show filtered locations:
 		updateMapMarkers();
 
 	}
 
 
 
-
+	// This processed the GeoLocation data from the browser and gets nearest
+	// locations from the API: 
 	vm.getData = function(position) {
 		vm.message = "Searching for nearby places";
 
 		vm.showLocations = false;
 		vm.showSpinner = true;
 
-
 		var lat = position.coords.latitude;
 		var lng = position.coords.longitude;
-
 
 		vm.lat = lat;
 		vm.lng = lng;
@@ -318,34 +317,23 @@ function locationsCtrl ($scope, $filter, myLoc8rData, geolocation, mapHelpers) {
 				addMap(vm.data.locations, lng, lat, data.map_key);
 
 				if (vm.data.locations.length > 0){
-					vm.showWelcome = false;
+					// vm.showWelcome = false;
 					vm.showSpinner = false;
 					vm.showLocations = true;
 				}
 
 			})
 			.error(function(e){
-				vm.message = "Sorry, something's gone wrong";
+				vm.message = "Sorry, something's gone wrong. Please try again.";
 				vm.showSpinner = false;
 
 				console.log(e);
 				
-			});
-
-		// // this is only for front end testing/development. It's static
-		// // data from the service and is quicker than hitting the API
-		// // everytime a front end change is made.
-
-		// $scope.$apply(function () {
-		// 	processData(testData.locations());
-		// 	addMap(vm.data.locations, lng, lat);
-		// });
-
-		
-		
+			});		
 
 	};
 
+	// general error during location processing:
 	vm.showError = function(error) {
 		$scope.$apply(function() {
 			vm.message = error.message;
@@ -354,6 +342,8 @@ function locationsCtrl ($scope, $filter, myLoc8rData, geolocation, mapHelpers) {
 	};
 
 
+	// called if the brower doesn't support Geolocation service (or if the
+	// user does not give location permission.)
 	vm.noGeo = function() {
 		$scope.$apply(function() {
 			vm.message = "Geolocation not supported by this browser";
@@ -363,11 +353,16 @@ function locationsCtrl ($scope, $filter, myLoc8rData, geolocation, mapHelpers) {
 	};
 
 
-	vm.getLocations = function() {
-		vm.showSpinner = true;
-		geolocation.getPosition(vm.getData, vm.showError, vm.noGeo);
 
-	};
+	// Entry point: 
+	// 
+	// 1st it gets the current location using the browsers
+	// location service (requires user permission). Once the GPS coordinates
+	// are given by the brower then the nearest locations are displayed.
+	geolocation.getPosition(vm.getData, vm.showError, vm.noGeo);
+
+
+
 
 
 
@@ -383,20 +378,3 @@ angular
 
 
 
-
-
-(function() {
-
-var locationsCtrl = function() {
-
-
-
-
-};
-
-
-angular
-	.module('myLoc8rApp')
-	.controller('locationsCtrl', locationsCtrl)
-
-})();

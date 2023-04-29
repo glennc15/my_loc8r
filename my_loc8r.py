@@ -1,37 +1,24 @@
 from flask import Flask, request, g, send_from_directory 
 from flask_mongoengine import MongoEngine
-# from flask import render_template
-# from flask_httpauth import HTTPBasicAuth, HTTPTokenAuth, HTTPMultiAuth
 from flask_httpauth import HTTPBasicAuth, HTTPTokenAuth, MultiAuth
+from urllib.parse import urlparse
 
 from werkzeug.utils import secure_filename
 import os 
 
 
-# import my_loc8r.app_server.controllers.locations_ctrl as loc_ctrl
 
-# import my_loc8r.app_api.controllers.locs_api_ctrl as locs_api_ctrl
 from my_loc8r.app_api.controllers.locations_api_controller import LocationsAPIController
 from my_loc8r.app_api.controllers.reviews_api_controller import ReviewsAPIController
 from my_loc8r.app_api.controllers.users_api_controller import UsersAPIController
-
 from my_loc8r.app_api.models.user_model import Users
 
-# import my_loc8r.app_api.controllers.reviews_api_ctrl as reviews_api_ctrl 
 
-from urllib.parse import urlparse
 
 import rlcompleter
 import pdb 
 pdb.Pdb.complete = rlcompleter.Completer(locals()).complete
 
-# from jinja2 import Environment, FileSystemLoader
-# template_dir = '/Users/glenn/Documents/GettingMEAN/my_loc8r/app_server/templates/'
-# env = Environment(loader=FileSystemLoader(template_dir))
-
-
-UPLOAD_FOLDER = '/Users/glenn/Documents/GettingMEAN/my_loc8r/profiles'
-ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
 
 
 
@@ -50,6 +37,8 @@ app.config['MONGODB_SETTINGS'] = [
 	}
 ]
 
+UPLOAD_FOLDER = '/Users/glenn/Documents/GettingMEAN/my_loc8r/profiles'
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 db = MongoEngine()
@@ -60,8 +49,6 @@ db.init_app(app)
 basic_auth = HTTPBasicAuth()
 token_auth = HTTPTokenAuth(scheme='Bearer')
 auth = MultiAuth(basic_auth, token_auth)
-
-# auth = HTTPBasicAuth()
 
 
 # -------------------------------------------------------------------------------
@@ -86,43 +73,6 @@ def not_found(e):
 
 	else:
 		return app.send_static_file("index.html")
-
-
-
-# -------------------------------------------------------------------------------
-# app_server routers:
-
-# @app.route('/', methods=['GET'])
-# def locations():
-
-# 	if request.method == 'GET':
-# 		return loc_ctrl.locations_by_distance(request=request)
-
-
-
-# @app.route('/location/<locationid>', methods=['GET'])
-# def location_details(locationid):
-
-# 	if request.method == 'GET':
-# 		return loc_ctrl.location(request=request, location_id=locationid)
-
-
-# @app.route('/location/<locationid>/review/new', methods=['GET', 'POST'])
-# def add_loc_review(locationid):
-
-# 	if request.method == 'GET':
-# 		return loc_ctrl.add_review_page(request=request, location_id=locationid)
-
-
-# 	elif request.method == 'POST':
-# 		return loc_ctrl.add_review(request=request, location_id=locationid)
-
-# 	# return "<p>Add a review for Location = {}!</p>".format(locationid)
-
-# @app.route('/about')
-# def about():
-# 	return '<p>About Page</p>'
-
 
 
 # -------------------------------------------------------------------------------
@@ -175,20 +125,12 @@ def api_location(locationid):
 			'map_key': os.environ.get('MAP_KEY')
 		}
 
-
 	if request.method == 'PUT':
 		loc_api_controller.update_location(location_id=locationid, location_data=request.get_json())
-
 
 	if request.method == 'DELETE':
 		loc_api_controller.delete_location(location_id=locationid)
 
-
-
-	# loc_api_controller.locations(request=request, location_id=locationid)
-
-	# print("loc_api_controller.status_code = {}".format(loc_api_controller.status_code))
-	# print("loc_api_controller.data = {}".format(loc_api_controller.data))
 
 	return (loc_api_controller.data, loc_api_controller.status_code)
 
@@ -200,8 +142,6 @@ def api_location(locationid):
 # authencation is requried for creating a review:
 @app.route('/api/locations/<locationid>/reviews', methods=['POST'])
 @auth.login_required
-# @basic_auth.login_required
-# @token_auth.login_required
 def api_review_create(locationid):
 	print("{}: api_review_create({})".format(request.method, locationid))
 
@@ -212,18 +152,12 @@ def api_review_create(locationid):
 		user=g.user
 	)
 
-	# print("review_api_controller.status_code = {}".format(review_api_controller.status_code))
-	# print("review_api_controller.data = {}".format(review_api_controller.data))
-
-	# pdb.set_trace()
-	
 	return (review_api_controller.data, review_api_controller.status_code)
 
 
 
 @app.route('/api/locations/<locationid>/reviews/<reviewid>', methods=['GET'])
 def api_review_get(locationid, reviewid):
-
 	print("{}: api_review_get({}, {})".format(request.method, locationid, reviewid))
 
 	review_api_controller = ReviewsAPIController()
@@ -232,8 +166,6 @@ def api_review_get(locationid, reviewid):
 		review_id=reviewid
 	)
 
-	# print("review_api_controller.status_code = {}".format(review_api_controller.status_code))
-	# print("review_api_controller.data = {}".format(review_api_controller.data))
 
 	return (review_api_controller.data, review_api_controller.status_code)
 
@@ -242,7 +174,6 @@ def api_review_get(locationid, reviewid):
 @app.route('/api/locations/<locationid>/reviews/<reviewid>', methods=['PUT', 'DELETE'])
 @auth.login_required
 def api_review_update(locationid, reviewid):
-
 	print("{}: api_review_update({}, {})".format(request.method, locationid, reviewid))
 	
 	review_api_controller = ReviewsAPIController()
@@ -263,10 +194,6 @@ def api_review_update(locationid, reviewid):
 		)
 
 
-	# print("review_api_controller.status_code = {}".format(review_api_controller.status_code))
-	# print("review_api_controller.data = {}".format(review_api_controller.data))
-
-
 	return (review_api_controller.data, review_api_controller.status_code)
 
 
@@ -278,12 +205,11 @@ def api_register():
 	users_api_controller = UsersAPIController()
 	users_api_controller.register(request=request)
 
-	# print("users_api_controller.status_code = {}".format(users_api_controller.status_code))
-	# print("users_api_controller.data = {}".format(users_api_controller.data))
 
 	return (users_api_controller.data, users_api_controller.status_code)
 
 
+# user profile add pic endpoint:
 @app.route('/api/userprofile', methods=['POST'])
 @auth.login_required
 def api_add_profile():
@@ -309,17 +235,12 @@ def api_add_profile():
 			return ({'error': "{} is not a valid file type".format(file.filename)}, 400)
 
 
-
 @app.route('/api/login', methods=['POST'])
 def api_login():
-
 	print("api_login() request.headers={}".format(request.headers))
 
 	users_api_controller = UsersAPIController()
 	users_api_controller.login(request=request)
-
-	# print("users_api_controller.status_code = {}".format(users_api_controller.status_code))
-	# print("users_api_controller.data = {}".format(users_api_controller.data))
 	
 	return (users_api_controller.data, users_api_controller.status_code)
 
@@ -352,23 +273,6 @@ def get_profile_pic(userid):
 		return send_from_directory(app.config['UPLOAD_FOLDER'], this_file)
 
 
-# @app.route('/api/users', methods=['PUT'])
-# @auth.login_required
-# def api_user():
-
-# 	users_api_controller = UsersAPIController()
-# 	users_api_controller.user_update(
-# 		user=g.user, 
-# 		user_data=request.get_json()
-# 	)
-
-
-# 	print("users_api_controller.status_code = {}".format(users_api_controller.status_code))
-# 	print("users_api_controller.data = {}".format(users_api_controller.data))
-	
-# 	return (users_api_controller.data, users_api_controller.status_code)
-
-
 
 # -------------------------------------------------------------------------------
 # Authencation Middleware:
@@ -382,12 +286,6 @@ def auth_error(status):
 # @auth.verify_password
 @basic_auth.verify_password
 def verify_password(username, password):
-
-	print("request.headers={}".format(request.headers))
-
-	print("username: {}".format(username))
-	print("password: {}".format(password))
-
 
 	user, error_msg = Users.verify_jwt(jwt_token=username)
 
@@ -412,4 +310,9 @@ def verify_token(token):
 # Helpers:
 def allowed_file(filename):
 	return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+
+
+
+
 

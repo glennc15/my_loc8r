@@ -1,39 +1,41 @@
 <!-- Responsive navbar-->
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
   <div class="container-fluid">
-    <a class="navbar-brand" href="#">myLoc8r</a>
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDarkDropdown" aria-controls="navbarNavDarkDropdown" aria-expanded="false" aria-label="Toggle navigation">
-      <span class="navbar-toggler-icon"></span>
-    </button>
+		<a class="navbar-brand" href="/">myLoc8r</a>
+		
+		<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDarkDropdown" aria-controls="navbarNavDarkDropdown" aria-expanded="false" aria-label="Toggle navigation">
+		  <span class="navbar-toggler-icon"></span>
+		</button>
    
-    <div class="collapse navbar-collapse" id="navbarNavDarkDropdown">
-		<!-- home and about navigation: -->
-		<ul class="navbar-nav ms-auto mb-2 mb-lg-0">
-			<li class="nav-item"><a class="nav-link" href="/">Home</a></li>
-			<li class="nav-item"><a class="nav-link" href="/#about">About</a></li>
-		</ul>
-      
-
-		<!-- user logged in w/ logout dropdown: -->
-		<ul class="navbar-nav navbar-right">
-
-			<li ng-hide="navvm.isLoggedIn">
-				<a href="/#login/?page={{ navvm.currentPath }}">Sign in</a>
-			</li>
-
-			<li class="nav-item dropdown" ng-show="navvm.isLoggedIn">
-
-				<button class="btn btn-dark dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">{{navvm.currentUser.name}}</button>
-
-				<ul class="dropdown-menu dropdown-menu-dark">
-					<li><a class="dropdown-item" href="" ng-click="navvm.logout()">Logout</a></li>
+		<div class="collapse navbar-collapse" id="navbarNavDarkDropdown">
+				<!-- home and about navigation: -->
+				<ul class="navbar-nav mb-2 mb-lg-0">
+					<li class="nav-item"><a class="nav-link" href="/">Home</a></li>
+					<li class="nav-item"><a class="nav-link" href="/locations">Locations</a></li>
+					<li class="nav-item"><a class="nav-link" href="/about">About</a></li>
 				</ul>
-			</li>
-		</ul>
+			  
+
+				<!-- user logged in w/ logout dropdown: -->
+				<ul class="navbar-nav ms-auto">
+
+					<li ng-hide="navvm.isLoggedIn">
+						<a href="/#login/?page={{ navvm.currentPath }}">Sign in</a>
+					</li>
+
+					<li class="nav-item dropdown" ng-show="navvm.isLoggedIn">
+
+						<button class="btn btn-dark dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">{{navvm.currentUser.name}}</button>
+
+						<ul class="dropdown-menu dropdown-menu-dark">
+							<li><a class="dropdown-item" href="" ng-click="navvm.logout()">Logout</a></li>
+						</ul>
+					</li>
+				</ul>
 
 
-    </div>
-  </div>
+		</div>
+	</div>
 </nav>
 
 

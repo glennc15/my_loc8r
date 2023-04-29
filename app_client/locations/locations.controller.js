@@ -10,163 +10,6 @@ function locationsCtrl ($scope, $filter, myLoc8rData, geolocation, mapHelpers) {
 	vm.showLocations = false;
 
 
-	// vm.pageHeader = {
-		// title: 'myLoc8r',
-		// strapline: "Find places to work with wifi near you!",
-		// content: "Looking for wifi and a seat? We help you find places to work when out and about. Perhaps with coffee, cake or a pint? Let myLoc8r help you find the place you're looking for."
-
-	// };
-
-	// vm.sidebar = {
-		// content: "Looking for wifi and a seat? myLoc8r helps you find places to work when out and about. Perhaps with coffee, cake or a pint? Let myLoc8r help you find the place you're looking for."
-	// };
-
-	// vm.message = "Searching for locations near you";
-
-
-
-
-	var updateMapMarkers = function(){
-		addMapLocations();
-	};
-
-
-	var getCurrentLocations = function() {
-
-		var locations = new Array;
-
-		// build map points for each filtered location:
-		$filter('facilitiesFilter')(vm.data.locations, vm.facilitiesFilters).forEach(function(location){
-			locations.push({
-				'type': 'Feature',
-				'properties': {
-					'description':('<strong>' + location.name + '</strong><p>' + location.address + '</p>')
-				},
-				'geometry': {
-					'type': 'Point',
-					'coordinates': [location.lng, location.lat]
-				}
-			});
-
-		});
-
-		return locations;
-
-
-	}
-
-	var addMapLocations = function(){
-
-		vm.map.removeLayer('locations');
-		vm.map.removeSource('locations');
-
-		vm.map.addSource('locations', {
-			'type': 'geojson',
-			'data': {
-				'type': 'FeatureCollection',
-				'features': getCurrentLocations()
-			}
-		});
-
-		vm.map.addLayer({
-			'id': 'locations',
-			'type': 'circle',
-			'source': 'locations',
-			'paint': {
-				'circle-color': '#4264fb',
-				'circle-radius': 6,
-				'circle-stroke-width': 2,
-				'circle-stroke-color': '#ffffff'
-			}
-		});
-
-	};
-
-	var addMap = function (locations, longitude, latitude, map_api_key){
-
-		mapboxgl.accessToken = map_api_key;
-
-		const map = new mapboxgl.Map({
-			container: 'map-locations', // container ID
-			style: 'mapbox://styles/mapbox/streets-v12', // style URL
-			center: [longitude, latitude], // starting center in [lng, lat]
-		});
-
-		// sets the map view area:
-		map.fitBounds(mapHelpers.getBounds(longitude, latitude, 2.6));
-
-		// add a current location marker:
-		const currentLocationMarker = new mapboxgl.Marker({color: 'red', scale: .5})
-			.setLngLat([longitude, latitude])
-			.addTo(map);
-
-
-		// add locations to the map:
-		map.on('load', function() {
-
-			map.addSource('locations', {
-				'type': 'geojson',
-				'data': {
-					'type': 'FeatureCollection',
-					'features': getCurrentLocations()
-				}
-			});
-
-			map.addLayer({
-				'id': 'locations',
-				'type': 'circle',
-				'source': 'locations',
-				'paint': {
-					'circle-color': '#4264fb',
-					'circle-radius': 6,
-					'circle-stroke-width': 2,
-					'circle-stroke-color': '#ffffff'
-				}
-			});
-
-			// Create a popup, but don't add it to the map yet.
-			const popup = new mapboxgl.Popup({
-				closeButton: false,
-				closeOnClick: false
-			});
-
-
-			map.on('mouseenter', 'locations', (e) => {
-				// Change the cursor style as a UI indicator.
-				map.getCanvas().style.cursor = 'pointer';
-				 
-				// Copy coordinates array.
-				const coordinates = e.features[0].geometry.coordinates.slice();
-				const description = e.features[0].properties.description;
-				 
-				// Ensure that if the map is zoomed out such that multiple
-				// copies of the feature are visible, the popup appears
-				// over the copy being pointed to.
-				while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
-					coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
-				}
-				 
-				// Populate the popup and set its coordinates
-				// based on the feature found.
-				popup.setLngLat(coordinates).setHTML(description).addTo(map);
-			});
-				 
-			map.on('mouseleave', 'locations', () => {
-				map.getCanvas().style.cursor = '';
-				popup.remove();
-			});
-
-			map.on('render', function() {
-				map.resize();
-			});
-
-		});
-
-		vm.map = map;
-		
-	};
-
-
 	// helper function: gets the location data from the API and readies it for
 	// the view.
 	var processData = function(data, longitude, lattitude) {
@@ -272,7 +115,8 @@ function locationsCtrl ($scope, $filter, myLoc8rData, geolocation, mapHelpers) {
 		}
 
 		// update the map to show filtered locations:
-		updateMapMarkers();
+		var mapLocations = $filter('facilitiesFilter')(vm.data.locations, vm.facilitiesFilters);
+		mapHelpers.updateMap(vm.map, mapLocations);
 
 	};
 
@@ -289,7 +133,8 @@ function locationsCtrl ($scope, $filter, myLoc8rData, geolocation, mapHelpers) {
 		vm.facilitiesFilters = new Array;
 
 		// update the map to show filtered locations:
-		updateMapMarkers();
+		var mapLocations = $filter('facilitiesFilter')(vm.data.locations, vm.facilitiesFilters);
+		mapHelpers.updateMap(vm.map, mapLocations);
 
 	}
 
@@ -314,7 +159,7 @@ function locationsCtrl ($scope, $filter, myLoc8rData, geolocation, mapHelpers) {
 			.success(function(data){
 
 				processData(data.data);
-				addMap(vm.data.locations, lng, lat, data.map_key);
+				vm.map = mapHelpers.createMap(vm.data.locations, lng, lat, 2.6, data.map_key);
 
 				if (vm.data.locations.length > 0){
 					// vm.showWelcome = false;
@@ -353,18 +198,12 @@ function locationsCtrl ($scope, $filter, myLoc8rData, geolocation, mapHelpers) {
 	};
 
 
-
 	// Entry point: 
 	// 
 	// 1st it gets the current location using the browsers
 	// location service (requires user permission). Once the GPS coordinates
 	// are given by the brower then the nearest locations are displayed.
 	geolocation.getPosition(vm.getData, vm.showError, vm.noGeo);
-
-
-
-
-
 
 
 };

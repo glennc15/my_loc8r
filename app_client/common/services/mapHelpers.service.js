@@ -7,11 +7,9 @@ var mapHelpers = function() {
 	};
 
 
-
 	var radians2degrees = function(radians) {
 		return radians *  180 / Math.PI;
 	};
-
 
 
 	var getEndpoint = function(lat1,lon1,bearing,d) {
@@ -69,9 +67,152 @@ var mapHelpers = function() {
 	};
 
 
+	var buildLocationFeatures = function(locations) {
+
+		var location_points = new Array;
+
+		// build map points for each filtered location:
+		locations.forEach(function(location){
+			location_points.push({
+				'type': 'Feature',
+				'properties': {
+					'description':('<strong>' + location.name + '</strong><p>' + location.address + '</p>')
+				},
+				'geometry': {
+					'type': 'Point',
+					'coordinates': [location.lng, location.lat]
+				}
+			});
+
+		});
+
+
+		return location_points;
+	};
+
+
+	var updateMap = function(mapObj, locations) {
+		mapObj.removeLayer('locations');
+		mapObj.removeSource('locations');
+
+		mapObj.addSource('locations', {
+			'type': 'geojson',
+			'data': {
+				'type': 'FeatureCollection',
+				'features': buildLocationFeatures(locations)
+			}
+		});
+
+		mapObj.addLayer({
+			'id': 'locations',
+			'type': 'circle',
+			'source': 'locations',
+			'paint': {
+				'circle-color': '#4264fb',
+				'circle-radius': 6,
+				'circle-stroke-width': 2,
+				'circle-stroke-color': '#ffffff'
+			}
+		});
+
+	};
+
+
+
+	var createMap = function(locations, longitude, latitude, distance, map_api_key) {
+
+		console.log("distance = " + distance);
+
+		mapboxgl.accessToken = map_api_key;
+
+		const map = new mapboxgl.Map({
+			container: 'map-locations', // container ID
+			style: 'mapbox://styles/mapbox/streets-v12', // style URL
+			center: [longitude, latitude], // starting center in [lng, lat]
+		});
+
+		// sets the map view area. 2.6 is 2.6km and is the map display radius:
+		// map.fitBounds(mapHelpers.getBounds(longitude, latitude, 2.6));
+		map.fitBounds(getBounds(longitude, latitude, distance));
+
+		// add a current location marker:
+		const currentLocationMarker = new mapboxgl.Marker({color: 'red', scale: .5})
+			.setLngLat([longitude, latitude])
+			.addTo(map);
+
+
+		// add locations to the map:
+		map.on('load', function() {
+
+			map.addSource('locations', {
+				'type': 'geojson',
+				'data': {
+					'type': 'FeatureCollection',
+					'features': buildLocationFeatures(locations)
+				}
+			});
+
+			map.addLayer({
+				'id': 'locations',
+				'type': 'circle',
+				'source': 'locations',
+				'paint': {
+					'circle-color': '#4264fb',
+					'circle-radius': 6,
+					'circle-stroke-width': 2,
+					'circle-stroke-color': '#ffffff'
+				}
+			});
+
+			// Create a popup, but don't add it to the map yet.
+			const popup = new mapboxgl.Popup({
+				closeButton: false,
+				closeOnClick: false
+			});
+
+
+			map.on('mouseenter', 'locations', (e) => {
+				// Change the cursor style as a UI indicator.
+				map.getCanvas().style.cursor = 'pointer';
+				 
+				// Copy coordinates array.
+				const coordinates = e.features[0].geometry.coordinates.slice();
+				const description = e.features[0].properties.description;
+				 
+				// Ensure that if the map is zoomed out such that multiple
+				// copies of the feature are visible, the popup appears
+				// over the copy being pointed to.
+				while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
+					coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
+				}
+				 
+				// Populate the popup and set its coordinates
+				// based on the feature found.
+				popup.setLngLat(coordinates).setHTML(description).addTo(map);
+			});
+				 
+			map.on('mouseleave', 'locations', () => {
+				map.getCanvas().style.cursor = '';
+				popup.remove();
+			});
+
+			map.on('render', function() {
+				map.resize();
+			});
+
+		});
+
+		return map;
+		
+	};
+
+
+
+
 
 	return {
-		getBounds: getBounds
+		createMap: createMap,
+		updateMap: updateMap
 	}
 
 };

@@ -1,0 +1,79 @@
+<navigation></navigation>
+
+	
+<!-- container for spinner while loading locations -->
+<div class="container" ng-show="true">
+	<div class="text-center">
+		<div class="spinner-border text-success" role="status">
+			<span class="visually-hidden">Loading...</span>
+		</div>
+		<h4 class="fw-semibold">We are seaching for places near you</h4>
+	</div>
+</div>
+
+
+
+
+
+<!-- Locations: -->
+<div class="container" ng-show="false">
+	<div class="row">
+		
+		<!-- Locations header -->
+		<div class="text-center">
+			<h2 class="fw-bold my-3">
+				Found {{(vm.data.locations|facilitiesFilter:vm.facilitiesFilters).length}} locations for you to explore!
+			</h2>
+		</div>
+
+
+		<!-- Blog entries-->
+		<div class="col-lg-8">
+			<!-- Featured blog post-->
+			<div class="card mb-4">
+				<div  id="map-locations"></div>
+
+
+				<div class="card-body">
+					<div class="list-group-item m-1 location" ng-repeat="location in vm.data.locations | facilitiesFilter : vm.facilitiesFilters">
+					<!-- <div location-data location="location"></div> -->
+						<location-data location="location" current-lat="vm.lat" current-lng="vm.lng"></location-data>
+					</div>
+				</div>
+
+
+			</div>
+		
+
+		
+		</div>
+
+		<!-- Side widgets-->
+		<div class="col-lg-4">
+			
+			<!-- Search widget-->
+			<div class="card mb-4">
+				<!-- <div class="card-header">Search</div> -->
+				<div class="card-header">Filter locations by facilities</div>
+
+				<!-- input filters: -->
+				<div class="card-body">
+					
+					<div class="form-check" ng-repeat="filter in vm.facilityFiltersData">
+						<input class="form-check-input border-dark-subtle" type="checkbox" value="false" ng-model="filter.model" id="filter.id" ng-change="vm.filterChange(filter.model, filter.value)">
+						<label class="form-check-label fw-normal" for="filter.id">{{filter.value}}</label>
+					</div>
+
+					<button type="button" class="btn btn-warning" ng-click="vm.clearFilters()" ng-show="(vm.data.locations|facilitiesFilter:vm.facilitiesFilters).length < vm.total_locations">Clear All Filters</button>
+
+				</div>
+
+			</div>
+			
+
+		</div>
+	</div>
+</div>
+
+
+

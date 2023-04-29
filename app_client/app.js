@@ -16,7 +16,8 @@ function config ($routeProvider, $locationProvider) {
 			controllerAs: 'vm'
 		})
 		.when('/about', {
-			templateUrl: '/common/views/genericText.view.html',
+			// templateUrl: '/common/views/genericText.view.html',
+			templateUrl: '/about/about.view.html',
 			controller: 'aboutCtrl',
 			controllerAs: 'vm'
 		})

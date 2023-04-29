@@ -11,13 +11,6 @@ var locationDetailCtrl = function($routeParams, myLoc8rData, $location, authenti
 
 	vm.currentPath = "/" + $routeParams.locationid + "?lng=" + $routeParams.lng + "&lat=" + $routeParams.lat + "&dist=" + $routeParams.dist;
 
-	// $routeParams.lng, $routeParams.lat, $routeParams.dist
-
-	// vm.locationPath = 
-
-	// vm.pageHeader = {
-	// 	title: "Location detail page"
-	// };
 
 
 	myLoc8rData.locationById($routeParams.locationid)

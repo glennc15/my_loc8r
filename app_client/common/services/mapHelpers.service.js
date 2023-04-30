@@ -1,17 +1,22 @@
 (function() {
 
-var mapHelpers = function() {
+angular
+	.module('myLoc8rApp')
+	.service('mapHelpers', mapHelpers);
 
+function mapHelpers() {
+	// helper function:
 	var degrees2radians = function(degrees) {
 		return degrees * Math.PI/180;
 	};
 
-
+	// helper function:
 	var radians2degrees = function(radians) {
 		return radians *  180 / Math.PI;
 	};
 
-
+	// helper function: takes a start longtude/latitude, bearing and distance
+	// and calculates the destination longitude/latitude:
 	var getEndpoint = function(lat1,lon1,bearing,d) {
 		var R = 6371; 						// Radius of the Earth in km
 		var brng = degrees2radians(bearing); // convert degrees to radians
@@ -217,10 +222,6 @@ var mapHelpers = function() {
 
 };
 
-
-angular
-	.module('myLoc8rApp')
-	.service('mapHelpers', mapHelpers);
 
 
 

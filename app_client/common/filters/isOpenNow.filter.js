@@ -1,36 +1,47 @@
 (function() {
 
-var weekday2Number = function(weekday) {
-	var weekDays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
-
-	var dayOfWeek = weekDays.findIndex(function(x) {
-		return (x == weekday);
-	}) + 1;
 
 
-	return dayOfWeek;
-}
 
-var timestr2date = function(time_str) {
-	var hours = parseInt(time_str.split(':')[0])
-	var minutes = parseInt(time_str.split(':')[1].slice(0,2));
+angular 
+	.module('myLoc8rApp')
+	.filter('isOpenNow', isOpenNow);
 
-	if (time_str.includes('pm')) {
-		hours += 12;
+
+function isOpenNow() {
+	// helper function:
+	var weekday2Number = function(weekday) {
+		var weekDays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+
+		var dayOfWeek = weekDays.findIndex(function(x) {
+			return (x == weekday);
+		}) + 1;
+
+
+		return dayOfWeek;
 	}
+	
+	// helper function:
+	var timestr2date = function(time_str) {
+		var hours = parseInt(time_str.split(':')[0])
+		var minutes = parseInt(time_str.split(':')[1].slice(0,2));
 
-	var this_date = new Date();
+		if (time_str.includes('pm')) {
+			hours += 12;
+		}
 
-	this_date.setHours(hours);
-	this_date.setMinutes(minutes);
-	this_date.setSeconds(0);
-	this_date.setMilliseconds(0);
+		var this_date = new Date();
 
-	return this_date;
+		this_date.setHours(hours);
+		this_date.setMinutes(minutes);
+		this_date.setSeconds(0);
+		this_date.setMilliseconds(0);
 
-};
+		return this_date;
 
-var isOpenNow = function() {
+	};
+
+
 	return function(openingTimes){
 
 		var is_open_now = false;
@@ -92,16 +103,8 @@ var isOpenNow = function() {
 };
 
 
-// var isOpenNow = function() {
-// 	return function(openingTimes) {
-// 		console.log("openingTimes = " + JSON.stringify(openingTimes));
-// 	};
-// };
 
 
-angular 
-	.module('myLoc8rApp')
-	.filter('isOpenNow', isOpenNow);
 
 
 })();

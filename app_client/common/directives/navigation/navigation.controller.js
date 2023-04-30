@@ -1,7 +1,11 @@
 (function() {
 
+angular
+	.module('myLoc8rApp')
+	.controller('navigationCtrl', navigationCtrl);
 
-var navigationCtrl = function($location, authentication) {
+navigationCtrl.$inject = ["$location", "authentication"];
+function navigationCtrl($location, authentication) {
 	var vm = this;
 
 	vm.currentPath = $location.path();
@@ -21,12 +25,6 @@ var navigationCtrl = function($location, authentication) {
 
 	};
 };
-
-
-
-angular
-	.module('myLoc8rApp')
-	.controller('navigationCtrl', navigationCtrl);
 
 
 })();

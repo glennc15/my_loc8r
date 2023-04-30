@@ -1,7 +1,12 @@
 (function() {
 
 
-var aboutCtrl = function() {
+angular
+	.module('myLoc8rApp')
+	.controller('aboutCtrl', aboutCtrl);
+
+
+function aboutCtrl() {
 	var vm = this;
 
 	vm.pageHeader = {
@@ -16,9 +21,7 @@ var aboutCtrl = function() {
 
 
 
-angular
-	.module('myLoc8rApp')
-	.controller('aboutCtrl', aboutCtrl);
+
 
 
 })();

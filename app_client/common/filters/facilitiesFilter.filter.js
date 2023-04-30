@@ -1,24 +1,26 @@
 (function() {
 
+angular
+	.module('myLoc8rApp')
+	.filter('facilitiesFilter', facilitiesFilter);
 
-var filterLocations = function(locations, facility) {
-	var filtered_locations = new Array;
+function facilitiesFilter() {
 
-	locations.forEach(function(location){
-		if (location.facilities.includes(facility)) {
-			filtered_locations.push(location);
-		}
+	var filterLocations = function(locations, facility) {
+		var filtered_locations = new Array;
 
-	})
+		locations.forEach(function(location){
+			if (location.facilities.includes(facility)) {
+				filtered_locations.push(location);
+			}
 
-	return filtered_locations;
+		})
+
+		return filtered_locations;
+
+	};	
 
 
-}
-
-
-
-var facilitiesFilter = function() {
 	return function(locations, facilities){
 		// console.log('facilitiesFilter yall!');
 		// console.log("facilities = " + JSON.stringify(facilities));
@@ -52,9 +54,7 @@ var facilitiesFilter = function() {
 
 
 
-angular
-	.module('myLoc8rApp')
-	.filter('facilitiesFilter', facilitiesFilter);
+
 
 
 })();

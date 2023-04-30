@@ -1,11 +1,16 @@
 (function() {
 
-var _isNumeric = function (n) {
-	return !isNaN(parseFloat(n)) && isFinite(n);
-};
+
+angular
+	.module('myLoc8rApp')
+	.filter('formatDistance', formatDistance);
+
+function formatDistance() {
+	var _isNumeric = function (n) {
+		return !isNaN(parseFloat(n)) && isFinite(n);
+	};
 
 
-var formatDistance = function () {
 	return function (distance) {
 		var numDistance, unit;
 		
@@ -28,11 +33,6 @@ var formatDistance = function () {
 
 	};
 };
-
-
-angular
-	.module('myLoc8rApp')
-	.filter('formatDistance', formatDistance);
 
 
 })();

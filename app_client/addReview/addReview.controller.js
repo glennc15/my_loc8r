@@ -1,7 +1,11 @@
 (function() {
 
+angular 
+	.module('myLoc8rApp')
+	.controller('addReviewCtrl', addReviewCtrl);
 
-var addReviewCtrl = function($routeParams, myLoc8rData, authentication, $window) {
+addReviewCtrl.$inject = ["$routeParams", "myLoc8rData", "authentication", "$window"];
+function addReviewCtrl($routeParams, myLoc8rData, authentication, $window) {
 	var vm = this;
 	vm.isLoggedIn = authentication.isLoggedIn()
 
@@ -102,10 +106,5 @@ var addReviewCtrl = function($routeParams, myLoc8rData, authentication, $window)
 
 };
 
-
-
-angular 
-	.module('myLoc8rApp')
-	.controller('addReviewCtrl', addReviewCtrl);
 
 })();

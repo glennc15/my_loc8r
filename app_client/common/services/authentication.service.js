@@ -1,7 +1,13 @@
 (function() {
 
 
-var authentication = function($window, $http) {
+angular
+	.module('myLoc8rApp')
+	.service('authentication', authentication);
+
+
+authentication.$inject = ["$window", "$http"];
+function authentication ($window, $http) {
 
 	var register = function(user) {
 
@@ -73,9 +79,7 @@ var authentication = function($window, $http) {
 };
 
 
-angular
-	.module('myLoc8rApp')
-	.service('authentication', authentication);
+
 
 
 })();

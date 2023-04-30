@@ -1,6 +1,11 @@
 (function() {
+
+
+angular
+	.module('myLoc8rApp')
+	.filter('isRating', isRating);
 	
-var isRating = function() {
+function isRating() {
 	return function(rating) {
 
 		if (!isNaN(rating)) {
@@ -22,8 +27,5 @@ var isRating = function() {
 	};
 };
 
-angular
-	.module('myLoc8rApp')
-	.filter('isRating', isRating);
 
 })();

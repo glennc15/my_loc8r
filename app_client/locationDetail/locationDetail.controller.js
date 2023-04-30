@@ -1,7 +1,13 @@
 (function() {
 
-// var locationDetailCtrl = function($routeParams, myLoc8rData, $modal, $location, authentication, mapHelpers) {
-var locationDetailCtrl = function($routeParams, myLoc8rData, $location, authentication, mapHelpers) {
+
+angular
+	.module('myLoc8rApp')
+	.controller('locationDetailCtrl', locationDetailCtrl);
+
+
+locationDetailCtrl.$inject = ['$routeParams', 'myLoc8rData', '$location', 'authentication', 'mapHelpers'];
+function locationDetailCtrl($routeParams, myLoc8rData, $location, authentication, mapHelpers) {
 
 	var vm = this;
 
@@ -47,9 +53,6 @@ var locationDetailCtrl = function($routeParams, myLoc8rData, $location, authenti
 };
 
 
-angular
-	.module('myLoc8rApp')
-	.controller('locationDetailCtrl', locationDetailCtrl);
 
 })();
 

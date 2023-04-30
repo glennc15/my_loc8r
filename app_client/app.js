@@ -1,5 +1,10 @@
+(function() {
+
+
 // angular.module('myLoc8rApp', ['ngRoute', 'ngSanitize', 'ui.bootstrap']);
 angular.module('myLoc8rApp', ['ngRoute', 'ngSanitize']);
+
+
 
 
 function config ($routeProvider, $locationProvider) {
@@ -51,3 +56,6 @@ function config ($routeProvider, $locationProvider) {
 angular
 	.module('myLoc8rApp')
 	.config(['$routeProvider', '$locationProvider', config]);
+
+
+})();

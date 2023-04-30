@@ -1,7 +1,12 @@
 (function() {
 
 
-function locationsCtrl ($scope, $filter, myLoc8rData, geolocation, mapHelpers) {
+angular
+	.module('myLoc8rApp')
+	.controller('locationsCtrl', locationsCtrl);
+
+locationsCtrl.$inject = ['$scope', '$filter', 'myLoc8rData', 'geolocation', 'mapHelpers'];
+function locationsCtrl($scope, $filter, myLoc8rData, geolocation, mapHelpers) {
 	var vm = this;
 
 	// when the page first loads the spinner is displayed and the Locations
@@ -209,9 +214,7 @@ function locationsCtrl ($scope, $filter, myLoc8rData, geolocation, mapHelpers) {
 };
 
 
-angular
-	.module('myLoc8rApp')
-	.controller('locationsCtrl', locationsCtrl);
+
 
 })();
 

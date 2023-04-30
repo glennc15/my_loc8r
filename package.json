@@ -1,0 +1,17 @@
+{
+  "name": "my_loc8r",
+  "version": "1.0.0",
+  "description": "myLoc8r is my implementation of the Loc8r app built by Simon Holmes in his excellent book [Getting MEAN with Mongo, Express, Angular, and Node](https://www.manning.com/books/getting-mean-with-mongo-express-angular-and-node), 1st edition.",
+  "main": "index.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "uglify-js": "^3.17.4"
+  }
+}

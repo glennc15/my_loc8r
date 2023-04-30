@@ -1,7 +1,11 @@
 (function() {
 
 
-var pageHeader = function () {
+angular
+	.module('myLoc8rApp')
+	.directive('pageHeader', pageHeader);
+
+function pageHeader() {
 
 	return {
 		restrict: 'EA',
@@ -14,13 +18,6 @@ var pageHeader = function () {
 
 
 };
-
-
-
-angular
-	.module('myLoc8rApp')
-	.directive('pageHeader', pageHeader);
-
 
 
 })();

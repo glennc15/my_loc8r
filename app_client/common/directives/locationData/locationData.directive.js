@@ -1,6 +1,11 @@
 (function() {
 
-var locationData = function() {
+angular
+	.module('myLoc8rApp')
+	.directive('locationData', locationData);
+
+
+function locationData() {
 
 	return {
 		restrict: "EA",
@@ -12,16 +17,7 @@ var locationData = function() {
 		templateUrl: '/common/directives/locationData/locationData.template.html'
 	};
 
-
-
 };
-
-
-angular
-	.module('myLoc8rApp')
-	.directive('locationData', locationData);
-
-
 
 
 })();

@@ -72,14 +72,14 @@ class UsersAPIController(APIControllersBase):
 
 
 	# POST: /api/login
-	def login(self, request):
+	def login(self, login_data):
 		'''
 
 
 		'''
 
 
-		login_data = request.json 
+		# login_data = request.json 
 
 		if self.is_user_ok(registration_data=login_data, required_keys=self._required_login_keys):
 

@@ -202,9 +202,13 @@ def api_review_update(locationid, reviewid):
 
 @app.route('/api/register', methods=['POST'])
 def api_register():
+
+	print(request.json)
+
 	users_api_controller = UsersAPIController()
 	users_api_controller.register(request=request)
 
+	print(users_api_controller.data)
 
 	return (users_api_controller.data, users_api_controller.status_code)
 
@@ -240,7 +244,7 @@ def api_login():
 	print("api_login() request.headers={}".format(request.headers))
 
 	users_api_controller = UsersAPIController()
-	users_api_controller.login(request=request)
+	users_api_controller.login(login_data=request.json)
 	
 	return (users_api_controller.data, users_api_controller.status_code)
 

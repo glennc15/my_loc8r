@@ -20,7 +20,6 @@ class Users(me.Document):
 	created_on = me.DateTimeField(default=datetime.datetime.utcnow)
    
 
-
 	@staticmethod
 	def verify_jwt(jwt_token):
 		'''

@@ -67,7 +67,7 @@ class ReviewsAPIController(APIControllersBase):
 			review_data['review_text'] = review_data['reviewText']
 
 		# # remove any unnessary fields from review_data:
-		review_data = dict([(k, v) for k, v in review_data.items() if k in ['rating', 'review_text']])
+		review_data = dict([(k, v) for k, v in review_data.items() if k in ['rating', 'review_text', 'created_on']])
 
 		# add author as the verified user name
 		review_data['author'] = user.name

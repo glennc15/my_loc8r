@@ -18,7 +18,9 @@ pdb.Pdb.complete = rlcompleter.Completer(locals()).complete
 class GenerateLocations(object):
 	'''
 	
-	Generates Locations with reviews and adds them to the database.
+	Generates Locations with reviews and adds them to the database. The new
+	locations are near (withing radius defined by max_dist)
+	longtitude/latitude given in the arugments.
 
 	'''
 
@@ -28,8 +30,21 @@ class GenerateLocations(object):
 
 		'''
 
+		# data includes users/review authors, locations including address and
+		# facilities info, and all reviews.  Each location is build by
+		# randomly selecting the appropriate values from data.
 		data = self.get_data(existing_locations=existing_locations)
 
+
+		# data base interface. This interace calls the api controllers
+		# directly instead of using POST request through the API.
+		myLoc8rInterface = myLoc8rCtrlInterface(locations_ctrl_obj=location_ctrl_obj)
+
+
+		# builds the locations and add them to the database. When the location
+		# is added to the database it is assinged and id.  The location id is
+		# required before reviews can be added. The locations do not have any
+		# reviews yet.
 		self._locations = Locations(
 			origin_latitude=origin_latitude,
 			origin_longitude=origin_longitude,
@@ -38,11 +53,10 @@ class GenerateLocations(object):
 			data=data 
 		) 
 
-		myLoc8rInterface = myLoc8rCtrlInterface(locations_ctrl_obj=location_ctrl_obj)
-
-		# add the locations to the database and login all users:
 		[x.add(myLoc8rInterface) for x in self._locations.locations()]
 
+
+		# build the user/authors. Each review requires an author
 		self._users = Authors(data=data, myloc8r_interface=myLoc8rInterface)
 
 
@@ -59,20 +73,6 @@ class GenerateLocations(object):
 					review=review_record,
 					user=self._users.get_author(author=review_record['author'])
 				)
-
-
-	# *******************************************************************************
-	# START: Public methods:
-
-
-
-
-
-
-
-
-	# END: Public methods:
-	# *******************************************************************************
 
 
 
@@ -97,8 +97,7 @@ class GenerateLocations(object):
 
 		'''
 
-		# rating is scaled to 6 to start with and then scaled between 1 and 5.
-		max_rating = 6 
+
 
 		# the number of reviews is random.  
 		number_of_reviews, rating = np.random.random_sample(2)
@@ -113,6 +112,9 @@ class GenerateLocations(object):
 		# scale ratings. make samples from the normal disturbution with mean
 		# of rating. Trying to get all review ratings to roughly average to
 		# rating.
+
+		# rating is scaled to 6 to start with and then scaled between 1 and 5.
+		max_rating = 6 
 		rating = rating * max_rating
 
 		# these are ratings for each review:

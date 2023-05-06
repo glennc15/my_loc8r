@@ -149,6 +149,8 @@ class Author(object):
 
 		'''
 
+		# if the user cannot login then register
+
 		try: 
 			self.token = myloc8r_interface.login(
 				email=self._email,

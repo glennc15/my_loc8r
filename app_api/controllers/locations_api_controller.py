@@ -93,7 +93,8 @@ class LocationsAPIController(APIControllersBase):
 
 
 		
-		# validating the longitude and latitude with a location model instance. all parameters are strings so must be converted to floats
+		# validating the longitude and latitude with a location model
+		# instance. all parameters are strings so must be converted to floats
 		try:
 			Locations(
 				name='abc',
@@ -157,7 +158,7 @@ class LocationsAPIController(APIControllersBase):
 			GenerateLocations(
 				origin_longitude=float(parameters['lng']),
 				origin_latitude=float(parameters['lat']),
-				max_dist=float(parameters['maxDistance']),
+				max_dist=float((max_dist_m/1000)),
 				n=10, 
 				existing_locations=[x['name'] for x in self.data],
 				location_ctrl_obj=LocationsAPIController()

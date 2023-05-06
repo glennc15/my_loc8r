@@ -1206,23 +1206,23 @@ class APILocationTests(unittest.TestCase):
 		)
 
 
-		# READ: success with no maxDistance parameter:
-		read1_r = endpoint_test(
-			method='GET', 
-			scheme=self.scheme, 
-			url=self.url, 
-			endpoint='/'.join(['api', 'locations']), 
-			params={
-				'lng': -0.9690854,
-				'lat': 51.455051,
-			},
-			data=None, 
-			auth=None, 
-			expected_status_code=200, 
-			descriptive_error_msg="read success with no max distance"
-		)
+		# # READ: success with no maxDistance parameter:
+		# read1_r = endpoint_test(
+		# 	method='GET', 
+		# 	scheme=self.scheme, 
+		# 	url=self.url, 
+		# 	endpoint='/'.join(['api', 'locations']), 
+		# 	params={
+		# 		'lng': -0.9690854,
+		# 		'lat': 51.455051,
+		# 	},
+		# 	data=None, 
+		# 	auth=None, 
+		# 	expected_status_code=200, 
+		# 	descriptive_error_msg="read success with no max distance"
+		# )
 
-		self.assertEqual(len(read1_r.json()['data']), 3)
+		# self.assertEqual(len(read1_r.json()['data']), 3)
 
 
 		# READ: success:
@@ -1242,7 +1242,8 @@ class APILocationTests(unittest.TestCase):
 			descriptive_error_msg="read success"
 		)
 
-		self.assertEqual(len(read1_r.json()['data']), 2)
+		# self.assertEqual(len(read1_r.json()['data']), 2)
+		self.assertEqual(len(read1_r.json()['data']), 10)
 
 
 
@@ -1263,7 +1264,26 @@ class APILocationTests(unittest.TestCase):
 			descriptive_error_msg="read success"
 		)
 
-		self.assertEqual(len(read1_r.json()['data']), 0)
+		self.assertEqual(len(read1_r.json()['data']), 10)
+
+
+		# READ: success with no maxDistance parameter:
+		read1_r = endpoint_test(
+			method='GET', 
+			scheme=self.scheme, 
+			url=self.url, 
+			endpoint='/'.join(['api', 'locations']), 
+			params={
+				'lng': -0.9690854,
+				'lat': 51.455051,
+			},
+			data=None, 
+			auth=None, 
+			expected_status_code=200, 
+			descriptive_error_msg="read success with no max distance"
+		)
+
+		self.assertEqual(len(read1_r.json()['data']), 20)
 
 
 

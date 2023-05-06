@@ -81,14 +81,6 @@ class GenerateLocations(object):
 	# START: Helper methods:
 
 
-	def add_reviews(self, data):
-		'''
-
-
-		'''
-
-		pass 
-
 
 	def get_reviews(self, data):
 		'''

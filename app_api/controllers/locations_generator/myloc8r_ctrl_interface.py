@@ -42,7 +42,20 @@ class myLoc8rCtrlInterface(myLoc8rInterface):
 
 		'''
 
-		pass 
+		user_ctrl = UsersAPIController()
+
+		user_ctrl.register(registration_data={
+			'name': name,
+			'email': email,
+			'password': password
+		})
+
+
+		if user_ctrl.status_code != 201:
+			raise ValueError("Problem registering user {}".format(email))
+
+
+		return user_ctrl.data['token'] 
 
 
 	

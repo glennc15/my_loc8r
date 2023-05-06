@@ -93,7 +93,7 @@ class Author(object):
 
 	'''
 
-	def __init__(self, name, n=None):
+	def __init__(self, name, n=None, auto_register=False):
 		'''
 		
 		n: an integer to add to each email and password, n is required.
@@ -107,6 +107,7 @@ class Author(object):
 			self.name = name 
 		
 
+		self._auto_register = auto_register
 
 		if n is None:
 			raise ValueError("parameter n is required")
@@ -148,10 +149,14 @@ class Author(object):
 
 		'''
 
-		self.token = myloc8r_interface.login(
-			email=self._email,
-			password=self._password
-		)
+		try: 
+			self.token = myloc8r_interface.login(
+				email=self._email,
+				password=self._password
+			)
+
+		except Exception as e:
+			self.register(myloc8r_interface=myloc8r_interface)
 
 
 

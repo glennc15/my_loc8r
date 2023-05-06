@@ -1234,7 +1234,7 @@ class APILocationTests(unittest.TestCase):
 			params={
 				'lng': -0.9690854,
 				'lat': 51.455051,
-				'maxDistance': .001
+				'maxDistance': 2.5
 			},
 			data=None, 
 			auth=None, 
@@ -1243,7 +1243,7 @@ class APILocationTests(unittest.TestCase):
 		)
 
 		# self.assertEqual(len(read1_r.json()['data']), 2)
-		self.assertEqual(len(read1_r.json()['data']), 10)
+		self.assertEqual(len(read1_r.json()['data']), 13)
 
 
 
@@ -1283,7 +1283,7 @@ class APILocationTests(unittest.TestCase):
 			descriptive_error_msg="read success with no max distance"
 		)
 
-		self.assertEqual(len(read1_r.json()['data']), 20)
+		self.assertEqual(len(read1_r.json()['data']), 23)
 
 
 

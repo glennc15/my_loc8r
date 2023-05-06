@@ -33,13 +33,13 @@ class UsersAPIController(APIControllersBase):
 # START: Public methods:
 
 	# POST: /api/register
-	def register(self, request):
+	def register(self, registration_data):
 		'''
 
 
 		'''
 
-		registration_data = request.json
+		# registration_data = request.json
 
 		# if self.is_user_data_ok(registration_data=registration_data, required_keys=self._required_registration_keys):
 		if self.is_user_ok(registration_data=registration_data, required_keys=self._required_registration_keys):

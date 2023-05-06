@@ -206,7 +206,7 @@ def api_register():
 	print(request.json)
 
 	users_api_controller = UsersAPIController()
-	users_api_controller.register(request=request)
+	users_api_controller.register(registration_data=request.json)
 
 	print(users_api_controller.data)
 

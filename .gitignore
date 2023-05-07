@@ -139,5 +139,6 @@ package-lock.json
 # parcel
 .parcel-cache/
 
-# profile pics
+# myLoc8r stuff
 profiles
+location_data_files

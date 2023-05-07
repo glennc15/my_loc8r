@@ -2,6 +2,8 @@ from flask import Flask, request, g, send_from_directory
 from flask_mongoengine import MongoEngine
 from flask_httpauth import HTTPBasicAuth, HTTPTokenAuth, MultiAuth
 from urllib.parse import urlparse
+from dotenv import load_dotenv
+
 
 from werkzeug.utils import secure_filename
 import os 
@@ -28,16 +30,31 @@ app = Flask(__name__,
 	static_url_path=''  
 )
 
+
+load_dotenv()
+
 app.config['MONGODB_SETTINGS'] = [
 	{
 		'db': 'myLoc8r',
-		'host': '192.168.1.2',
-		'port': 27017,
-		'alias': "default"
+		'host': os.environ.get("MONGO_URI"),
 	}
 ]
 
-UPLOAD_FOLDER = '/Users/glenn/Documents/GettingMEAN/my_loc8r/profiles'
+
+# local testing:
+# app.config['MONGODB_SETTINGS'] = [
+# 	{
+# 		'db': 'myLoc8r',
+# 		'host': '192.168.1.2',
+# 		'port': 27017,
+# 		'alias': "default"
+# 	}
+# ]
+
+print(os.path.join(os.getcwd(), 'profiles'))
+
+# UPLOAD_FOLDER = '/Users/glenn/Documents/GettingMEAN/my_loc8r/profiles'
+UPLOAD_FOLDER = os.path.join(os.getcwd(), 'profiles')
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 

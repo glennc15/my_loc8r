@@ -1,5 +1,5 @@
 <h6>
-	<a ng-href="/#/location/{{location._id}}?lng={{currentLng}}&lat={{currentLat}}&dist={{location.dist_calc}}" class="text-muted fs-5 text-decoration-none">{{location.name}}</a>
+	<a ng-href="/#location/{{location._id}}?lng={{currentLng}}&lat={{currentLat}}&dist={{location.dist_calc}}" class="text-muted fs-5 text-decoration-none">{{location.name}}</a>
 	<span class="badge text-bg-primary rounded-pill float-end" ng-show="location.is_open">{{ location.distance | formatDistance }}</span>
 	<span class="badge text-bg-secondary rounded-pill float-end" ng-hide="location.is_open">{{ location.distance | formatDistance }}</span>
 

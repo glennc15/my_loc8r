@@ -51,10 +51,16 @@ app.config['MONGODB_SETTINGS'] = [
 # 	}
 # ]
 
-print(os.path.join(os.getcwd(), 'profiles'))
+
+# check if the profiles directory exists and if not then create it:
+profiles_path = os.path.join(os.getcwd(), 'profiles')
+
+if not os.path.exists(profiles_path):
+	os.mkdir(profiles_path)
+
 
 # UPLOAD_FOLDER = '/Users/glenn/Documents/GettingMEAN/my_loc8r/profiles'
-UPLOAD_FOLDER = os.path.join(os.getcwd(), 'profiles')
+UPLOAD_FOLDER = profiles_path
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 

@@ -5,7 +5,7 @@ import os
 from bson import ObjectId
 import bson
 
-from my_loc8r.app_api.models.location_models import Locations
+from my_loc8r_app.app_api.models.location_models import Locations
 
 import rlcompleter
 import pdb 

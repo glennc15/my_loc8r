@@ -1,9 +1,9 @@
 import requests
 
-from my_loc8r.app_api.controllers.locations_generator.myloc8r_interface import myLoc8rInterface
-from my_loc8r.app_api.controllers.users_api_controller import UsersAPIController
-from my_loc8r.app_api.controllers.reviews_api_controller import ReviewsAPIController
-from my_loc8r.app_api.models.user_model import Users
+from my_loc8r_app.app_api.controllers.locations_generator.myloc8r_interface import myLoc8rInterface
+from my_loc8r_app.app_api.controllers.users_api_controller import UsersAPIController
+from my_loc8r_app.app_api.controllers.reviews_api_controller import ReviewsAPIController
+from my_loc8r_app.app_api.models.user_model import Users
 
 
 

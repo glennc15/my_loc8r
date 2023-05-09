@@ -442,7 +442,7 @@ class LocationTestHelpers(object):
 		'''
 
 		'''
-		# load_dotenv()
+		load_dotenv()
 
 		return jwt.decode(token, self._encode_key, algorithms=["HS256"])
 
@@ -456,7 +456,11 @@ class LocationTestHelpers(object):
 
 		token_data = self.decode_token(token=token)
 
-		filenames = [x.split('.')[0] for x in os.listdir('/Users/glenn/Documents/GettingMEAN/my_loc8r/profiles')]
+
+		profile_path = os.path.join('/Users/glenn/Documents/GettingMEAN/my_loc8r/src/my_loc8r_app', 'profiles')
+
+
+		filenames = [x.split('.')[0] for x in os.listdir(profile_path)]
 
 		unittest.TestCase().assertIn(token_data['_id'], filenames)
 
@@ -465,26 +469,50 @@ class LocationTestHelpers(object):
 
 		token_data = self.decode_token(token=token)
 
+		profile_path = os.path.join('/Users/glenn/Documents/GettingMEAN/my_loc8r/src/my_loc8r_app', 'profiles')
+
 		# very unsophisticated delete:
-		try:
-			os.remove("/Users/glenn/Documents/GettingMEAN/my_loc8r/profiles/{}.png".format(token_data['_id']))
 
-		except Exception as e:
-			pass 
+		filenames = ["{}.png".format(token_data['_id']), "{}.jpg".format(token_data['_id']), "{}.jpeg".format(token_data['_id'])]
+
+		for filename in filenames:
+			this_path = os.path.join(profile_path, filename)
+
+			if os.path.exists(this_path):
+				os.remove(this_path)
+		
+
+		# try:
+
+		# 	filename = "{}.png".format(token_data['_id'])
+		# 	os.remove(os.path.join(profiles_path, filename))
+
+		# 	# os.remove("/Users/glenn/Documents/GettingMEAN/my_loc8r/profiles/{}.png".format(token_data['_id']))
+
+		# except Exception as e:
+		# 	pass 
 
 
-		try:
-			os.remove("/Users/glenn/Documents/GettingMEAN/my_loc8r/profiles/{}.jpg".format(token_data['_id']))
+		# try:
 
-		except Exception as e:
-			pass 
+		# 	filename = "{}.jpg".format(token_data['_id'])
+		# 	os.remove(os.path.join(profiles_path, filename))
 
 
-		try:
-			os.remove("/Users/glenn/Documents/GettingMEAN/my_loc8r/profiles/{}.jpeg".format(token_data['_id']))
+		# 	# os.remove("/Users/glenn/Documents/GettingMEAN/my_loc8r/profiles/{}.jpg".format(token_data['_id']))
 
-		except Exception as e:
-			pass 
+		# except Exception as e:
+		# 	pass 
+
+
+		# try:
+		# 	filename = "{}.jpeg".format(token_data['_id'])
+		# 	os.remove(os.path.join(profiles_path, filename))
+
+		# 	# os.remove("/Users/glenn/Documents/GettingMEAN/my_loc8r/profiles/{}.jpeg".format(token_data['_id']))
+
+		# except Exception as e:
+		# 	pass 
 
 
 

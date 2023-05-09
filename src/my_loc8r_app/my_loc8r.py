@@ -10,10 +10,10 @@ import os
 
 
 
-from my_loc8r.app_api.controllers.locations_api_controller import LocationsAPIController
-from my_loc8r.app_api.controllers.reviews_api_controller import ReviewsAPIController
-from my_loc8r.app_api.controllers.users_api_controller import UsersAPIController
-from my_loc8r.app_api.models.user_model import Users
+from my_loc8r_app.app_api.controllers.locations_api_controller import LocationsAPIController
+from my_loc8r_app.app_api.controllers.reviews_api_controller import ReviewsAPIController
+from my_loc8r_app.app_api.controllers.users_api_controller import UsersAPIController
+from my_loc8r_app.app_api.models.user_model import Users
 
 
 
@@ -33,6 +33,28 @@ app = Flask(__name__,
 
 load_dotenv()
 
+# if os.environ.get("TESTING"):
+# 	# local testing:
+# 	app.config['MONGODB_SETTINGS'] = [
+# 		{
+# 			'db': 'myLoc8r',
+# 			'host': '192.168.1.2',
+# 			'port': 27017,
+# 			'alias': "default"
+# 		}
+# 	]
+
+
+# else:
+# 	app.config['MONGODB_SETTINGS'] = [
+# 		{
+# 			'db': 'myLoc8r',
+# 			'host': os.environ.get("MONGO_URI"),
+# 		}
+# 	]
+
+
+
 app.config['MONGODB_SETTINGS'] = [
 	{
 		'db': 'myLoc8r',
@@ -40,16 +62,6 @@ app.config['MONGODB_SETTINGS'] = [
 	}
 ]
 
-
-# local testing:
-# app.config['MONGODB_SETTINGS'] = [
-# 	{
-# 		'db': 'myLoc8r',
-# 		'host': '192.168.1.2',
-# 		'port': 27017,
-# 		'alias': "default"
-# 	}
-# ]
 
 
 # check if the profiles directory exists and if not then create it:

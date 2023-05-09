@@ -2,11 +2,11 @@ import os
 import numpy as np 
 import datetime 
 
-from my_loc8r.app_api.controllers.locations_generator.load_data import LoadData
-from my_loc8r.app_api.controllers.locations_generator.locations import Locations
-from my_loc8r.app_api.controllers.locations_generator.authors import Authors
+from my_loc8r_app.app_api.controllers.locations_generator.load_data import LoadData
+from my_loc8r_app.app_api.controllers.locations_generator.locations import Locations
+from my_loc8r_app.app_api.controllers.locations_generator.authors import Authors
 
-from my_loc8r.app_api.controllers.locations_generator.myloc8r_ctrl_interface import myLoc8rCtrlInterface
+from my_loc8r_app.app_api.controllers.locations_generator.myloc8r_ctrl_interface import myLoc8rCtrlInterface
 
 
 

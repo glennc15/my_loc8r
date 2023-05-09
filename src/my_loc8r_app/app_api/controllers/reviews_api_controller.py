@@ -6,9 +6,9 @@ import json
 import mongoengine as me
 
 
-from my_loc8r.app_api.controllers.api_controllers_base import APIControllersBase
-from my_loc8r.app_api.models.location_models import Locations, OpeningTime, Review
-from my_loc8r.app_api.models.user_model import Users
+from my_loc8r_app.app_api.controllers.api_controllers_base import APIControllersBase
+from my_loc8r_app.app_api.models.location_models import Locations, OpeningTime, Review
+from my_loc8r_app.app_api.models.user_model import Users
 
 
 import rlcompleter

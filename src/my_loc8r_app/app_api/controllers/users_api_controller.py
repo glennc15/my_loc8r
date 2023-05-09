@@ -2,8 +2,8 @@ import datetime
 import mongoengine as me
 import re 
 
-from my_loc8r.app_api.controllers.api_controllers_base import APIControllersBase
-from my_loc8r.app_api.models.user_model import Users
+from my_loc8r_app.app_api.controllers.api_controllers_base import APIControllersBase
+from my_loc8r_app.app_api.models.user_model import Users
 
 import rlcompleter
 import pdb 

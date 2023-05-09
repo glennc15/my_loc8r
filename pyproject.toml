@@ -3,12 +3,12 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "example_package_glenn_c_15"
+name = "my_loc8r_app_glennc15"
 version = "0.0.1"
 authors = [
-  { name="Example Author", email="martin.crosby15@gmail.com" },
+  { name="Glenn", email="martin.crosby15@gmail.com" },
 ]
-description = "A small example package"
+description = "my implementation of Loc8r from Simon Holmes"
 readme = "README.md"
 requires-python = ">=3.7"
 classifiers = [
@@ -18,4 +18,4 @@ classifiers = [
 ]
 
 [project.urls]
-"Homepage" = "https://github.com/glennc15"
+"Homepage" = "https://github.com/glennc15/my_loc8r"

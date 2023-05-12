@@ -2,7 +2,7 @@ import json
 from bson import ObjectId
 
 
-from my_loc8r_app.app_api.models.location_models import Location, OpeningTime, Review
+from my_loc8r_app_glennc15.app_api.models.location_models import Location, OpeningTime, Review
 
 # def convert_object_ids(document):
 # 	pass 

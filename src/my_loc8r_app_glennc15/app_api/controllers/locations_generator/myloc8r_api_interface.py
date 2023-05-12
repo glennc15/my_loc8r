@@ -1,4 +1,4 @@
-import requests
+# import requests
 
 from myloc8r_interface import myLoc8rInterface
 

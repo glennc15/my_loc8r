@@ -140,5 +140,5 @@ package-lock.json
 .parcel-cache/
 
 # myLoc8r stuff
-profiles
+# profiles
 location_data_files

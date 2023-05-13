@@ -34,8 +34,7 @@ pdb.Pdb.complete = rlcompleter.Completer(locals()).complete
 
 class APIReviewTests(unittest.TestCase):
 
-	mongo_address = "mongodb://192.168.1.2:27017"
-	mongo_client = MongoClient(mongo_address)
+	mongo_client = None 
 
 
 	@classmethod
@@ -45,7 +44,16 @@ class APIReviewTests(unittest.TestCase):
 		'''
 
 		load_dotenv()
+		
+		mongo_address = os.environ.get('MONGO_URI')
+		APIReviewTests.mongo_client = MongoClient(mongo_address)
+
 		cls._encode_key = os.environ.get('JWT_SECRETE')
+
+
+		# MONGO_URI='mongodb://192.168.1.2:27017/'
+		# MONGO_URI="mongodb+srv://myloc8r_admin:admin@cluster0.7q3mmhc.mongodb.net/myLoc8r?retryWrites=true&w=majority"
+
 
 
 	@classmethod

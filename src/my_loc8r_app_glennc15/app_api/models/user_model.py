@@ -43,6 +43,10 @@ class Users(me.Document):
 				error_msg = {'error': "authorization token is required"}
 				return (None, error_msg)
 
+			elif isinstance(e, jwt.exceptions.InvalidAlgorithmError):
+				error_msg = {'error': "{}".format(e)}
+				return (None, error_msg)
+
 
 			else:
 				raise e  

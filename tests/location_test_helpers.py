@@ -457,7 +457,7 @@ class LocationTestHelpers(object):
 		token_data = self.decode_token(token=token)
 
 
-		profile_path = os.path.join('/Users/glenn/Documents/GettingMEAN/my_loc8r/src/my_loc8r_app', 'profiles')
+		profile_path = os.path.join('/Users/glenn/Documents/GettingMEAN/my_loc8r/src/my_loc8r_app_glennc15', 'profiles')
 
 
 		filenames = [x.split('.')[0] for x in os.listdir(profile_path)]
@@ -469,7 +469,7 @@ class LocationTestHelpers(object):
 
 		token_data = self.decode_token(token=token)
 
-		profile_path = os.path.join('/Users/glenn/Documents/GettingMEAN/my_loc8r/src/my_loc8r_app', 'profiles')
+		profile_path = os.path.join('/Users/glenn/Documents/GettingMEAN/my_loc8r/src/my_loc8r_app_glennc15', 'profiles')
 
 		# very unsophisticated delete:
 

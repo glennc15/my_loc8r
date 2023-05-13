@@ -24,6 +24,9 @@ pdb.Pdb.complete = rlcompleter.Completer(locals()).complete
 
 
 
+# mongodb+srv://myloc8_admin:admin@myloc8r.dlbwwig.mongodb.net/myloc8r?retryWrites=true&w=majority
+# gunicorn 'my_loc8r_app_glennc15.my_loc8r:create_app()'
+
 def create_app(test_config=None):
 
 	app = Flask(__name__, 
@@ -56,13 +59,18 @@ def create_app(test_config=None):
 	# 	]
 
 
+	print("os.environ.get(MONGO_URI) = {}".format(os.environ.get("MONGO_URI")))
 
-	app.config['MONGODB_SETTINGS'] = [
-		{
-			'db': 'myLoc8r',
-			'host': os.environ.get("MONGO_URI"),
-		}
-	]
+	# app.config['MONGODB_SETTINGS'] = [
+	# 	{
+	# 		'db': 'myLoc8r',
+	# 		'host': '192.168.1.2',
+	# 		'port': 27017,
+	# 		'alias': "default"
+	# 	}
+	# ]
+
+	app.config['MONGODB_HOST'] = os.environ.get("MONGO_URI")
 
 
 

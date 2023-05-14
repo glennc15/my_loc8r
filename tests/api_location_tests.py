@@ -1237,7 +1237,7 @@ class APILocationTests(unittest.TestCase):
 			params={
 				'lng': -0.9690854,
 				'lat': 51.455051,
-				'maxDistance': 2.5
+				'maxDistance': 0.001
 			},
 			data=None, 
 			auth=None, 

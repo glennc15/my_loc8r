@@ -8,7 +8,6 @@ import mongoengine as me
 
 from my_loc8r_app_glennc15.app_api.controllers.api_controllers_base import APIControllersBase
 from my_loc8r_app_glennc15.app_api.models.location_models import Locations, OpeningTime
-# from my_loc8r_app_glennc15.app_api.controllers.locations_generator.generate_locations import GenerateLocations
 
 
 import rlcompleter
@@ -151,23 +150,6 @@ class LocationsAPIController(APIControllersBase):
 		self.data = [self.format_location(document=x) for x in locations]
 		self.status_code = 200
 
-
-		# # there should always be some locations. If there are less than 5
-		# # locations then generate more and add them to the database:
-		# if len(self.data) < 5:
-		# 	GenerateLocations(
-		# 		origin_longitude=float(parameters['lng']),
-		# 		origin_latitude=float(parameters['lat']),
-		# 		max_dist=float((max_dist_m/1000)),
-		# 		n=10, 
-		# 		existing_locations=[x['name'] for x in self.data],
-		# 		location_ctrl_obj=LocationsAPIController()
-		# 	)
-
-		# 	# pdb.set_trace()
-			
-		# 	# read the new locations from the database:
-		# 	self.read_locations_by_distance(parameters=parameters)
 
 
 	# GET:/api/locations/<locationid>

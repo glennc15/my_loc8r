@@ -5,8 +5,8 @@ angular
 	.module('myLoc8rApp')
 	.controller('locationsCtrl', locationsCtrl);
 
-locationsCtrl.$inject = ['$scope', '$filter', 'myLoc8rData', 'geolocation', 'mapHelpers'];
-function locationsCtrl($scope, $filter, myLoc8rData, geolocation, mapHelpers) {
+locationsCtrl.$inject = ['$scope', '$filter', '$window', 'myLoc8rData', 'geolocation', 'mapHelpers'];
+function locationsCtrl($scope, $filter, $window, myLoc8rData, geolocation, mapHelpers) {
 	var vm = this;
 
 	// when the page first loads the spinner is displayed and the Locations
@@ -35,6 +35,9 @@ function locationsCtrl($scope, $filter, myLoc8rData, geolocation, mapHelpers) {
 		var facilities = [];
 		data.forEach(function(location){
 
+
+			// console.log("location.facilities = " + location.facilities);
+
 			location.facilities.split(',').forEach(function(facility){
 				facilities.push(facility);
 			});
@@ -54,6 +57,7 @@ function locationsCtrl($scope, $filter, myLoc8rData, geolocation, mapHelpers) {
 			// determine if the location is open or closed:
 			location.is_open = $filter('isOpenNow')(location.openingTimes);
 
+			// console.log("this location = " + JSON.stringify(location));
 
 		});
 
@@ -89,7 +93,7 @@ function locationsCtrl($scope, $filter, myLoc8rData, geolocation, mapHelpers) {
 		//  to empty so all locations are displayed:
 		vm.facilitiesFilters = new Array;
 
-		// set the locations data for use but the view:
+		// set the locations data for use by the view:
 		vm.data = {locations: data};
 		vm.total_locations = data.length;
 
@@ -145,6 +149,7 @@ function locationsCtrl($scope, $filter, myLoc8rData, geolocation, mapHelpers) {
 
 
 
+
 	// This processed the GeoLocation data from the browser and gets nearest
 	// locations from the API: 
 	vm.getData = function(position) {
@@ -159,29 +164,78 @@ function locationsCtrl($scope, $filter, myLoc8rData, geolocation, mapHelpers) {
 		vm.lat = lat;
 		vm.lng = lng;
 
-		// get locations from the API and prepare the data for the view
-		myLoc8rData.locationByCoords(lat, lng)
-			.success(function(data){
+		// locations are stored in the session. If there are no locations
+		// stored in the session then get locations from the api and store
+		// them in the session.
+		if ($window.sessionStorage['myLoc8r-locations'] == null) {
 
-				processData(data.data);
-				vm.map = mapHelpers.createMap(vm.data.locations, lng, lat, 2.6, data.map_key);
+			myLoc8rData.apiLocationByCoords(0, 0)
+				.success(function(data){
+					console.log("getting data from api");
 
-				if (vm.data.locations.length > 0){
-					// vm.showWelcome = false;
+					// console.log("data.data instanceof Array =  " + (data.data instanceof Array));
+
+					// add bearing data to the locations. This allows each
+					// location coordinate to be updated near the current
+					// position given by the browser. Then save the locations
+					// and teh map key to local storage:
+					var locations = myLoc8rData.addLocaitonBearings(data.data);
+					locations = myLoc8rData.updateLocations(locations, lng, lat);
+					$window.sessionStorage['myLoc8r-locations'] = JSON.stringify(locations);
+					$window.sessionStorage['myLoc8r-mapKey'] = JSON.stringify(data.map_key);
+
+					// checks if each location is currently open, formats
+					// facilities, and builds the filters.
+					processData(locations);
+					vm.map = mapHelpers.createMap(vm.data.locations, lng, lat, 2.6, data.map_key);
+
+					if (vm.data.locations.length > 0){
+						vm.showSpinner = false;
+						vm.showLocations = true;
+
+					} else {
+						vm.message = "Oh no! We could not find any locations near you. Please try again later :(";
+						vm.showSpinner = false;
+
+					}
+
+				})
+				.error(function(e){
+					vm.message = "Sorry, something's gone wrong. Please try again.";
+					vm.showSpinner = false;
+
+					console.log(e);
+					
+				});		
+
+
+		// Locations are stored in the session so read the location from
+		// session and prepare the locations:
+		} else {
+
+			console.log("getting data from session");
+
+			var locations = JSON.parse($window.sessionStorage['myLoc8r-locations']);
+			const mapKey = JSON.parse($window.sessionStorage['myLoc8r-mapKey']);
+
+			// update each location position so it's near the current
+			// position, checks if each location is currently open, formats
+			// facilities, and builds the filters.
+			locations = myLoc8rData.updateLocations(locations, lng, lat);
+			processData(locations);
+			vm.map = mapHelpers.createMap(vm.data.locations, lng, lat, 2.6, mapKey);
+
+			if (vm.data.locations.length > 0){
+				$scope.$apply(function() {
 					vm.showSpinner = false;
 					vm.showLocations = true;
-				}
 
-			})
-			.error(function(e){
-				vm.message = "Sorry, something's gone wrong. Please try again.";
-				vm.showSpinner = false;
+				});
 
-				console.log(e);
-				
-			});		
-
+			}
+		}
 	};
+
 
 	// general error during location processing:
 	vm.showError = function(error) {

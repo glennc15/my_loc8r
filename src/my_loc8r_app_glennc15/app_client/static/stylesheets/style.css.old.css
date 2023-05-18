@@ -1,0 +1,74 @@
+body {
+  background-color: #fff;
+
+}
+
+.container {
+/*  text-align: center;  */
+	background-color: #f1f1f1;
+	border: 1px solid blue; // Blue border on container to show that rows are aligned
+	font-family: 'Sans VF', 'Sans', Arial, sans-serif;
+
+}
+
+.margin-top {
+  margin-top: 20px;
+}
+
+
+/*.col-md-4 {*/
+/*  background-color: pink; // Example to show the padding in pink*/
+/*  border: 1px solid black;*/
+/*}*/
+
+.filters {
+	background-color: #fff;
+}
+
+.ui-checkbox {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 1em;
+	height: 1em;
+	background-color: #fff;
+	border: 1px solid #000;
+	color: #fff;
+/*	font-size: 16px;*/
+/*	line-height: 20px;*/
+/*	font-family: 'Sans VF', 'Sans', Arial, sans-serif;*/
+}
+
+label {
+	font-size: 16px;
+	line-height: 20px;
+}
+
+/*.greyCol {*/
+/*  background-color: grey; // Apply the grey background on the div*/
+/*  height: 100%;*/
+/*  padding: 5px;*/
+/*}*/
+
+.location {
+/*	height: 100%;*/
+	background-color: #fff;
+/*	background-color: #f1f1f1;*/
+	border: 1px solid blue; // Blue border on container to show that rows are aligned
+	font-family: 'Sans VF', 'Sans', Arial, sans-serif;
+
+}
+
+
+.location-review-text {
+	border: 1px solid blue; // Blue border on container to show that rows are aligned
+	font-family: 'Sans VF', 'Sans', Arial, sans-serif;
+	font-size: 14px;
+	color: #333;
+
+}
+
+.open_status {
+	color: green;
+}
+

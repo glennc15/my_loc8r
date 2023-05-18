@@ -12,9 +12,12 @@ function authentication ($window, $http) {
 	var register = function(user) {
 
 		console.log('register user = ' + user);
-		return $http.post('api/register', user).success(function(data){
-			console.log("success data: " + data);
-			saveToken(data.token);});
+		return $http.post('api/register', user)
+					.success(
+						function(data){
+							console.log("success data: " + data);
+							saveToken(data.token);
+						});
 	};
 
 	var login = function(user) {

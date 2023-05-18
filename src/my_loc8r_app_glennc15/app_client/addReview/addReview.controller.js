@@ -4,8 +4,8 @@ angular
 	.module('myLoc8rApp')
 	.controller('addReviewCtrl', addReviewCtrl);
 
-addReviewCtrl.$inject = ["$routeParams", "myLoc8rData", "authentication", "$window"];
-function addReviewCtrl($routeParams, myLoc8rData, authentication, $window) {
+addReviewCtrl.$inject = ["$routeParams", "$location", "myLoc8rData", "authentication", "$window"];
+function addReviewCtrl($routeParams, $location, myLoc8rData, authentication, $window) {
 	var vm = this;
 	vm.isLoggedIn = authentication.isLoggedIn()
 
@@ -20,26 +20,30 @@ function addReviewCtrl($routeParams, myLoc8rData, authentication, $window) {
 	};
 
 
+	vm.returnPage = $location.search().page || '/';
 
 
 	vm.pageHeader = {
 		title: "Add Review"
 	};
 
-	myLoc8rData.locationById($routeParams.locationid)
-		.success(function(location) {
 
-			vm.data = {location: location.data};
+	// 17 May 23: if we get here then the location is in session data so load
+	// it and find the correct location:
+	var locations = JSON.parse($window.sessionStorage['myLoc8r-locations']);
+	let location = locations.find(t => t._id === $routeParams.locationid);
+	vm.data = {location: location};
 
-	
 
+	// myLoc8rData.locationById($routeParams.locationid)
+	// 	.success(function(location) {
+	// 		vm.data = {location: location.data};
 
-		})
-		.error(function(e) {
-			console.log(e);
+	// 	})
+	// 	.error(function(e) {
+	// 		console.log(e);
 
-		});
-
+	// 	});
 
 
 	vm.onSubmit = function() {
@@ -58,10 +62,7 @@ function addReviewCtrl($routeParams, myLoc8rData, authentication, $window) {
 		} else{
 			// add the user's name and submit:
 			vm.formData.name = authentication.currentUser().name;
-
-			// console.log(JSON.stringify(vm.formData));
 			vm.doAddReview($routeParams.locationid, vm.formData);
-			vm.gotoLocation();
 
 			return false;
 
@@ -71,13 +72,14 @@ function addReviewCtrl($routeParams, myLoc8rData, authentication, $window) {
 
 
 	vm.gotoLocation = function() {
-		$window.location.href = "/location" + vm.currentPath;
+		$window.location.href = "/#location" + vm.currentPath;
+
 	}
 
 
-
-
 	vm.doAddReview = function(locationid, formData) {
+		$window.sessionStorage.removeItem('myLoc8r-locations');
+
 
 		myLoc8rData.addReviewById(locationid, {
 				author: formData.name,
@@ -85,17 +87,18 @@ function addReviewCtrl($routeParams, myLoc8rData, authentication, $window) {
 				reviewText: formData.reviewText
 			})
 			.success(function(data) {
-				console.log("Form Submit success!");
-				console.log(data);
-				// vm.modal.close(data);
+				// console.log("Form Submit success!");
+				// console.log(data);
+				vm.gotoLocation();
 
 			})
 			.error(function(data){
 				vm.formError = "Your review has not been saved, try again!";
-				console.log("Form Submit Error!");
-				console.log(data);
+				// console.log("Form Submit Error!");
+				// console.log(data);
 
 			});
+
 
 		return false;
 

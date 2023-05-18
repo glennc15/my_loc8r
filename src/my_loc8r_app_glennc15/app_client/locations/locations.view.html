@@ -12,17 +12,20 @@
 </div>
 
 
-
+<!-- <p>{{vm.data.locations}}</p> -->
 
 
 <!-- Locations: -->
-<div class="container" ng-show="vm.showLocations">
+<!-- <div class="container" ng-show="vm.showLocations"> -->
+<div class="container" ng-show="true">
+
 	<div class="row">
 		
 		<!-- Locations header -->
 		<div class="text-center">
 			<h2 class="fw-bold my-3">
 				Found {{(vm.data.locations|facilitiesFilter:vm.facilitiesFilters).length}} locations for you to explore!
+
 			</h2>
 		</div>
 

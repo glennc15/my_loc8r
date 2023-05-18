@@ -29,7 +29,55 @@ function mapHelpers() {
 		
 		return [lon2, lat2];
 
-	}
+	};
+
+
+
+
+
+	var getDistance = function (lon1, lat1, lon2, lat2) {
+
+		// console.log("lon1 = " + lon1);
+		// console.log("lat1 = " + lat1);
+
+		// console.log("lon2 = " + lon2);
+		// console.log("lat2 = " + lat2);
+
+
+		const R = 6371; // Radius of Earth in km
+		const lat1_rad = lat1 * Math.PI/180; 
+		const lat2_rad = lat2 * Math.PI/180;
+		const lat_delta = (lat2-lat1) * Math.PI/180;
+		const lng_delta = (lon2-lon1) * Math.PI/180;
+
+		const a = Math.sin(lat_delta/2) * Math.sin(lat_delta/2) +
+		          Math.cos(lat1_rad) * Math.cos(lat2_rad) *
+		          Math.sin(lng_delta/2) * Math.sin(lng_delta/2);
+		const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+
+		const d = R * c; // in km
+
+		// distance in km:
+		return d;
+
+	};
+
+
+	var getBearing = function (lng1, lat1, lng2, lat2) {
+		const lat1_rad = lat1 * Math.PI/180;
+		const lng1_rad = lng1 * Math.PI/180;
+		const lat2_rad = lat2 * Math.PI/180;
+		const lng2_rad = lng2 * Math.PI/180;
+		
+
+		const y = Math.sin(lng2_rad-lng1_rad) * Math.cos(lat2_rad);
+		const x = Math.cos(lat1_rad)*Math.sin(lat2_rad) - Math.sin(lat1_rad)*Math.cos(lat2_rad)*Math.cos(lng2_rad-lng1_rad);
+		const theta = Math.atan2(y, x);
+		const brng = (theta*180/Math.PI + 360) % 360; // in degrees
+
+		return brng
+
+	};
 
 	var getBounds = function(longitude, latitude, radius){
 		/* 
@@ -126,9 +174,11 @@ function mapHelpers() {
 
 	var createMap = function(locations, longitude, latitude, distance, map_api_key) {
 
-		console.log("distance = " + distance);
+		// console.log("distance = " + distance);
 
 		mapboxgl.accessToken = map_api_key;
+
+		// mapboxgl.accessToken = 'pk.eyJ1IjoiZ2xlbm5jMTUiLCJhIjoiY2xnNWJtajhxMDF3MjNrcGN0eWo2YzV5MyJ9.HQvXRdwCwWGYGa36rxEqgQ';
 
 		const map = new mapboxgl.Map({
 			container: 'map-locations', // container ID
@@ -217,7 +267,10 @@ function mapHelpers() {
 
 	return {
 		createMap: createMap,
-		updateMap: updateMap
+		updateMap: updateMap,
+		getEndpoint: getEndpoint,
+		getDistance: getDistance,
+		getBearing: getBearing
 	}
 
 };

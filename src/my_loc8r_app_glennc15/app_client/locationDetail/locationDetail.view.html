@@ -76,7 +76,7 @@
 
 						</div>
 
-						<div class="review" ng-repeat="review in vm.data.location.reviews | orderBy: 'created_on' : false">
+						<div class="review" ng-repeat="review in vm.data.location.reviews | orderBy: 'created_on' : true">
 
 							<div class="card mb-3">
 								<div class="card-body">
@@ -95,6 +95,7 @@
 											<p class="fw-light">
 												<span class="rating" rating-stars rating="review.rating"></span>
 												&nbsp Reviewed {{review.moment}}
+
 											</p>
 											<p ng-bind-html="review.review_text | addHtmlLineBreaks"></p>
 										</div>

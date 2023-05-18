@@ -40,7 +40,7 @@ var uglified = uglifyJs.minify(appClientFiles, {compress: false});
 
 // console.log("uglified: " + uglified.code);
 
-fs.writeFile('app_client/lib/angular/myLoc8r.min.js', uglified.code, function(err) {
+fs.writeFile('app_client/static/angular/myLoc8r.min.js', uglified.code, function(err) {
 	if (err) {
 		console.log("Error building: myLoc8r.min.js");
 		console.log(err);

@@ -178,8 +178,6 @@ function mapHelpers() {
 
 		mapboxgl.accessToken = map_api_key;
 
-		// mapboxgl.accessToken = 'pk.eyJ1IjoiZ2xlbm5jMTUiLCJhIjoiY2xnNWJtajhxMDF3MjNrcGN0eWo2YzV5MyJ9.HQvXRdwCwWGYGa36rxEqgQ';
-
 		const map = new mapboxgl.Map({
 			container: 'map-locations', // container ID
 			style: 'mapbox://styles/mapbox/streets-v12', // style URL

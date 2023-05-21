@@ -22,11 +22,6 @@ import rlcompleter
 import pdb 
 pdb.Pdb.complete = rlcompleter.Completer(locals()).complete
 
-
-
-# mongodb+srv://myloc8_admin:admin@myloc8r.dlbwwig.mongodb.net/myloc8r?retryWrites=true&w=majority
-# gunicorn 'my_loc8r_app_glennc15.my_loc8r:create_app()'
-
 def create_app(test_config=None):
 
 	app = Flask(__name__, 

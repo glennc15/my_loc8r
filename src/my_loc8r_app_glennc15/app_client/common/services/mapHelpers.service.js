@@ -171,7 +171,6 @@ function mapHelpers() {
 	};
 
 
-
 	var createMap = function(locations, longitude, latitude, distance, map_api_key) {
 
 		// console.log("distance = " + distance);

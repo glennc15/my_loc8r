@@ -92,6 +92,7 @@ class APIControllersBase(object):
 
 
 		else:
+			print("exception = {}".format(exception))
 			raise exception 
 
 
